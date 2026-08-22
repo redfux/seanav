@@ -42,13 +42,32 @@ Tile-Matrix-Set:  webmercator (EPSG:3857)
 ```
 
 `webmercator` entspricht der üblichen XYZ-/Slippy-Map-Kachelmathematik, sodass
-Leaflets `{z}/{x}/{y}`-Substitution und die eigene Berechnung in
-`latLngToTile()` ohne Umrechnung zusammenpassen.
+Leaflets Kachelkoordinaten und die eigene Berechnung in `latLngToTile()` ohne
+Umrechnung zusammenpassen.
+
+Gegen die Live-Capabilities verifiziert (siehe B1 in `bugs.md`):
+
+- Der Dienst bietet 19 Stufen, `"00"` … `"18"` – die Identifier sind
+  **zweistellig null-aufgefüllt**, `seaTileUrl()` füllt entsprechend auf.
+- `tilematrix={z}` ist korrekt; die qualifizierte Form `webmercator:{z}`
+  liefert HTTP 500.
+- Unbekannte Layer-Namen werden abgewiesen, es gibt also keinen still
+  ausgelieferten Default-Layer.
+
+Tile-URLs entstehen ausschließlich in `seaTileUrl()`. Anzeige-Layer und
+Offline-Downloader teilen sich diese Funktion, damit sie nicht auseinanderlaufen.
 
 Bewusst Rasterkarten statt offizieller ENC-Vektordaten (S-57/S-63): letztere
 erfordern Lizenzierung und einen Vektor-Renderer mit S-52-Symbolik, was für
-reine Streckenplanung und Orientierung nicht nötig ist. Der Preis dafür sind
-fehlende Attribute – z. B. keine Tiefenlinien-Abfrage per Klick.
+reine Streckenplanung und Orientierung nicht nötig ist.
+
+Der Preis ist prinzipiell und nicht durch Darstellungsarbeit behebbar: Ein
+Rasterbild trägt keine Attribute. Tiefen sind als Zahlen *aufgedruckt* und
+damit ablesbar, aber nicht abfragbar – kein Antippen einer Stelle für die
+Tiefe, keine Tiefenlinien-Filter, keine automatische Warnung bei
+Unterschreitung. Dafür bräuchte es Vektordaten (ENC/S-57, für Norwegen über
+PRIMAR lizenzpflichtig) oder ein separates Bathymetrie-Dataset; hochauflösende
+Tiefendaten sind in Norwegen zudem zugangsbeschränkt.
 
 ## Zwei getrennte Cache-Mechanismen
 
@@ -74,6 +93,32 @@ Hinweis auf eine Lücke statt eines kaputten Bildsymbols.
 Datenbank `seenavi-tiles`, Version 1, ein Object Store `tiles`:
 Schlüssel `"z/x/y"` (String), Wert das PNG als `Blob`. Kein Index, da immer
 nur der Punktzugriff über den Schlüssel gebraucht wird.
+
+`z` ist dabei immer die **Service-Zoomstufe** – die tatsächlich angeforderte –,
+nicht die Zoomstufe der Karte. Bei High-DPI-Darstellung unterscheiden sich
+beide um `ZOOM_OFFSET` (siehe unten).
+
+## High-DPI-Darstellung
+
+Mobile Displays laufen mit `devicePixelRatio` 2–3. Eine 256-px-Kachel über
+256 CSS-Pixel gezeichnet wird dort über rund 2,6 Gerätepixel gestreckt – bei
+einer Rasterseekarte verschmieren dadurch genau die Details, auf die es
+ankommt: aufgedruckte Lotungen und Untiefen-Symbolik.
+
+Deshalb `detectRetina: true`. Leaflet halbiert dann die Kachelgröße auf 128 px
+und erhöht `zoomOffset` um 1: bei Karten-Zoom 12 wird also Service-Zoom 13
+geladen und auf halber Fläche gezeichnet, was die Pixelzuordnung wieder auf
+etwa 1:1 bringt.
+
+Das betrifft den Offline-Cache unmittelbar. Der Downloader bekommt vom UI
+Karten-Zoomstufen und rechnet sie über `ZOOM_OFFSET` in Service-Zoomstufen um.
+Täte er das nicht, würde er Kacheln speichern, die der Anzeige-Layer nie
+abfragt – der Offline-Modus wäre still kaputt und das erst ohne Empfang
+aufgefallen. `ZOOM_OFFSET` spiegelt exakt die Bedingung, unter der Leaflet
+`detectRetina` aktiviert (`L.Browser.retina` und `maxZoom > 0`).
+
+Preis: rund viermal so viele Kacheln pro Fläche. Das Offline-Panel weist darauf
+hin.
 
 ## Warum `sw.js` im Root bleibt
 

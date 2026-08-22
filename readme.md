@@ -55,7 +55,9 @@ Platzhalter statt als kaputtes Bild.
 1. Gewünschten Kartenausschnitt einstellen (zoomen/verschieben)
 2. Über den ⬇️-Button das Offline-Panel öffnen
 3. Maximale Zoomstufe wählen (höhere Stufe = mehr Detail, aber deutlich mehr
-   Kacheln und Speicherbedarf)
+   Kacheln und Speicherbedarf). Auf hochauflösenden Displays lädt die App eine
+   Zoomstufe tiefer, um die Karte scharf darzustellen – das sind rund viermal
+   so viele Kacheln pro Fläche.
 4. „Sichtbaren Bereich laden" antippen – lädt alle Zoomstufen vom aktuellen
    bis zum gewählten Maximum für den sichtbaren Ausschnitt herunter
 5. Bereits vorhandene Kacheln werden übersprungen; die App kann also mehrfach

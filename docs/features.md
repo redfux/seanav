@@ -20,6 +20,7 @@ Mobilfunkempfang. Kein Ersatz für vorschriftsmäßige Seekarten und Ausrüstung
 | F9 | App startet ohne Netzverbindung (App-Shell im Service Worker) | 0.1.0 |
 | F10 | Fehlende Kacheln als erkennbarer Platzhalter statt kaputtem Bild | 0.1.0 |
 | F11 | Anzeige des belegten Kachelspeichers | 0.1.0 |
+| F12 | Scharfe Kartendarstellung auf hochauflösenden Displays (High-DPI) | 0.3.0 |
 
 ## Nichtfunktionale Anforderungen
 
@@ -37,5 +38,6 @@ Mobilfunkempfang. Kein Ersatz für vorschriftsmäßige Seekarten und Ausrüstung
 | --- | --- | --- |
 | O1 | PWA-Icons (`manifest.json` → `icons` ist derzeit leer), damit die Installation auf dem Homescreen ein eigenes Symbol bekommt | offen |
 | O2 | Gezieltes Löschen einzelner Offline-Bereiche bzw. des gesamten Kachelcaches aus der App heraus | offen |
+| O5 | Abfragbare Tiefenwerte (Antippen → Tiefe), Tiefenlinien, Untiefen-Warnung. Mit Rasterkarten prinzipiell nicht möglich, erfordert Vektor-/Bathymetriedaten – siehe `architecture.md` | zu entscheiden |
 | O3 | Routen mit mehreren Wegpunkten statt nur einem Einzelziel | offen |
 | O4 | Google Material Design als gestalterische Grundlage (Masterprompt-Vorgabe) – siehe Begründung der aktuellen Abweichung in `architecture.md` | zu entscheiden |

@@ -290,11 +290,23 @@ let activeDownload = null;
 function wireOfflinePanel() {
   const zoomRange = document.getElementById('zoom-range');
   const zoomVal = document.getElementById('zoom-range-val');
+
+  // The layer decides the usable maximum: with high-DPI rendering Leaflet
+  // lowers the map's maxZoom by one, so a hardcoded slider bound would offer
+  // a level that can never be displayed.
+  zoomRange.max = String(map.getMaxZoom());
+  if (parseInt(zoomRange.value, 10) > map.getMaxZoom()) {
+    zoomRange.value = String(map.getMaxZoom());
+  }
+  zoomVal.textContent = zoomRange.value;
   zoomRange.addEventListener('input', () => { zoomVal.textContent = zoomRange.value; });
 
   document.getElementById('btn-download-area').addEventListener('click', () => {
     const maxZoom = parseInt(zoomRange.value, 10);
-    const minZoom = map.getZoom();
+    // Guard against the current view already being zoomed in further than the
+    // selected maximum - the range would be empty and the download a silent
+    // no-op showing "0 / 0".
+    const minZoom = Math.min(map.getZoom(), maxZoom);
     const progressBox = document.getElementById('download-progress');
     const fill = document.getElementById('progress-fill');
     const text = document.getElementById('progress-text');
@@ -306,7 +318,9 @@ function wireOfflinePanel() {
     activeDownload = downloadAreaForOffline(map, minZoom, maxZoom, (done, total) => {
       const pct = total > 0 ? Math.round((done / total) * 100) : 0;
       fill.style.width = `${pct}%`;
-      text.textContent = `${done} / ${total} Kacheln`;
+      text.textContent = total > 0
+        ? `${done} / ${total} Kacheln`
+        : 'Keine Kacheln für diesen Bereich';
     });
 
     activeDownload.promise.then(() => {
@@ -325,8 +339,11 @@ function wireOfflinePanel() {
 
 async function refreshCacheStats() {
   const stats = await TileStore.stats();
+  const dpiNote = HIGH_DPI
+    ? ' · hochauflösendes Display: eine Zoomstufe tiefer, ca. 4× Kacheln'
+    : '';
   document.getElementById('cache-size-hint').textContent =
-    `Aktuell gespeichert: ${stats.count} Kacheln (~${stats.mb.toFixed(1)} MB)`;
+    `Aktuell gespeichert: ${stats.count} Kacheln (~${stats.mb.toFixed(1)} MB)${dpiNote}`;
 }
 
 // --- Toolbar wiring ------------------------------------------------------

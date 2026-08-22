@@ -10,6 +10,49 @@ const TILE_DB_NAME = 'seenavi-tiles';
 const TILE_DB_VERSION = 1;
 const TILE_STORE = 'tiles';
 
+// --- Kartverket WMTS ---------------------------------------------------
+// Verified against the live GetCapabilities: the service offers layer
+// "sjokartraster" on tile matrix set "webmercator" with 19 levels whose
+// identifiers are zero-padded ("00" .. "18"). Passing an unpadded value works
+// for two-digit zooms but is not what the capabilities declare, so pad it -
+// otherwise zoom levels below 10 would send "4" instead of "04".
+// The qualified form "webmercator:{z}" is NOT accepted (HTTP 500).
+const TILE_URL_BASE = 'https://cache.kartverket.no/v1/service';
+const SEA_CHART_LAYER = 'sjokartraster';
+const SEA_CHART_MATRIX_SET = 'webmercator';
+const SERVICE_MAX_ZOOM = 18;
+
+/*
+ * High-DPI handling. Phone screens run at devicePixelRatio 2-3, so a 256 px
+ * tile drawn across 256 CSS px is stretched over ~2.6 device pixels each -
+ * which turns the printed soundings and shoal symbols of the raster chart
+ * into mush. Leaflet's detectRetina fetches one zoom level deeper and draws
+ * it at half size, restoring roughly 1:1 pixel mapping.
+ *
+ * The offset must be known outside the layer too, because the offline
+ * downloader has to store the same zoom levels the layer will ask for.
+ * detectRetina applies exactly when L.Browser.retina is set and maxZoom > 0,
+ * which is the condition mirrored here.
+ */
+const HIGH_DPI = L.Browser.retina;
+const ZOOM_OFFSET = HIGH_DPI ? 1 : 0;
+
+// Single place building tile URLs - display layer and offline downloader
+// must never drift apart.
+function seaTileUrl(z, x, y) {
+  const matrix = String(z).padStart(2, '0');
+  return `${TILE_URL_BASE}?service=WMTS&request=GetTile&version=1.0.0` +
+    `&layer=${SEA_CHART_LAYER}&style=default&format=image/png` +
+    `&tilematrixset=${SEA_CHART_MATRIX_SET}` +
+    `&tilematrix=${matrix}&tilerow=${y}&tilecol=${x}`;
+}
+
+// Cache key. z is always the *service* zoom actually requested, not the map's
+// zoom - with high-DPI the two differ by ZOOM_OFFSET.
+function tileKey(z, x, y) {
+  return `${z}/${x}/${y}`;
+}
+
 // Wraps IndexedDB access behind a small promise-based API.
 const TileStore = {
   _dbPromise: null,
@@ -87,10 +130,19 @@ const TileStore = {
  */
 const OfflineWMTSLayer = L.TileLayer.extend({
 
+  // Leaflet substitutes {z} itself; overridden so the zero-padded matrix
+  // identifier and the cache key come from the same helper.
+  getTileUrl: function (coords) {
+    return seaTileUrl(this._getZoomForUrl(), coords.x, coords.y);
+  },
+
   createTile: function (coords, done) {
     const img = document.createElement('img');
     img.setAttribute('role', 'presentation');
-    const key = `${coords.z}/${coords.x}/${coords.y}`;
+    // Service zoom, including the high-DPI offset. coords.z is the map's tile
+    // zoom, which is one level lower whenever detectRetina is active.
+    const z = this._getZoomForUrl();
+    const key = tileKey(z, coords.x, coords.y);
 
     TileStore.get(key).then((blob) => {
       if (blob) {
@@ -100,7 +152,7 @@ const OfflineWMTSLayer = L.TileLayer.extend({
       }
       // Not cached: try the network. If offline, this rejects and we
       // show a placeholder instead of a broken image icon.
-      const url = this.getTileUrl(coords);
+      const url = seaTileUrl(z, coords.x, coords.y);
       fetch(url)
         .then((res) => {
           if (!res.ok) throw new Error('tile fetch failed: ' + res.status);
@@ -150,19 +202,15 @@ const OfflineWMTSLayer = L.TileLayer.extend({
  * tile math matches normal XYZ/slippy conventions.
  */
 function createSeaChartLayer() {
-  const base = 'https://cache.kartverket.no/v1/service';
-  const template =
-    base +
-    '?service=WMTS&request=GetTile&version=1.0.0' +
-    '&layer=sjokartraster&style=default&format=image/png' +
-    '&tilematrixset=webmercator&tilematrix={z}&tilerow={y}&tilecol={x}';
-
-  return new OfflineWMTSLayer(template, {
+  return new OfflineWMTSLayer(TILE_URL_BASE, {
     minZoom: 4,
-    maxZoom: 17,
+    // Highest level the service serves. With detectRetina active Leaflet
+    // lowers the map's maxZoom by one and adds it back as zoomOffset, so the
+    // requested service zoom still tops out at SERVICE_MAX_ZOOM.
+    maxZoom: SERVICE_MAX_ZOOM,
     tileSize: 256,
+    detectRetina: true,
     attribution: '&copy; Kartverket',
-    // Leaflet substitutes {z}/{x}/{y} itself via getTileUrl; keep keys matching.
   });
 }
 
@@ -170,6 +218,11 @@ function createSeaChartLayer() {
  * Downloads all tiles for the given map bounds across a zoom range and
  * stores them in IndexedDB. Reports progress via onProgress(done, total)
  * and can be aborted by calling the returned controller's cancel().
+ *
+ * minZoom/maxZoom are *map* zoom levels, i.e. what the user picks in the UI.
+ * They are translated to service zoom levels via ZOOM_OFFSET so the stored
+ * keys match exactly what the display layer will look up - otherwise the
+ * download would silently fill the cache with tiles nobody ever requests.
  */
 function downloadAreaForOffline(map, minZoom, maxZoom, onProgress) {
   let cancelled = false;
@@ -177,9 +230,10 @@ function downloadAreaForOffline(map, minZoom, maxZoom, onProgress) {
 
   async function run() {
     // Collect every tile coordinate needed across all requested zoom levels.
+    const bounds = map.getBounds();
     const jobs = [];
-    for (let z = minZoom; z <= maxZoom; z++) {
-      const bounds = map.getBounds();
+    for (let mapZoom = minZoom; mapZoom <= maxZoom; mapZoom++) {
+      const z = Math.min(mapZoom + ZOOM_OFFSET, SERVICE_MAX_ZOOM);
       const nwPoint = latLngToTile(bounds.getNorthWest(), z);
       const sePoint = latLngToTile(bounds.getSouthEast(), z);
       for (let x = nwPoint.x; x <= sePoint.x; x++) {
@@ -188,6 +242,18 @@ function downloadAreaForOffline(map, minZoom, maxZoom, onProgress) {
         }
       }
     }
+
+    // Clamping at SERVICE_MAX_ZOOM can map two map zooms onto one service
+    // zoom; drop the duplicates so the progress total stays honest.
+    const seen = new Set();
+    const unique = jobs.filter((j) => {
+      const k = tileKey(j.z, j.x, j.y);
+      if (seen.has(k)) return false;
+      seen.add(k);
+      return true;
+    });
+    jobs.length = 0;
+    jobs.push(...unique);
 
     const total = jobs.length;
     let done = 0;
@@ -198,14 +264,10 @@ function downloadAreaForOffline(map, minZoom, maxZoom, onProgress) {
       while (cursor < jobs.length) {
         if (cancelled) return;
         const job = jobs[cursor++];
-        const key = `${job.z}/${job.x}/${job.y}`;
+        const key = tileKey(job.z, job.x, job.y);
         const already = await TileStore.has(key);
         if (!already) {
-          const url =
-            'https://cache.kartverket.no/v1/service' +
-            '?service=WMTS&request=GetTile&version=1.0.0' +
-            '&layer=sjokartraster&style=default&format=image/png' +
-            `&tilematrixset=webmercator&tilematrix=${job.z}&tilerow=${job.y}&tilecol=${job.x}`;
+          const url = seaTileUrl(job.z, job.x, job.y);
           try {
             const res = await fetch(url);
             if (res.ok) {

@@ -6,6 +6,39 @@ Versionierung nach [SemVer](https://semver.org/lang/de/).
 Die Versionsnummer wird ausschließlich in `js/version.js` gepflegt; Footer und
 Service-Worker-Cachename leiten sich automatisch daraus ab.
 
+## [0.3.0] – 2026-08-22
+
+Behebt die grobe Kartendarstellung (B2). Ursache war nicht die Kartenquelle,
+sondern die fehlende Behandlung hochauflösender Displays.
+
+### Added
+
+- High-DPI-Darstellung (`detectRetina`): auf Geräten mit
+  `devicePixelRatio > 1` wird eine Zoomstufe tiefer geladen und auf halber
+  Fläche gezeichnet. Aufgedruckte Lotungen und Untiefen-Symbolik werden
+  dadurch lesbar.
+- Hinweis im Offline-Panel auf den dadurch rund vierfachen Speicherbedarf
+
+### Changed
+
+- **Breaking (intern):** Der Offline-Downloader speichert jetzt die
+  Service-Zoomstufen, die der Anzeige-Layer anfordert, statt der Karten-Zoomstufen.
+  Ohne das hätte High-DPI den Offline-Cache still unbrauchbar gemacht.
+  Bereits gespeicherte Kacheln bleiben gültig, decken aber nur den Zoombereich
+  ohne Offset ab – für die neue Darstellung ist ein erneuter Download nötig.
+- Tile-URLs entstehen nur noch in `seaTileUrl()` statt an zwei Stellen
+- Obergrenze des Zoom-Reglers folgt `map.getMaxZoom()` statt fest 17
+- `maxZoom` des Layers auf 18 (vom Dienst tatsächlich angeboten), vorher 17
+
+### Fixed
+
+- TileMatrix-Identifier werden zweistellig null-aufgefüllt (`"04"` statt `"4"`),
+  wie in den Capabilities deklariert. Betraf Zoomstufen unter 10.
+- Offline-Download war ein stiller No-Op mit Anzeige „0 / 0", wenn die Karte
+  bereits weiter hineingezoomt war als die gewählte maximale Zoomstufe
+- B1 geklärt: `tilematrix={z}` ist korrekt, die qualifizierte Variante
+  `webmercator:{z}` liefert HTTP 500. Warnung in der Doku entfernt.
+
 ## [0.2.1] – 2026-08-22
 
 ### Added
