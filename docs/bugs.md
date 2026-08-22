@@ -11,23 +11,40 @@ stehen, damit sie bei einem Rückfall wiederauffindbar sind.
 grobklotzig: harte, perfekt quadratische Pixelblöcke mit reinen Farben.
 Untiefen-Symbole sind sichtbar, tragen aber keine ablesbaren Tiefenangaben.
 
-**Erste Eingrenzung:** Weder `style.css` noch `vendor/leaflet.css` setzen
-`image-rendering: pixelated` (Leaflet nur für Safari). Browser interpolieren
-beim Vergrößern normalerweise weich – die harten Blöcke müssen also aus den
-gelieferten Kacheln selbst stammen. Der Dienst liefert zwar auf allen Stufen
-bis z18 HTTP 200, oberhalb der nativen Auflösung des Kartenrasters aber
-offenbar nur hochskalierte Kacheln.
+**Messung (Abschnitt 6 von `diagnose.html`, am Live-Dienst):**
 
-**Konsequenz für B2:** Oberhalb dieser Grenze bringt `detectRetina` kein
-zusätzliches Detail – die tiefere Stufe enthält dieselbe Information, nur
-größer gerechnet – kostet aber die vierfache Kachelmenge. Unterhalb der Grenze
+| Zoom | Farben | Abweichung ggü. verdoppelter Stufe darunter |
+| --- | --- | --- |
+| z13 | 4097 | 54,2 % (Ø 28,2) |
+| z14 | 4097 | 22,3 % (Ø 5,6) |
+| z15 | 2983 | 14,2 % (Ø 3,8) |
+| z16 | 619 | 7,4 % (Ø 2,0) |
+| z17 | 664 | 5,0 % (Ø 1,5) |
+| z18 | 478 | 3,1 % (Ø 1,1) |
+
+Die Abweichung fällt monoton, und die Farbanzahl bricht zwischen z15 und z16
+von 2983 auf 619 ein. Wenige Farben bei minimaler mittlerer Differenz =
+hartkantig hochskaliert. **Nutzbares Kartendetail endet praktisch bei etwa
+z15.** Die ursprüngliche Schwelle von 2 % stufte das Resampling-Rauschen der
+oberen Stufen fälschlich als „echtes Detail" ein und wurde korrigiert.
+
+**Konsequenz für B2:** Oberhalb dieser Grenze bringt `detectRetina` am WMTS
+kein zusätzliches Detail, kostet aber die vierfache Kachelmenge. Unterhalb
 hilft es weiterhin.
 
-**Nächster Schritt:** Abschnitt 6 von `diagnose.html` misst die Grenze und
-liefert den Wert für `maxNativeZoom`. Abschnitt 7 prüft, ob ein WMS-Endpunkt
-erreichbar ist, der nicht an eine feste Kachelpyramide gebunden ist.
+**Aussichtsreicher Weg (Abschnitt 7):** `wms.geonorge.no/skwms1/wms.sjokartraster2`
+antwortet mit HTTP 200 und bietet unter anderem die Layer `all`, `overseiling`,
+`overview`, `300serien` sowie einzelne Kartenblätter (`kart300`, `kart549` …).
+Die 300er-Serie sind die detaillierten Hafenkarten. Ein WMS rendert den
+angefragten Ausschnitt in der angefragten Pixelgröße und ist damit **nicht an
+eine Kachelpyramide gebunden**; auf hochauflösenden Displays fordert Leaflet
+dort 512×512 statt 256×256 an, also echte doppelte Pixelzahl.
 
-**Status:** offen, Messung ausstehend.
+**Nächster Schritt:** `compare.html` stellt beide Quellen synchronisiert
+nebeneinander, damit sich Layer-Wahl und tatsächlicher Detailgewinn am realen
+Dienst entscheiden lassen, bevor etwas davon in die App wandert.
+
+**Status:** offen, Ursache geklärt, Lösungsweg identifiziert.
 
 ## Behoben
 

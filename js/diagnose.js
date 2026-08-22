@@ -251,19 +251,26 @@ async function measureResolution() {
     const upscaled = toPixels(prev.bmp, 256, qx, qy, prev.bmp.width / 2, false);
     const { differingPct, meanDiff } = comparePixels(curPx, upscaled);
 
-    const real = differingPct > 2;
-    if (real) lastRealDetail = cur.z;
+    // A pure nearest-neighbour upscale differs by exactly nothing, but a
+    // smooth one still produces a few percent of slightly-off pixels along
+    // every edge without carrying new information. Judging on the mean
+    // difference as well avoids reading that resampling noise as detail.
+    const verdict = (differingPct > 10 && meanDiff > 3) ? 'echtes Detail'
+      : (differingPct > 2 ? 'grenzwertig' : 'nur hochskaliert');
+    if (verdict === 'echtes Detail') lastRealDetail = cur.z;
     lines.push(
       `z${String(cur.z).padStart(2)}   | ${String(colours).padStart(6)} | ` +
       `${differingPct.toFixed(1).padStart(5)}% abweichend (Ø ${meanDiff.toFixed(1)}) | ` +
-      (real ? 'echtes Detail' : 'nur hochskaliert')
+      verdict
     );
   }
 
   lines.push('');
   lines.push(lastRealDetail !== null
-    ? `=> Hoechste Stufe mit echtem Kartendetail: z${lastRealDetail}`
+    ? `=> Hoechste Stufe mit klar messbarem neuen Kartendetail: z${lastRealDetail}`
     : '=> Keine Stufe brachte messbar neues Detail.');
+  lines.push('   ("grenzwertig" = wenige Prozent abweichend bei kleiner mittlerer');
+  lines.push('    Differenz - typisch fuer weiches Hochskalieren ohne neue Information)');
 
   const out = lines.join('\n');
   el.textContent = out;

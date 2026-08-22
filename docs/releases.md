@@ -6,6 +6,28 @@ Versionierung nach [SemVer](https://semver.org/lang/de/).
 Die Versionsnummer wird ausschließlich in `js/version.js` gepflegt; Footer und
 Service-Worker-Cachename leiten sich automatisch daraus ab.
 
+## [0.3.2] – 2026-08-22
+
+### Added
+
+- `compare.html` + `js/compare.js`: stellt WMTS-Kachelcache und Geonorge-WMS
+  synchronisiert nebeneinander. Layer- und Formatauswahl kommen live aus den
+  Capabilities des Dienstes, sodass sich die richtige Konfiguration am realen
+  Dienst ermitteln lässt, statt sie zu raten.
+
+### Fixed
+
+- Auflösungsmessung in `diagnose.html` stufte weiches Hochskalieren als
+  „echtes Detail" ein. Die Schwelle von 2 % Pixelabweichung ignorierte, dass
+  eine glatte Vergrößerung an jeder Kante ein paar Prozent leicht abweichender
+  Pixel erzeugt, ohne neue Information zu tragen. Bewertet wird jetzt zusätzlich
+  über die mittlere Differenz, mit „grenzwertig" als Zwischenstufe.
+
+### Notes
+
+- Messergebnis am Live-Dienst: nutzbares Kartendetail endet bei etwa z15;
+  darüber skaliert der Dienst nur noch hoch. Details in `docs/bugs.md`, B3.
+
 ## [0.3.1] – 2026-08-22
 
 ### Added
