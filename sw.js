@@ -1,22 +1,34 @@
 /*
  * Service worker: caches the app shell only (HTML/CSS/JS/vendor files).
- * Map tiles are handled separately via IndexedDB in tilecache.js, since
+ * Map tiles are handled separately via IndexedDB in js/tilecache.js, since
  * they need custom eviction/size logic the Cache API doesn't give us.
+ *
+ * Stays in the repo root on purpose: a service worker can only control
+ * pages at or below its own path, so moving it into /js would limit its
+ * scope to /js/ and leave index.html uncontrolled.
+ *
+ * thought up by human, coded by ai
  */
 
-const SHELL_CACHE = 'seenavi-shell-v0.1.0';
+// Single source of truth for the version, shared with index.html.
+importScripts('js/version.js');
+
+// Version in the cache name doubles as cache busting: a new APP_VERSION
+// creates a new cache and the activate handler drops the previous one.
+const SHELL_CACHE = `seenavi-shell-v${APP_VERSION}`;
 const SHELL_FILES = [
   './',
   './index.html',
   './style.css',
-  './app.js',
-  './tilecache.js',
+  './manifest.json',
+  './js/version.js',
+  './js/app.js',
+  './js/tilecache.js',
   './vendor/leaflet.js',
   './vendor/leaflet.css',
   './vendor/images/marker-icon.png',
   './vendor/images/marker-icon-2x.png',
   './vendor/images/marker-shadow.png',
-  './manifest.json',
 ];
 
 self.addEventListener('install', (event) => {
@@ -39,7 +51,7 @@ self.addEventListener('fetch', (event) => {
   const url = new URL(event.request.url);
 
   // Never intercept tile requests to Kartverket; those go through
-  // tilecache.js / IndexedDB, not the service worker.
+  // js/tilecache.js / IndexedDB, not the service worker.
   if (url.hostname.includes('kartverket.no')) return;
 
   event.respondWith(

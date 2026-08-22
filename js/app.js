@@ -2,9 +2,11 @@
  * SeeNavi Bergen - client-side offline sea navigation helper.
  * No server component: map tiles, position handling and route math
  * all run in the browser so the app keeps working without signal.
+ *
+ * APP_VERSION lives in js/version.js, which index.html loads first.
+ *
+ * thought up by human, coded by ai
  */
-
-const APP_VERSION = '0.1.0';
 
 // --- Constants -------------------------------------------------------
 const BERGEN_CENTER = [60.39, 5.32];

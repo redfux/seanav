@@ -2,6 +2,8 @@
  * Offline tile cache for Leaflet using IndexedDB.
  * Tiles are stored as Blobs keyed by "z/x/y" so the map keeps working
  * without a network connection once an area has been downloaded.
+ *
+ * thought up by human, coded by ai
  */
 
 const TILE_DB_NAME = 'seenavi-tiles';

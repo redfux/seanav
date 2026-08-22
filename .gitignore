@@ -1,0 +1,22 @@
+# Abhaengigkeiten (im Projekt bewusst nicht genutzt, zur Sicherheit ausgeschlossen)
+node_modules/
+
+# Lokale Konfiguration / Secrets
+.env
+.env.local
+
+# Build-Ausgaben
+dist/
+build/
+
+# IDE / Editor
+.vscode/
+.idea/
+*.swp
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Agent-/Tool-Verzeichnisse
+.claude/
