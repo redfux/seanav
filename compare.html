@@ -4,55 +4,44 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https://cache.kartverket.no https://wms.geonorge.no; connect-src 'self' https://cache.kartverket.no https://wms.geonorge.no;">
-  <title>SeeNavi – WMTS vs. WMS</title>
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https://cache.kartverket.no https://wms.geonorge.no https://tiles.openseamap.org https://depth.openseamap.org; connect-src 'self' https://cache.kartverket.no https://wms.geonorge.no https://depth.openseamap.org;">
+  <title>SeeNavi – Kartenquellen-Labor</title>
   <link rel="stylesheet" href="vendor/leaflet.css">
   <style>
     :root { color-scheme: dark; }
     * { box-sizing: border-box; }
     html, body { margin: 0; height: 100%; background: #0d1b2a; color: #e6edf3;
-                 font: 14px/1.4 system-ui, sans-serif; }
+                 font: 13px/1.4 system-ui, sans-serif; }
     body { display: flex; flex-direction: column; height: 100dvh; }
-    #controls { padding: .5rem; background: #10202c; display: flex; flex-wrap: wrap;
-                gap: .5rem; align-items: center; flex: 0 0 auto; }
-    #controls label { font-size: 12px; }
+    #bar { padding: .4rem .5rem; background: #10202c; display: flex; flex-wrap: wrap;
+           gap: .4rem; align-items: center; flex: 0 0 auto; }
     select, button { font: inherit; padding: .3rem; background: #16222e; color: #e6edf3;
                      border: 1px solid #2a3f52; border-radius: 4px; }
-    #maps { flex: 1 1 auto; display: grid; grid-template-rows: 1fr 1fr; gap: 2px; min-height: 0; }
-    @media (min-width: 800px) { #maps { grid-template-rows: none; grid-template-columns: 1fr 1fr; } }
-    .pane { position: relative; min-height: 0; }
-    .pane .map { position: absolute; inset: 0; background: #0a141d; }
-    .pane .tag { position: absolute; z-index: 500; top: .4rem; left: .4rem;
-                 background: rgba(13,27,42,.85); padding: .2rem .5rem; border-radius: 4px;
-                 font-size: 12px; font-weight: 600; }
-    #status { padding: .4rem .5rem; background: #0a141d; font-size: 11px;
-              max-height: 7rem; overflow: auto; flex: 0 0 auto; white-space: pre-wrap; }
-    .bad { color: #ff6b6b; } .ok { color: #06d6a0; }
+    label { font-size: 11px; opacity: .85; }
+    #map { flex: 1 1 auto; min-height: 0; background: #0a141d; }
+    #log { padding: .4rem .5rem; background: #0a141d; font-size: 11px;
+           height: 9rem; overflow: auto; flex: 0 0 auto; white-space: pre-wrap;
+           font-family: ui-monospace, monospace; }
+    .bad { color: #ff6b6b; } .ok { color: #06d6a0; } .hl { color: #ffb703; }
+    #hint { padding: .3rem .5rem; background: #16222e; font-size: 11px; flex: 0 0 auto; }
   </style>
 </head>
 <body>
 
-<div id="controls">
-  <label for="wms-layer">WMS-Layer:</label>
-  <select id="wms-layer"><option>lädt…</option></select>
-  <label for="wms-format">Format:</label>
-  <select id="wms-format"></select>
+<div id="bar">
+  <label for="depth-layer">Tiefendaten-Layer:</label>
+  <select id="depth-layer"><option>lädt…</option></select>
+  <label for="opacity">Deckkraft:</label>
+  <input type="range" id="opacity" min="0" max="100" value="85" style="width:6rem">
   <button id="btn-locate">Eigene Position</button>
   <span id="zoominfo"></span>
 </div>
 
-<div id="maps">
-  <div class="pane">
-    <div class="tag">WMTS (aktuell) – <span id="tag-left-z"></span></div>
-    <div class="map" id="map-left"></div>
-  </div>
-  <div class="pane">
-    <div class="tag">WMS sjokartraster2 – <span id="tag-right-z"></span></div>
-    <div class="map" id="map-right"></div>
-  </div>
-</div>
+<div id="hint">Ebenen oben rechts ein-/ausschalten. <strong>Auf die Karte tippen</strong>
+  fragt die Tiefendaten an der Stelle ab (GetFeatureInfo).</div>
 
-<pre id="status">läuft…</pre>
+<div id="map"></div>
+<pre id="log">läuft…</pre>
 
 <script src="vendor/leaflet.js"></script>
 <script src="js/compare.js"></script>

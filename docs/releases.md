@@ -6,6 +6,27 @@ Versionierung nach [SemVer](https://semver.org/lang/de/).
 Die Versionsnummer wird ausschließlich in `js/version.js` gepflegt; Footer und
 Service-Worker-Cachename leiten sich automatisch daraus ab.
 
+## [0.3.3] – 2026-08-22
+
+### Changed
+
+- `compare.html` von einem WMTS/WMS-Vergleich zu einem Kartenquellen-Labor
+  umgebaut. Der Vergleich hatte sich erledigt: beide Quellen sind Raster und
+  scheitern am selben Problem. Das Labor legt stattdessen die frei verfügbaren
+  Vektor- und Tiefendatenquellen über die Rasterkarte:
+  Kartverket-Tiefendaten (WMS, Layerliste live aus den Capabilities),
+  OpenSeaMap-Seezeichen und OpenSeaMap-Tiefenlinien, jeweils schaltbar und
+  in der Deckkraft regelbar.
+- Tippen auf die Karte stellt eine GetFeatureInfo-Anfrage an die Tiefendaten
+  und zeigt die Antwort – der Test dafür, ob „Antippen → Tiefe" machbar ist.
+
+### Notes
+
+- Der Vergleich mit einer kommerziellen App zeigte, dass dort Vektordaten
+  (ENC/S-57) clientseitig gerendert werden. Keine Rasterquelle kann das
+  einholen; die Datenquellen-Landschaft ist jetzt in `architecture.md`
+  dokumentiert, offene Punkte als O5–O7 in `features.md`.
+
 ## [0.3.2] – 2026-08-22
 
 ### Added

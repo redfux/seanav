@@ -169,6 +169,46 @@ Distanz und Peilung über Haversine bzw. Großkreis-Anfangspeilung auf einer
 Kugel mit R = 6.371 km. Der Fehler gegenüber einem Ellipsoidmodell liegt bei
 den hier relevanten Distanzen unter der GPS-Genauigkeit.
 
+## Kartendatenquellen: Raster vs. Vektor
+
+Der Vergleich mit einer kommerziellen App (Skippo, gerendert über Mapbox) hat
+die grundsätzliche Grenze des bisherigen Ansatzes sichtbar gemacht. Dort sind
+bei 100 m Maßstab Tiefenlinien, Lotungen und ein `Obstn`-Hindernis mit den
+Werten `(1)` und `(3)` gestochen scharf zu lesen. Das ist kein besseres
+Rasterbild, sondern ein anderer Datentyp:
+
+| | Raster (`sjokartraster`) | Vektor (ENC/S-57) |
+| --- | --- | --- |
+| Auflösung | fest, endet praktisch bei z15 | beliebig, wird clientseitig gezeichnet |
+| Tiefen | als Pixel aufgedruckt | Attribut am Objekt, abfragbar |
+| Filtern nach Tiefe | nicht möglich | möglich |
+| Verfügbarkeit für Norwegen | frei | offizielle ENC nur lizenziert über PRIMAR-Distributoren |
+
+Kein Rasterendpunkt kann diese Lücke schließen; die Suche nach einer besseren
+Rasterquelle war der falsche Weg.
+
+### Frei verfügbare Alternativen
+
+- **Kartverket „Sjøkart – Dybdedata" (WMS/WFS)** – die öffentliche,
+  unklassifizierte Tiefendatensammlung, die auch norgeskart.no verwendet:
+  `https://wms.geonorge.no/skwms1/wms.dybdedata2`. Tiefenpunkte mit 50 m
+  Abstand, Tiefenlinien in Intervallen 2/5/10/15/20/30/40/50/100 m. Als WMS
+  nicht an eine Kachelpyramide gebunden und per GetFeatureInfo abfragbar –
+  damit wäre „Antippen → Tiefe" möglich.
+  Wichtige Einschränkung: Detaillierte Bathymetrie ist in Norwegen
+  zugangsbeschränkt. Auflösungen ab 25×25 m gelten als vertraulich, 25–50 m als
+  beschränkt; frei nutzbar ist nur 50×50 m und gröber.
+- **OpenSeaMap Seezeichen** – Tonnen, Baken und Feuer als transparentes
+  Raster-Overlay, `https://tiles.openseamap.org/seamark/{z}/{x}/{y}.png`,
+  CC-BY-SA. Deckung ist community-abhängig.
+- **OpenSeaMap Tiefenlinien** – WMS unter
+  `https://depth.openseamap.org/cgi-bin/mapserv.fcgi`, Layer `contour`/`contour2`.
+- **Offizielle ENC** – der einzige echte Ersatz, erfordert aber eine
+  Vereinbarung mit einem PRIMAR-Distributor.
+
+`compare.html` legt diese Quellen übereinander, damit sich am realen Revier
+beurteilen lässt, ob die Kombination reicht.
+
 ## Bewusste Abweichung: kein Material Design
 
 Der Masterprompt nennt Google Material Design als gestalterische Grundlage für
