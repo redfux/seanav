@@ -6,6 +6,26 @@ Versionierung nach [SemVer](https://semver.org/lang/de/).
 Die Versionsnummer wird ausschließlich in `js/version.js` gepflegt; Footer und
 Service-Worker-Cachename leiten sich automatisch daraus ab.
 
+## [0.3.1] – 2026-08-22
+
+### Added
+
+- `diagnose.html` misst jetzt die **Auflösungsgrenze** des Dienstes: jede
+  Kachel wird mit dem verdoppelten passenden Viertel der Stufe darunter
+  verglichen. Ein reines Hochskalieren ergibt null Abweichung, echtes
+  Kartendetail nicht – damit ist objektiv bestimmbar, ab wann der Dienst nur
+  noch vergrößert. Logik gegen synthetische Kacheln verifiziert.
+- Diagnose probt alternative WMS-Endpunkte, die für einen Ausschnitt in
+  beliebiger Pixelgröße rendern statt aus einem festen Kachel-Cache
+
+### Notes
+
+- Der Screenshot des Nutzers zeigt harte, nearest-neighbor-artige Pixelblöcke.
+  Da weder eigenes CSS noch Leaflet `image-rendering: pixelated` setzen, kommt
+  das Hochskalieren vom Dienst. `detectRetina` (0.3.0) bringt oberhalb der
+  nativen Auflösung folglich kein Detail, kostet aber die vierfache
+  Kachelmenge – Entscheidung darüber steht bis zum Messergebnis aus.
+
 ## [0.3.0] – 2026-08-22
 
 Behebt die grobe Kartendarstellung (B2). Ursache war nicht die Kartenquelle,

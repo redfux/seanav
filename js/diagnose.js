@@ -158,6 +158,155 @@ async function loadCaps() {
   }
 }
 
+// --- 6. Aufloesungsgrenze -------------------------------------------------
+// A tile cache can serve every zoom level even when the underlying chart
+// raster runs out of detail: above its native resolution the service simply
+// upsamples. Comparing a tile against the doubled quadrant of the level below
+// detects that objectively - a pure upscale differs by nothing.
+
+async function fetchBitmap(url) {
+  const ctrl = new AbortController();
+  const timer = setTimeout(() => ctrl.abort(), NET_TIMEOUT_MS);
+  try {
+    const res = await fetch(url, { signal: ctrl.signal });
+    if (!res.ok) return null;
+    const blob = await res.blob();
+    if (!blob.type.startsWith('image/')) return null;
+    return await createImageBitmap(blob);
+  } catch {
+    return null;
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
+function toPixels(bitmap, size, srcX, srcY, srcSize, smooth) {
+  const c = document.createElement('canvas');
+  c.width = size; c.height = size;
+  const ctx = c.getContext('2d', { willReadFrequently: true });
+  ctx.imageSmoothingEnabled = !!smooth;
+  ctx.drawImage(bitmap, srcX, srcY, srcSize, srcSize, 0, 0, size, size);
+  return ctx.getImageData(0, 0, size, size).data;
+}
+
+// Share of pixels that differ noticeably, plus mean absolute difference.
+function comparePixels(a, b) {
+  let differing = 0, sum = 0;
+  const px = a.length / 4;
+  for (let i = 0; i < a.length; i += 4) {
+    const d = Math.abs(a[i] - b[i]) + Math.abs(a[i + 1] - b[i + 1]) + Math.abs(a[i + 2] - b[i + 2]);
+    sum += d;
+    if (d > 24) differing++;
+  }
+  return { differingPct: (differing / px) * 100, meanDiff: sum / px / 3 };
+}
+
+function distinctColours(pixels) {
+  const set = new Set();
+  for (let i = 0; i < pixels.length; i += 4) {
+    set.add((pixels[i] << 16) | (pixels[i + 1] << 8) | pixels[i + 2]);
+    if (set.size > 4096) break;
+  }
+  return set.size;
+}
+
+async function measureResolution() {
+  const el = document.getElementById('resolution');
+  const lines = [];
+  const levels = [];
+
+  for (let z = 8; z <= 18; z++) {
+    const { x, y } = latLngToTile(BERGEN.lat, BERGEN.lng, z);
+    const bmp = await fetchBitmap(tileUrl('sjokartraster', z, x, y, false));
+    levels.push({ z, x, y, bmp });
+  }
+
+  if (!levels.some((l) => l.bmp)) {
+    const msg = 'Kacheln nicht als Bilddaten lesbar (CORS oder Dienst nicht erreichbar).';
+    el.textContent = msg;
+    log('\n--- Aufloesungsgrenze ---\n' + msg);
+    return;
+  }
+
+  lines.push('Zoom | Farben | neu ggü. Stufe darunter | Bewertung');
+  lines.push('-----+--------+-------------------------+----------');
+
+  let lastRealDetail = null;
+  for (let i = 0; i < levels.length; i++) {
+    const cur = levels[i];
+    if (!cur.bmp) { lines.push(`z${cur.z}  | – nicht ladbar`); continue; }
+
+    const curPx = toPixels(cur.bmp, 256, 0, 0, cur.bmp.width, false);
+    const colours = distinctColours(curPx);
+
+    const prev = levels[i - 1];
+    if (!prev || !prev.bmp) {
+      lines.push(`z${String(cur.z).padStart(2)}   | ${String(colours).padStart(6)} | (keine Referenz)        | –`);
+      continue;
+    }
+
+    // Which quadrant of the parent does this tile cover?
+    const qx = (cur.x % 2) * (prev.bmp.width / 2);
+    const qy = (cur.y % 2) * (prev.bmp.height / 2);
+    const upscaled = toPixels(prev.bmp, 256, qx, qy, prev.bmp.width / 2, false);
+    const { differingPct, meanDiff } = comparePixels(curPx, upscaled);
+
+    const real = differingPct > 2;
+    if (real) lastRealDetail = cur.z;
+    lines.push(
+      `z${String(cur.z).padStart(2)}   | ${String(colours).padStart(6)} | ` +
+      `${differingPct.toFixed(1).padStart(5)}% abweichend (Ø ${meanDiff.toFixed(1)}) | ` +
+      (real ? 'echtes Detail' : 'nur hochskaliert')
+    );
+  }
+
+  lines.push('');
+  lines.push(lastRealDetail !== null
+    ? `=> Hoechste Stufe mit echtem Kartendetail: z${lastRealDetail}`
+    : '=> Keine Stufe brachte messbar neues Detail.');
+
+  const out = lines.join('\n');
+  el.textContent = out;
+  log('\n--- Aufloesungsgrenze ---\n' + out);
+}
+
+// --- 7. Alternative Endpunkte --------------------------------------------
+// A WMS renders an arbitrary bbox at an arbitrary pixel size instead of
+// serving fixed pre-rendered tiles, so it is not capped by a tile pyramid.
+
+const WMS_CANDIDATES = [
+  { name: 'geonorge sjokartraster2', url: 'https://wms.geonorge.no/skwms1/wms.sjokartraster2' },
+  { name: 'geonorge sjokartraster', url: 'https://wms.geonorge.no/skwms1/wms.sjokartraster' },
+  { name: 'statkart sjokartraster', url: 'https://openwms.statkart.no/skwms1/wms.sjokartraster' },
+  { name: 'opencache WMTS (alt)', url: 'https://opencache.kartverket.no/gatekeeper/gk/gk.open_wmts' },
+];
+
+async function probeEndpoints() {
+  const el = document.getElementById('endpoints');
+  const lines = [];
+  for (const cand of WMS_CANDIDATES) {
+    const url = cand.url + '?service=WMS&request=GetCapabilities&version=1.3.0';
+    const ctrl = new AbortController();
+    const timer = setTimeout(() => ctrl.abort(), NET_TIMEOUT_MS);
+    try {
+      const res = await fetch(url, { signal: ctrl.signal });
+      const text = await res.text();
+      const xml = new DOMParser().parseFromString(text, 'application/xml');
+      const names = [...xml.querySelectorAll('Layer > Name')].map((n) => n.textContent.trim());
+      lines.push(`${cand.name}: HTTP ${res.status}` +
+        (names.length ? `, Layer: ${names.slice(0, 8).join(', ')}${names.length > 8 ? ' …' : ''}`
+                      : `, keine Layer gefunden`));
+    } catch (e) {
+      lines.push(`${cand.name}: ${ctrl.signal.aborted ? 'Timeout' : (e.message || e)}`);
+    } finally {
+      clearTimeout(timer);
+    }
+  }
+  const out = lines.join('\n');
+  el.textContent = out;
+  log('\n--- Alternative Endpunkte ---\n' + out);
+}
+
 async function main() {
   const caps = await loadCaps();
   const layerName = 'sjokartraster';
@@ -190,6 +339,9 @@ async function main() {
     box.appendChild(cell);
     log(`${name}: Bild=${r.ok}`);
   }
+
+  await measureResolution();
+  await probeEndpoints();
 
   // Summary
   const plainOk = plain.filter((r) => r.ok).map((r) => r.z);

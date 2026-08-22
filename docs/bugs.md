@@ -5,7 +5,29 @@ stehen, damit sie bei einem Rückfall wiederauffindbar sind.
 
 ## Offen
 
-_(derzeit keine)_
+### B3 – Karte bleibt zum Navigieren zu grob aufgelöst
+
+**Symptom:** Auch nach dem High-DPI-Fix (B2) ist die Karte beim Hineinzoomen
+grobklotzig: harte, perfekt quadratische Pixelblöcke mit reinen Farben.
+Untiefen-Symbole sind sichtbar, tragen aber keine ablesbaren Tiefenangaben.
+
+**Erste Eingrenzung:** Weder `style.css` noch `vendor/leaflet.css` setzen
+`image-rendering: pixelated` (Leaflet nur für Safari). Browser interpolieren
+beim Vergrößern normalerweise weich – die harten Blöcke müssen also aus den
+gelieferten Kacheln selbst stammen. Der Dienst liefert zwar auf allen Stufen
+bis z18 HTTP 200, oberhalb der nativen Auflösung des Kartenrasters aber
+offenbar nur hochskalierte Kacheln.
+
+**Konsequenz für B2:** Oberhalb dieser Grenze bringt `detectRetina` kein
+zusätzliches Detail – die tiefere Stufe enthält dieselbe Information, nur
+größer gerechnet – kostet aber die vierfache Kachelmenge. Unterhalb der Grenze
+hilft es weiterhin.
+
+**Nächster Schritt:** Abschnitt 6 von `diagnose.html` misst die Grenze und
+liefert den Wert für `maxNativeZoom`. Abschnitt 7 prüft, ob ein WMS-Endpunkt
+erreichbar ist, der nicht an eine feste Kachelpyramide gebunden ist.
+
+**Status:** offen, Messung ausstehend.
 
 ## Behoben
 

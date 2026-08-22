@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https://cache.kartverket.no; connect-src 'self' https://cache.kartverket.no;">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https://cache.kartverket.no https://wms.geonorge.no https://openwms.statkart.no https://opencache.kartverket.no; connect-src 'self' https://cache.kartverket.no https://wms.geonorge.no https://openwms.statkart.no https://opencache.kartverket.no;">
   <title>SeeNavi – WMTS-Diagnose</title>
   <link rel="stylesheet" href="style.css">
   <style>
@@ -48,6 +48,18 @@
      sehen Karte 3/4 und die topografische Karte hier gleich aus, ignoriert der
      Dienst den Layer-Namen.</p>
   <div class="grid" id="probe-layers"></div>
+
+  <h2>6. Auflösungsgrenze</h2>
+  <p>Misst, ab welcher Zoomstufe der Dienst nur noch hochskaliert. Verglichen
+     wird jede Kachel mit dem passenden, verdoppelten Viertel der Stufe darunter:
+     ist der Unterschied null, steckt keine zusätzliche Information darin.</p>
+  <pre id="resolution">läuft…</pre>
+
+  <h2>7. Alternative Endpunkte</h2>
+  <p>Ein WMS rendert für einen angefragten Ausschnitt in der gewünschten
+     Pixelgröße statt aus einem festen Kachel-Cache – falls einer dieser
+     Dienste erreichbar ist, wäre damit mehr Detail möglich.</p>
+  <pre id="endpoints">läuft…</pre>
 </div>
 
 <script src="js/diagnose.js"></script>
