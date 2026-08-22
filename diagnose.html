@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<!-- thought up by human, coded by ai -->
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https://cache.kartverket.no; connect-src 'self' https://cache.kartverket.no;">
+  <title>SeeNavi – WMTS-Diagnose</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    body { overflow: auto; }
+    .diag { max-width: 60rem; margin: 0 auto; padding: 1rem; font: 14px/1.5 system-ui, sans-serif; color: #e6edf3; }
+    .diag h1 { font-size: 1.3rem; }
+    .diag h2 { font-size: 1rem; margin-top: 2rem; border-bottom: 1px solid #234; padding-bottom: .3rem; }
+    .diag pre { background: #0a141d; padding: .7rem; overflow-x: auto; border-radius: 4px; font-size: 12px; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: .6rem; }
+    .probe { background: #0a141d; border-radius: 4px; padding: .4rem; font-size: 11px; }
+    .probe img { width: 128px; height: 128px; display: block; background: #16222e; image-rendering: pixelated; }
+    .ok { color: #06d6a0; } .bad { color: #ff6b6b; } .warn { color: #ffb703; }
+    #summary { background: #10202c; border-left: 3px solid #2ec4b6; padding: .7rem; }
+    button { font: inherit; padding: .5rem 1rem; margin: .3rem .3rem .3rem 0; }
+  </style>
+</head>
+<body>
+<div class="diag">
+  <h1>SeeNavi – WMTS-Diagnose</h1>
+  <p>Prüft, was <code>cache.kartverket.no</code> tatsächlich liefert. Ergebnis
+     bitte komplett kopieren (Button unten) und zurückschicken.</p>
+
+  <h2>1. Zusammenfassung</h2>
+  <div id="summary">läuft…</div>
+  <button id="btn-copy">Ergebnis als Text kopieren</button>
+
+  <h2>2. GetCapabilities</h2>
+  <pre id="caps">läuft…</pre>
+
+  <h2>3. Kachel-Test: <code>tilematrix={z}</code></h2>
+  <p>Aktuell von der App verwendet. Erwartung bei korrekter Konfiguration:
+     Seekarte mit Tiefenzahlen, ab ca. z14 lesbar.</p>
+  <div class="grid" id="probe-plain"></div>
+
+  <h2>4. Kachel-Test: <code>tilematrix=webmercator:{z}</code></h2>
+  <p>Alternative Parametrisierung (siehe B1 in <code>docs/bugs.md</code>).</p>
+  <div class="grid" id="probe-qualified"></div>
+
+  <h2>5. Vergleichs-Layer</h2>
+  <p>Zeigt, ob ein <em>anderer</em> Layer geliefert wird als angefordert –
+     sehen Karte 3/4 und die topografische Karte hier gleich aus, ignoriert der
+     Dienst den Layer-Namen.</p>
+  <div class="grid" id="probe-layers"></div>
+</div>
+
+<script src="js/diagnose.js"></script>
+</body>
+</html>

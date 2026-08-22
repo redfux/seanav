@@ -6,6 +6,20 @@ Versionierung nach [SemVer](https://semver.org/lang/de/).
 Die Versionsnummer wird ausschließlich in `js/version.js` gepflegt; Footer und
 Service-Worker-Cachename leiten sich automatisch daraus ab.
 
+## [0.2.1] – 2026-08-22
+
+### Added
+
+- `diagnose.html` + `js/diagnose.js`: Diagnoseseite für den Kartverket-WMTS.
+  Testet beide `tilematrix`-Varianten nebeneinander, liest die Capabilities
+  (Layer-Namen, TileMatrixSets, verfügbare Zoomstufen) und stellt mehrere
+  Layer gegenüber, um einen stillschweigend ausgelieferten Default-Layer zu
+  erkennen. Nötig, weil der Dienst aus der Entwicklungsumgebung nicht
+  erreichbar ist. Alle Netzzugriffe mit Timeout, damit die Seite bei
+  blockiertem Dienst eine Meldung zeigt statt hängenzubleiben.
+- `docs/bugs.md`: B2 (Kartendarstellung zu grob, keine Tiefenwerte) mit
+  Ursachenanalyse
+
 ## [0.2.0] – 2026-08-22
 
 Anpassung an die Konventionen des Masterprompts. Bechtle-spezifische Vorgaben

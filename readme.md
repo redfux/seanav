@@ -91,6 +91,11 @@ alles darüber hinaus technisch.
 | [`docs/changes.md`](docs/changes.md) | Eingangskorb für gewünschte Änderungen |
 | [`docs/THIRD_PARTY_LICENSES.md`](docs/THIRD_PARTY_LICENSES.md) | Lizenzen eingebetteter Fremdkomponenten |
 
+Zusätzlich gibt es `diagnose.html` – eine Wartungsseite, die prüft, was der
+Kartverket-WMTS tatsächlich liefert (Layer, Zoomstufen, Parametrisierung).
+Sie gehört nicht zur App und kann entfernt werden, sobald B1/B2 in
+`docs/bugs.md` geklärt sind.
+
 ## Lizenz
 
 MIT, siehe [`LICENSE`](LICENSE).
