@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https://cache.kartverket.no; connect-src 'self' https://cache.kartverket.no;">
+  <title>SeeNavi Bergen</title>
+  <link rel="stylesheet" href="vendor/leaflet.css">
+  <link rel="stylesheet" href="style.css">
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#0d1b2a">
+</head>
+<body>
+
+  <div id="map"></div>
+
+  <!-- Top status bar: GPS fix, speed, heading -->
+  <div id="statusbar" class="panel">
+    <div class="stat">
+      <span class="stat-label">Kurs</span>
+      <span class="stat-value" id="val-heading">–</span>
+    </div>
+    <div class="stat">
+      <span class="stat-label">Speed</span>
+      <span class="stat-value" id="val-speed">–</span>
+    </div>
+    <div class="stat">
+      <span class="stat-label">GPS</span>
+      <span class="stat-value" id="val-gps-status">suche…</span>
+    </div>
+  </div>
+
+  <!-- Navigation panel: shown once a destination is set -->
+  <div id="navpanel" class="panel hidden">
+    <div class="stat">
+      <span class="stat-label">Distanz zum Ziel</span>
+      <span class="stat-value" id="val-distance">–</span>
+    </div>
+    <div class="stat">
+      <span class="stat-label">Peilung zum Ziel</span>
+      <span class="stat-value" id="val-bearing">–</span>
+    </div>
+    <div class="stat">
+      <span class="stat-label">ETA</span>
+      <span class="stat-value" id="val-eta">–</span>
+    </div>
+    <button id="btn-clear-target" class="btn-small">Ziel löschen</button>
+  </div>
+
+  <!-- Distance-per-time projection panel, always visible once GPS+heading available -->
+  <div id="projectionpanel" class="panel hidden">
+    <div class="proj-title">Bei aktuellem Kurs/Speed</div>
+    <div class="proj-row"><span>in 1 min</span><span id="val-proj-1min">–</span></div>
+    <div class="proj-row"><span>für 200 m</span><span id="val-proj-200m">–</span></div>
+    <div class="proj-row"><span>für 500 m</span><span id="val-proj-500m">–</span></div>
+  </div>
+
+  <!-- Offline tile download tool -->
+  <div id="offlinepanel" class="panel hidden">
+    <div class="proj-title">Kartenbereich offline speichern</div>
+    <p class="hint">Zoomstufe und Ausschnitt so wählen wie benötigt, dann Download starten.</p>
+    <label class="zoomlabel">Max. Zoomstufe: <span id="zoom-range-val">15</span></label>
+    <input type="range" id="zoom-range" min="8" max="17" value="15">
+    <div id="download-progress" class="hidden">
+      <div class="progress-bar"><div id="progress-fill"></div></div>
+      <span id="progress-text">0 / 0 Kacheln</span>
+    </div>
+    <div class="offline-buttons">
+      <button id="btn-download-area" class="btn-primary">Sichtbaren Bereich laden</button>
+      <button id="btn-cancel-download" class="btn-small hidden">Abbrechen</button>
+    </div>
+    <p class="hint" id="cache-size-hint"></p>
+  </div>
+
+  <!-- Bottom toolbar -->
+  <div id="toolbar">
+    <button id="btn-locate" class="fab" title="Zur eigenen Position">📍</button>
+    <button id="btn-toggle-offline" class="fab" title="Offline-Karten verwalten">⬇️</button>
+    <button id="btn-toggle-proj" class="fab" title="Kurs-Projektion ein/aus">📐</button>
+  </div>
+
+  <div id="footer">thought up by human, created by ai · v<span id="app-version"></span></div>
+
+  <script src="vendor/leaflet.js"></script>
+  <script src="tilecache.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
