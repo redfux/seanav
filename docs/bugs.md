@@ -5,48 +5,44 @@ stehen, damit sie bei einem Rückfall wiederauffindbar sind.
 
 ## Offen
 
-### B3 – Karte bleibt zum Navigieren zu grob aufgelöst
-
-**Symptom:** Auch nach dem High-DPI-Fix (B2) ist die Karte beim Hineinzoomen
-grobklotzig: harte, perfekt quadratische Pixelblöcke mit reinen Farben.
-Untiefen-Symbole sind sichtbar, tragen aber keine ablesbaren Tiefenangaben.
-
-**Messung (Abschnitt 6 von `diagnose.html`, am Live-Dienst):**
-
-| Zoom | Farben | Abweichung ggü. verdoppelter Stufe darunter |
-| --- | --- | --- |
-| z13 | 4097 | 54,2 % (Ø 28,2) |
-| z14 | 4097 | 22,3 % (Ø 5,6) |
-| z15 | 2983 | 14,2 % (Ø 3,8) |
-| z16 | 619 | 7,4 % (Ø 2,0) |
-| z17 | 664 | 5,0 % (Ø 1,5) |
-| z18 | 478 | 3,1 % (Ø 1,1) |
-
-Die Abweichung fällt monoton, und die Farbanzahl bricht zwischen z15 und z16
-von 2983 auf 619 ein. Wenige Farben bei minimaler mittlerer Differenz =
-hartkantig hochskaliert. **Nutzbares Kartendetail endet praktisch bei etwa
-z15.** Die ursprüngliche Schwelle von 2 % stufte das Resampling-Rauschen der
-oberen Stufen fälschlich als „echtes Detail" ein und wurde korrigiert.
-
-**Konsequenz für B2:** Oberhalb dieser Grenze bringt `detectRetina` am WMTS
-kein zusätzliches Detail, kostet aber die vierfache Kachelmenge. Unterhalb
-hilft es weiterhin.
-
-**Aussichtsreicher Weg (Abschnitt 7):** `wms.geonorge.no/skwms1/wms.sjokartraster2`
-antwortet mit HTTP 200 und bietet unter anderem die Layer `all`, `overseiling`,
-`overview`, `300serien` sowie einzelne Kartenblätter (`kart300`, `kart549` …).
-Die 300er-Serie sind die detaillierten Hafenkarten. Ein WMS rendert den
-angefragten Ausschnitt in der angefragten Pixelgröße und ist damit **nicht an
-eine Kachelpyramide gebunden**; auf hochauflösenden Displays fordert Leaflet
-dort 512×512 statt 256×256 an, also echte doppelte Pixelzahl.
-
-**Nächster Schritt:** `compare.html` stellt beide Quellen synchronisiert
-nebeneinander, damit sich Layer-Wahl und tatsächlicher Detailgewinn am realen
-Dienst entscheiden lassen, bevor etwas davon in die App wandert.
-
-**Status:** offen, Ursache geklärt, Lösungsweg identifiziert.
+_(derzeit keine)_
 
 ## Behoben
+
+### B3 – Karte zum Navigieren zu grob aufgelöst
+
+**Ursache:** Zwei unabhängige Gründe. Erstens endet die native Auflösung von
+`sjokartraster` gemessen bei etwa z15; darüber liefert der Dienst nur
+hochskalierte Kacheln. Zweitens – und das war der eigentliche Punkt – sind
+Rasterkarten für diesen Anwendungsfall der falsche Datentyp: Tiefen sind
+aufgedruckte Pixel, keine Objekte.
+
+**Lösung (0.4.0):** Die navigationsrelevante Information kommt jetzt aus dem
+Kartverket-Tiefendaten-WMS (`Dybdedata2`) und den OpenSeaMap-Seezeichen. Beide
+werden serverseitig aus Vektordaten gerendert und haben damit keinen
+Auflösungsdeckel. Die Rasterseekarte bleibt als Hintergrund für Küstenlinie
+und Kartenkontext, gedeckelt auf `maxNativeZoom: 15`.
+
+**Symbolgröße:** Die doppelte Pixelzahl allein hätte alles halb so groß
+gezeichnet, weil MapServer Linien und Beschriftungen in festen Pixelmaßen
+zeichnet. `MAP_RESOLUTION` skaliert die Symbolik mit – beides zusammen ergibt
+scharf *und* in der vorgesehenen Größe.
+
+### B4 – GetFeatureInfo der Tiefendaten antwortet mit Serverfehler
+
+**Symptom:** Eine Abfrage liefert HTTP 200, im Rumpf aber
+`msShapefileOpen(): Unable to access file. No (NULL) filename provided.`
+
+**Ursache:** Fehlkonfiguration auf Seiten des Dienstes (MapServer findet die
+hinterlegte Shapefile-Quelle nicht). Kein Fehler in dieser App.
+
+**Konsequenz:** Die Tipp-auf-die-Karte-Abfrage wurde nicht in die App
+übernommen. Die Tiefenwerte sind in der gerenderten Karte lesbar, der
+Mehrwert einer Abfrage wäre gering – eine Funktion, die zuverlässig eine
+Serverfehlermeldung zeigt, wäre schlechter als keine.
+
+**Status:** extern, nicht durch uns behebbar. Falls Kartverket das repariert,
+lässt sich die Abfrage nachrüsten; der Code dafür steht in `compare.html`.
 
 ### B2 – Kartendarstellung zu grob, keine Tiefenwerte erkennbar
 

@@ -7,4 +7,4 @@
  * thought up by human, coded by ai
  */
 
-const APP_VERSION = '0.3.3';
+const APP_VERSION = '0.4.0';

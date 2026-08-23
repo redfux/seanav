@@ -21,6 +21,10 @@ Mobilfunkempfang. Kein Ersatz für vorschriftsmäßige Seekarten und Ausrüstung
 | F10 | Fehlende Kacheln als erkennbarer Platzhalter statt kaputtem Bild | 0.1.0 |
 | F11 | Anzeige des belegten Kachelspeichers | 0.1.0 |
 | F12 | Scharfe Kartendarstellung auf hochauflösenden Displays (High-DPI) | 0.3.0 |
+| F13 | Tiefenlinien, Lotungen, Grunde und Schären aus dem Kartverket-Tiefendaten-WMS | 0.4.0 |
+| F14 | Seezeichen (Tonnen, Baken, Feuer) aus OpenSeaMap | 0.4.0 |
+| F15 | Kartenebenen einzeln ein-/ausschaltbar, Auswahl bleibt erhalten | 0.4.0 |
+| F16 | Kachelspeicher nach Ebene aufgeschlüsselt, manuell leerbar | 0.4.0 |
 
 ## Nichtfunktionale Anforderungen
 
@@ -38,8 +42,7 @@ Mobilfunkempfang. Kein Ersatz für vorschriftsmäßige Seekarten und Ausrüstung
 | --- | --- | --- |
 | O1 | PWA-Icons (`manifest.json` → `icons` ist derzeit leer), damit die Installation auf dem Homescreen ein eigenes Symbol bekommt | offen |
 | O2 | Gezieltes Löschen einzelner Offline-Bereiche bzw. des gesamten Kachelcaches aus der App heraus | offen |
-| O5 | Abfragbare Tiefenwerte (Antippen → Tiefe) und Tiefenlinien über das Kartverket-Tiefendaten-WMS (GetFeatureInfo). Frei verfügbar, aber auf 50×50 m Auflösung beschränkt – siehe `architecture.md` | in Erprobung (`compare.html`) |
-| O6 | Seezeichen-Overlay (Tonnen, Baken, Feuer) aus OpenSeaMap, vektorbasiert gerendert und daher bei jedem Zoom scharf | in Erprobung (`compare.html`) |
+| O5 | Abfragbare Tiefenwerte (Antippen → Tiefe) – blockiert durch einen Serverfehler des Dienstes, siehe B4 in `bugs.md` | extern blockiert |
 | O7 | Offizielle ENC-Vektorkarten (S-57) über einen PRIMAR-Distributor – der einzige vollwertige Ersatz für Rasterkarten, aber lizenzpflichtig | Beschaffungsentscheidung |
 | O3 | Routen mit mehreren Wegpunkten statt nur einem Einzelziel | offen |
 | O4 | Google Material Design als gestalterische Grundlage (Masterprompt-Vorgabe) – siehe Begründung der aktuellen Abweichung in `architecture.md` | zu entscheiden |

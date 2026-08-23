@@ -13,6 +13,9 @@
 // Single source of truth for the version, shared with index.html.
 importScripts('js/version.js');
 
+// Chart tile hosts, handled by the IndexedDB cache rather than here.
+const TILE_HOSTS = ['kartverket.no', 'geonorge.no', 'openseamap.org'];
+
 // Version in the cache name doubles as cache busting: a new APP_VERSION
 // creates a new cache and the activate handler drops the previous one.
 const SHELL_CACHE = `seenavi-shell-v${APP_VERSION}`;
@@ -22,6 +25,7 @@ const SHELL_FILES = [
   './style.css',
   './manifest.json',
   './js/version.js',
+  './js/sources.js',
   './js/app.js',
   './js/tilecache.js',
   './vendor/leaflet.js',
@@ -50,9 +54,9 @@ self.addEventListener('activate', (event) => {
 self.addEventListener('fetch', (event) => {
   const url = new URL(event.request.url);
 
-  // Never intercept tile requests to Kartverket; those go through
-  // js/tilecache.js / IndexedDB, not the service worker.
-  if (url.hostname.includes('kartverket.no')) return;
+  // Never intercept chart tile requests; those go through js/tilecache.js
+  // and IndexedDB, not the service worker.
+  if (TILE_HOSTS.some((h) => url.hostname.endsWith(h))) return;
 
   event.respondWith(
     caches.match(event.request).then((cached) => cached || fetch(event.request))

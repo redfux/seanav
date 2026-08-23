@@ -1,56 +1,20 @@
 /*
  * Offline tile cache for Leaflet using IndexedDB.
- * Tiles are stored as Blobs keyed by "z/x/y" so the map keeps working
+ * Tiles are stored as Blobs keyed by "source/z/x/y" so the map keeps working
  * without a network connection once an area has been downloaded.
  *
  * thought up by human, coded by ai
  */
 
 const TILE_DB_NAME = 'seenavi-tiles';
-const TILE_DB_VERSION = 1;
+// v2 namespaces keys by source. v1 keys were bare "z/x/y" from the single
+// raster layer and cannot be told apart from the new ones, so the upgrade
+// clears the store rather than leaving tiles behind that nothing can address.
+const TILE_DB_VERSION = 2;
 const TILE_STORE = 'tiles';
 
-// --- Kartverket WMTS ---------------------------------------------------
-// Verified against the live GetCapabilities: the service offers layer
-// "sjokartraster" on tile matrix set "webmercator" with 19 levels whose
-// identifiers are zero-padded ("00" .. "18"). Passing an unpadded value works
-// for two-digit zooms but is not what the capabilities declare, so pad it -
-// otherwise zoom levels below 10 would send "4" instead of "04".
-// The qualified form "webmercator:{z}" is NOT accepted (HTTP 500).
-const TILE_URL_BASE = 'https://cache.kartverket.no/v1/service';
-const SEA_CHART_LAYER = 'sjokartraster';
-const SEA_CHART_MATRIX_SET = 'webmercator';
-const SERVICE_MAX_ZOOM = 18;
-
-/*
- * High-DPI handling. Phone screens run at devicePixelRatio 2-3, so a 256 px
- * tile drawn across 256 CSS px is stretched over ~2.6 device pixels each -
- * which turns the printed soundings and shoal symbols of the raster chart
- * into mush. Leaflet's detectRetina fetches one zoom level deeper and draws
- * it at half size, restoring roughly 1:1 pixel mapping.
- *
- * The offset must be known outside the layer too, because the offline
- * downloader has to store the same zoom levels the layer will ask for.
- * detectRetina applies exactly when L.Browser.retina is set and maxZoom > 0,
- * which is the condition mirrored here.
- */
-const HIGH_DPI = L.Browser.retina;
-const ZOOM_OFFSET = HIGH_DPI ? 1 : 0;
-
-// Single place building tile URLs - display layer and offline downloader
-// must never drift apart.
-function seaTileUrl(z, x, y) {
-  const matrix = String(z).padStart(2, '0');
-  return `${TILE_URL_BASE}?service=WMTS&request=GetTile&version=1.0.0` +
-    `&layer=${SEA_CHART_LAYER}&style=default&format=image/png` +
-    `&tilematrixset=${SEA_CHART_MATRIX_SET}` +
-    `&tilematrix=${matrix}&tilerow=${y}&tilecol=${x}`;
-}
-
-// Cache key. z is always the *service* zoom actually requested, not the map's
-// zoom - with high-DPI the two differ by ZOOM_OFFSET.
-function tileKey(z, x, y) {
-  return `${z}/${x}/${y}`;
+function tileKey(sourceId, z, x, y) {
+  return `${sourceId}/${z}/${x}/${y}`;
 }
 
 // Wraps IndexedDB access behind a small promise-based API.
@@ -61,11 +25,12 @@ const TileStore = {
     if (this._dbPromise) return this._dbPromise;
     this._dbPromise = new Promise((resolve, reject) => {
       const req = indexedDB.open(TILE_DB_NAME, TILE_DB_VERSION);
-      req.onupgradeneeded = () => {
+      req.onupgradeneeded = (event) => {
         const db = req.result;
-        if (!db.objectStoreNames.contains(TILE_STORE)) {
-          db.createObjectStore(TILE_STORE);
+        if (event.oldVersion > 0 && db.objectStoreNames.contains(TILE_STORE)) {
+          db.deleteObjectStore(TILE_STORE);
         }
+        db.createObjectStore(TILE_STORE);
       };
       req.onsuccess = () => resolve(req.result);
       req.onerror = () => reject(req.error);
@@ -98,7 +63,17 @@ const TileStore = {
     return val !== null;
   },
 
-  // Rough estimate of cache size in MB, and tile count.
+  async clear() {
+    const db = await this.open();
+    return new Promise((resolve, reject) => {
+      const tx = db.transaction(TILE_STORE, 'readwrite');
+      tx.objectStore(TILE_STORE).clear();
+      tx.oncomplete = () => resolve();
+      tx.onerror = () => reject(tx.error);
+    });
+  },
+
+  // Tile count and rough size in MB, overall and per source.
   async stats() {
     const db = await this.open();
     return new Promise((resolve, reject) => {
@@ -106,43 +81,52 @@ const TileStore = {
       const store = tx.objectStore(TILE_STORE);
       let count = 0;
       let bytes = 0;
+      const bySource = {};
       const cursorReq = store.openCursor();
       cursorReq.onsuccess = (e) => {
         const cursor = e.target.result;
         if (cursor) {
+          const size = cursor.value.size || 0;
           count++;
-          bytes += cursor.value.size || 0;
+          bytes += size;
+          const id = String(cursor.key).split('/')[0];
+          bySource[id] = bySource[id] || { count: 0, bytes: 0 };
+          bySource[id].count++;
+          bySource[id].bytes += size;
           cursor.continue();
         } else {
-          resolve({ count, mb: bytes / (1024 * 1024) });
+          resolve({ count, mb: bytes / (1024 * 1024), bySource });
         }
       };
       cursorReq.onerror = () => reject(cursorReq.error);
     });
-  }
+  },
 };
 
 /*
- * Custom Leaflet tile layer that reads from IndexedDB first and only
- * falls back to the network (Kartverket WMTS) when a tile is missing.
- * Downloaded tiles are written back into the cache automatically, so
- * normal use while online gradually builds up an offline cache too.
+ * Tile layer that reads from IndexedDB first and only goes to the network
+ * when a tile is missing. Fetched tiles are written back, so normal use while
+ * online gradually builds the offline cache too.
+ *
+ * Works for any source in CHART_SOURCES: the URL always comes from the
+ * source's own url() function, never from a Leaflet URL template, which is
+ * what keeps display and offline download addressing tiles identically.
  */
-const OfflineWMTSLayer = L.TileLayer.extend({
+const CachedTileLayer = L.TileLayer.extend({
 
-  // Leaflet substitutes {z} itself; overridden so the zero-padded matrix
-  // identifier and the cache key come from the same helper.
   getTileUrl: function (coords) {
-    return seaTileUrl(this._getZoomForUrl(), coords.x, coords.y);
+    return this.options.source.url(coords.z, coords.x, coords.y);
   },
 
   createTile: function (coords, done) {
+    const source = this.options.source;
     const img = document.createElement('img');
     img.setAttribute('role', 'presentation');
-    // Service zoom, including the high-DPI offset. coords.z is the map's tile
-    // zoom, which is one level lower whenever detectRetina is active.
-    const z = this._getZoomForUrl();
-    const key = tileKey(z, coords.x, coords.y);
+    img.alt = '';
+    // coords.z is already clamped to maxNativeZoom by Leaflet, so it is the
+    // zoom actually requested - and therefore the right thing to key on.
+    const key = tileKey(source.id, coords.z, coords.x, coords.y);
+    const url = source.url(coords.z, coords.x, coords.y);
 
     TileStore.get(key).then((blob) => {
       if (blob) {
@@ -150,9 +134,6 @@ const OfflineWMTSLayer = L.TileLayer.extend({
         done(null, img);
         return;
       }
-      // Not cached: try the network. If offline, this rejects and we
-      // show a placeholder instead of a broken image icon.
-      const url = seaTileUrl(z, coords.x, coords.y);
       fetch(url)
         .then((res) => {
           if (!res.ok) throw new Error('tile fetch failed: ' + res.status);
@@ -164,9 +145,20 @@ const OfflineWMTSLayer = L.TileLayer.extend({
           done(null, img);
         })
         .catch(() => {
-          img.src = this._placeholderDataUrl();
-          img.classList.add('tile-missing');
-          done(null, img);
+          // fetch() also fails when a host sends no CORS headers, even though
+          // a plain <img> would load fine. Try that before giving up - such a
+          // tile just cannot be cached for offline use.
+          img.addEventListener('load', () => done(null, img), { once: true });
+          img.addEventListener('error', () => {
+            if (source.opaque) {
+              img.src = this._placeholderDataUrl();
+              img.classList.add('tile-missing');
+            } else {
+              img.src = TRANSPARENT_PIXEL;
+            }
+            done(null, img);
+          }, { once: true });
+          img.src = url;
         });
     });
 
@@ -174,8 +166,9 @@ const OfflineWMTSLayer = L.TileLayer.extend({
   },
 
   _placeholderDataUrl: function () {
-    // 256x256 transparent-ish dark tile with subtle diagonal hatching,
-    // so gaps in the offline cache are visible but not jarring.
+    // 256x256 dark tile with subtle diagonal hatching, so gaps in the offline
+    // cache are visible but not jarring. Only for the opaque base layer -
+    // hatching every missing overlay tile would bury the chart.
     if (!this._placeholderCache) {
       const c = document.createElement('canvas');
       c.width = 256; c.height = 256;
@@ -196,96 +189,89 @@ const OfflineWMTSLayer = L.TileLayer.extend({
   }
 });
 
-/*
- * Builds an offline WMTS layer pointed at Kartverket's "sjokartraster"
- * nautical chart cache, using the standard webmercator tile matrix so
- * tile math matches normal XYZ/slippy conventions.
- */
-function createSeaChartLayer() {
-  return new OfflineWMTSLayer(TILE_URL_BASE, {
-    minZoom: 4,
-    // Highest level the service serves. With detectRetina active Leaflet
-    // lowers the map's maxZoom by one and adds it back as zoomOffset, so the
-    // requested service zoom still tops out at SERVICE_MAX_ZOOM.
-    maxZoom: SERVICE_MAX_ZOOM,
+const TRANSPARENT_PIXEL =
+  'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7';
+
+function createChartLayer(source) {
+  return new CachedTileLayer('', {
+    source: source,
+    minZoom: source.minZoom,
+    maxZoom: MAP_MAX_ZOOM,
+    maxNativeZoom: source.maxNativeZoom,
     tileSize: 256,
-    detectRetina: true,
-    attribution: '&copy; Kartverket',
+    attribution: source.attribution,
   });
 }
 
 /*
- * Downloads all tiles for the given map bounds across a zoom range and
- * stores them in IndexedDB. Reports progress via onProgress(done, total)
- * and can be aborted by calling the returned controller's cancel().
+ * Downloads every tile the given sources need for the current map bounds
+ * across a zoom range, and stores them in IndexedDB. Reports progress via
+ * onProgress(done, total) and can be aborted via the returned cancel().
  *
- * minZoom/maxZoom are *map* zoom levels, i.e. what the user picks in the UI.
- * They are translated to service zoom levels via ZOOM_OFFSET so the stored
- * keys match exactly what the display layer will look up - otherwise the
- * download would silently fill the cache with tiles nobody ever requests.
+ * Zooms are clamped per source to its maxNativeZoom, matching exactly what
+ * the display layer will ask for: the raster chart has nothing beyond z15,
+ * so storing z16+ for it would waste space on tiles nobody requests.
  */
-function downloadAreaForOffline(map, minZoom, maxZoom, onProgress) {
+function downloadAreaForOffline(map, sources, minZoom, maxZoom, onProgress) {
   let cancelled = false;
   const CONCURRENCY = 6;
 
   async function run() {
-    // Collect every tile coordinate needed across all requested zoom levels.
     const bounds = map.getBounds();
     const jobs = [];
-    for (let mapZoom = minZoom; mapZoom <= maxZoom; mapZoom++) {
-      const z = Math.min(mapZoom + ZOOM_OFFSET, SERVICE_MAX_ZOOM);
-      const nwPoint = latLngToTile(bounds.getNorthWest(), z);
-      const sePoint = latLngToTile(bounds.getSouthEast(), z);
-      for (let x = nwPoint.x; x <= sePoint.x; x++) {
-        for (let y = nwPoint.y; y <= sePoint.y; y++) {
-          jobs.push({ z, x, y });
+    const seen = new Set();
+
+    for (const source of sources) {
+      for (let z = minZoom; z <= maxZoom; z++) {
+        const effectiveZ = Math.min(Math.max(z, source.minZoom), source.maxNativeZoom);
+        const nw = latLngToTile(bounds.getNorthWest(), effectiveZ);
+        const se = latLngToTile(bounds.getSouthEast(), effectiveZ);
+        for (let x = nw.x; x <= se.x; x++) {
+          for (let y = nw.y; y <= se.y; y++) {
+            const key = tileKey(source.id, effectiveZ, x, y);
+            // Clamping can map several map zooms onto one source zoom; drop
+            // the duplicates so the progress total stays honest.
+            if (seen.has(key)) continue;
+            seen.add(key);
+            jobs.push({ source, z: effectiveZ, x, y, key });
+          }
         }
       }
     }
 
-    // Clamping at SERVICE_MAX_ZOOM can map two map zooms onto one service
-    // zoom; drop the duplicates so the progress total stays honest.
-    const seen = new Set();
-    const unique = jobs.filter((j) => {
-      const k = tileKey(j.z, j.x, j.y);
-      if (seen.has(k)) return false;
-      seen.add(k);
-      return true;
-    });
-    jobs.length = 0;
-    jobs.push(...unique);
-
     const total = jobs.length;
     let done = 0;
-    onProgress(done, total);
+    let failed = 0;
+    onProgress(done, total, failed);
 
     let cursor = 0;
     async function worker() {
       while (cursor < jobs.length) {
         if (cancelled) return;
         const job = jobs[cursor++];
-        const key = tileKey(job.z, job.x, job.y);
-        const already = await TileStore.has(key);
-        if (!already) {
-          const url = seaTileUrl(job.z, job.x, job.y);
+        if (!(await TileStore.has(job.key))) {
           try {
-            const res = await fetch(url);
+            const res = await fetch(job.source.url(job.z, job.x, job.y));
             if (res.ok) {
-              const blob = await res.blob();
-              await TileStore.put(key, blob);
+              await TileStore.put(job.key, await res.blob());
+            } else {
+              failed++;
             }
           } catch (e) {
-            // Network hiccup on a single tile should not abort the whole batch.
+            // A single network hiccup - or a host without CORS headers, which
+            // cannot be cached at all - must not abort the whole batch.
+            failed++;
           }
         }
         done++;
-        onProgress(done, total);
+        onProgress(done, total, failed);
       }
     }
 
     const workers = [];
     for (let i = 0; i < CONCURRENCY; i++) workers.push(worker());
     await Promise.all(workers);
+    return { total, failed };
   }
 
   const promise = run();

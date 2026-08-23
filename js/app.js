@@ -17,7 +17,7 @@ const STALE_FIX_MS = 8000;           // GPS fix older than this counts as lost
 
 // --- State -------------------------------------------------------------
 let map;
-let seaChartLayer;
+const chartLayers = new Map(); // source id -> Leaflet layer, for those switched on
 let positionMarker;
 let courseLine;
 let targetMarker;
@@ -81,12 +81,83 @@ function initMap() {
     attributionControl: true,
     center: BERGEN_CENTER,
     zoom: 12,
+    minZoom: 4,
+    maxZoom: MAP_MAX_ZOOM,
   });
 
-  seaChartLayer = createSeaChartLayer();
-  seaChartLayer.addTo(map);
+  CHART_SOURCES.forEach((source) => setLayerEnabled(source, layerPreference(source.id)));
 
   map.on('click', (e) => setTarget(e.latlng));
+}
+
+// --- Chart layers ---------------------------------------------------------
+
+// Which layers are on is remembered per device; a wrong or missing value must
+// never keep a layer off silently, so anything unreadable falls back to on.
+function layerPreference(id) {
+  try {
+    const stored = localStorage.getItem(`seenavi.layer.${id}`);
+    return stored === null ? true : stored === '1';
+  } catch (e) {
+    return true;
+  }
+}
+
+function storeLayerPreference(id, on) {
+  try {
+    localStorage.setItem(`seenavi.layer.${id}`, on ? '1' : '0');
+  } catch (e) {
+    // Private mode or blocked storage: the choice just will not survive a reload.
+  }
+}
+
+function setLayerEnabled(source, on) {
+  const existing = chartLayers.get(source.id);
+  if (on && !existing) {
+    const layer = createChartLayer(source);
+    layer.addTo(map);
+    chartLayers.set(source.id, layer);
+  } else if (!on && existing) {
+    map.removeLayer(existing);
+    chartLayers.delete(source.id);
+  }
+  storeLayerPreference(source.id, on);
+}
+
+function enabledSources() {
+  return CHART_SOURCES.filter((s) => chartLayers.has(s.id));
+}
+
+// Builds the layer checkboxes from the registry, so adding a source needs no
+// change here.
+function wireLayerPanel() {
+  const list = document.getElementById('layer-list');
+  CHART_SOURCES.forEach((source) => {
+    const id = `layer-toggle-${source.id}`;
+    const row = document.createElement('label');
+    row.className = 'layer-row';
+    row.htmlFor = id;
+
+    const box = document.createElement('input');
+    box.type = 'checkbox';
+    box.id = id;
+    box.checked = layerPreference(source.id);
+    box.addEventListener('change', () => {
+      setLayerEnabled(source, box.checked);
+      refreshCacheStats();
+    });
+
+    const text = document.createElement('span');
+    text.textContent = source.label;
+
+    row.appendChild(box);
+    row.appendChild(text);
+    list.appendChild(row);
+  });
+
+  document.getElementById('btn-toggle-layers').addEventListener('click', () => {
+    document.getElementById('layerpanel').classList.toggle('hidden');
+  });
 }
 
 // --- Position handling -----------------------------------------------------
@@ -315,18 +386,46 @@ function wireOfflinePanel() {
     progressBox.classList.remove('hidden');
     cancelBtn.classList.remove('hidden');
 
-    activeDownload = downloadAreaForOffline(map, minZoom, maxZoom, (done, total) => {
-      const pct = total > 0 ? Math.round((done / total) * 100) : 0;
-      fill.style.width = `${pct}%`;
-      text.textContent = total > 0
-        ? `${done} / ${total} Kacheln`
-        : 'Keine Kacheln für diesen Bereich';
-    });
+    const sources = enabledSources();
+    if (sources.length === 0) {
+      text.textContent = 'Keine Ebene aktiv – bitte oben eine auswählen.';
+      cancelBtn.classList.add('hidden');
+      return;
+    }
 
-    activeDownload.promise.then(() => {
+    activeDownload = downloadAreaForOffline(map, sources, minZoom, maxZoom,
+      (done, total, failed) => {
+        const pct = total > 0 ? Math.round((done / total) * 100) : 0;
+        fill.style.width = `${pct}%`;
+        text.textContent = total > 0
+          ? `${done} / ${total} Kacheln${failed ? ` · ${failed} fehlgeschlagen` : ''}`
+          : 'Keine Kacheln für diesen Bereich';
+      });
+
+    activeDownload.promise.then((result) => {
       cancelBtn.classList.add('hidden');
       refreshCacheStats();
+      if (result && result.failed > 0) {
+        // Most likely a source that sends no CORS headers - it still displays,
+        // it just cannot be stored. Saying so beats a silently short cache.
+        text.textContent =
+          `${result.total - result.failed} von ${result.total} Kacheln gespeichert, ` +
+          `${result.failed} nicht speicherbar`;
+      }
     });
+  });
+
+  document.getElementById('btn-clear-cache').addEventListener('click', async () => {
+    const hint = document.getElementById('cache-size-hint');
+    hint.textContent = 'Wird gelöscht…';
+    try {
+      await TileStore.clear();
+      chartLayers.forEach((layer) => layer.redraw());
+    } catch (e) {
+      hint.textContent = 'Löschen fehlgeschlagen.';
+      return;
+    }
+    refreshCacheStats();
   });
 
   document.getElementById('btn-cancel-download').addEventListener('click', () => {
@@ -338,12 +437,19 @@ function wireOfflinePanel() {
 }
 
 async function refreshCacheStats() {
-  const stats = await TileStore.stats();
-  const dpiNote = HIGH_DPI
-    ? ' · hochauflösendes Display: eine Zoomstufe tiefer, ca. 4× Kacheln'
-    : '';
-  document.getElementById('cache-size-hint').textContent =
-    `Aktuell gespeichert: ${stats.count} Kacheln (~${stats.mb.toFixed(1)} MB)${dpiNote}`;
+  const hint = document.getElementById('cache-size-hint');
+  try {
+    const stats = await TileStore.stats();
+    const perSource = CHART_SOURCES
+      .filter((s) => stats.bySource[s.id])
+      .map((s) => `${s.label} ${stats.bySource[s.id].count}`)
+      .join(', ');
+    hint.textContent =
+      `Gespeichert: ${stats.count} Kacheln (~${stats.mb.toFixed(1)} MB)` +
+      (perSource ? ` · ${perSource}` : '');
+  } catch (e) {
+    hint.textContent = 'Kachelspeicher nicht lesbar.';
+  }
 }
 
 // --- Toolbar wiring ------------------------------------------------------
@@ -371,6 +477,7 @@ function wireToolbar() {
 function boot() {
   document.getElementById('app-version').textContent = APP_VERSION;
   initMap();
+  wireLayerPanel();
   wireOfflinePanel();
   wireToolbar();
   startTracking();

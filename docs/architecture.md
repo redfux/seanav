@@ -9,15 +9,16 @@ Backend. Ausgeliefert wird über GitHub Pages.
 index.html          Markup, CSP-Meta-Tag, Panel-Struktur
 style.css           Dark-Theme, Layout
 js/version.js       APP_VERSION – einzige Pflegestelle der Versionsnummer
-js/tilecache.js     IndexedDB-Kachelspeicher + eigener Leaflet-Layer
+js/sources.js       Kartenquellen: je eine url(z,x,y)-Funktion pro Quelle
+js/tilecache.js     IndexedDB-Kachelspeicher + generischer Leaflet-Layer
 js/app.js           Geodäsie, GPS-Handling, UI-Verdrahtung, Boot
 sw.js               Service Worker für den App-Shell (muss im Root liegen)
 vendor/             Leaflet 1.9.4 lokal
 docs/               Dokumentation
 ```
 
-Ladereihenfolge in `index.html`: Leaflet → `version.js` → `tilecache.js` →
-`app.js`. Klassische Skripte ohne Module, damit die App auch ohne Server-
+Ladereihenfolge in `index.html`: Leaflet → `version.js` → `sources.js` →
+`tilecache.js` → `app.js`. Klassische Skripte ohne Module, damit die App auch ohne Server-
 Konfiguration (MIME-Typen, CORS) läuft.
 
 ## Kein Framework, kein Build
@@ -69,6 +70,42 @@ Unterschreitung. Dafür bräuchte es Vektordaten (ENC/S-57, für Norwegen über
 PRIMAR lizenzpflichtig) oder ein separates Bathymetrie-Dataset; hochauflösende
 Tiefendaten sind in Norwegen zudem zugangsbeschränkt.
 
+## Kartenebenen
+
+Drei Quellen, in Zeichenreihenfolge:
+
+| Ebene | Quelle | Rolle | Auflösungsgrenze |
+| --- | --- | --- | --- |
+| Seekarte | `cache.kartverket.no` (WMTS-Raster) | Küstenlinie, Kartenkontext | z15, gedeckelt |
+| Tiefendaten | `wms.geonorge.no/skwms1/wms.dybdedata2`, Layer `Dybdedata2` (WMS) | Tiefenlinien, Lotungen, Grunde, Schären | keine |
+| Seezeichen | `tiles.openseamap.org` (Raster) | Tonnen, Baken, Feuer | z18 |
+
+Die Seekarte liefert bewusst nicht mehr den navigationsrelevanten Inhalt: als
+Raster endet ihre echte Auflösung bei z15, und ihre Tiefenangaben sind
+aufgedruckte Pixel. Die beiden anderen Ebenen werden serverseitig aus
+Vektordaten gerendert und haben deshalb keinen Auflösungsdeckel.
+
+Jede Quelle in `js/sources.js` besitzt genau eine `url(z, x, y)`-Funktion.
+Anzeige-Layer und Offline-Downloader gehen beide darüber – sie können sich
+also nicht darüber uneinig werden, welche Kachel gemeint ist. Eine solche
+Abweichung würde erst offline auffallen, im denkbar schlechtesten Moment.
+
+### Schärfe und Symbolgröße
+
+Beides hängt zusammen und lässt sich nur gemeinsam lösen. Ein Telefon läuft
+mit `devicePixelRatio` 2–3; fordert man vom WMS die doppelte Pixelzahl an,
+wird das Bild schärfer – aber alles halb so groß, weil MapServer Linien und
+Beschriftungen in festen Pixelmaßen zeichnet und wir das größere Bild in
+derselben CSS-Fläche darstellen.
+
+`MAP_RESOLUTION` ist MapServers Skalierungsfaktor für Symbolik (Standard
+72 dpi). Im Gleichschritt mit der Pixelzahl erhöht, bleiben Linienstärken und
+Schriftgrößen wie vorgesehen, während die Details schärfer werden. Beides
+steuert `DEPTH_OVERSAMPLE` in `js/sources.js`.
+
+Dass der Dienst MapServer ist, verrät seine eigene Fehlermeldung
+(`msShapefileOpen`, siehe B4 in `bugs.md`).
+
 ## Zwei getrennte Cache-Mechanismen
 
 Bewusst nicht vermischt, weil sie unterschiedliche Anforderungen haben:
@@ -76,49 +113,37 @@ Bewusst nicht vermischt, weil sie unterschiedliche Anforderungen haben:
 | Ebene | Mechanismus | Warum |
 | --- | --- | --- |
 | App-Shell (HTML/CSS/JS/Leaflet) | Cache API im Service Worker (`sw.js`) | wenige, bekannte Dateien; Cache-API-Standardfall |
-| Kartenkacheln | IndexedDB (`js/tilecache.js`) | tausende Einzeldateien mit Fortschrittsanzeige, Größenermittlung und Duplikatprüfung – dafür ist die Cache API zu grobkörnig |
+| Kartenkacheln aller Ebenen | IndexedDB (`js/tilecache.js`) | tausende Einzeldateien mit Fortschrittsanzeige, Größenermittlung und Duplikatprüfung – dafür ist die Cache API zu grobkörnig |
 
-Der `fetch`-Handler im Service Worker klammert `kartverket.no` deshalb explizit
-aus: Kacheln laufen ausschließlich über `js/tilecache.js`, sonst würden beide
-Ebenen dieselben Daten doppelt vorhalten.
+Der `fetch`-Handler im Service Worker klammert alle Kachel-Hosts deshalb
+explizit aus: Kacheln laufen ausschließlich über `js/tilecache.js`, sonst
+würden beide Ebenen dieselben Daten doppelt vorhalten.
 
-`OfflineWMTSLayer` liest zuerst aus IndexedDB und geht nur bei einem Fehltreffer
+`CachedTileLayer` liest zuerst aus IndexedDB und geht nur bei einem Fehltreffer
 ins Netz; erfolgreich geladene Kacheln werden zurückgeschrieben. Normale Nutzung
-bei Empfang baut den Offline-Cache also nebenbei mit auf. Schlägt beides fehl,
-liefert `_placeholderDataUrl()` eine schraffierte Canvas-Kachel – ein sichtbarer
-Hinweis auf eine Lücke statt eines kaputten Bildsymbols.
+bei Empfang baut den Offline-Cache also nebenbei mit auf.
+
+Scheitert `fetch()`, wird die Kachel ersatzweise direkt als `<img>` geladen.
+Das deckt Hosts ab, die keine CORS-Header senden: dort schlägt `fetch()` fehl,
+obwohl ein gewöhnliches Bild lädt. Solche Kacheln sind sichtbar, aber nicht
+offline speicherbar – der Downloader zählt sie als „nicht speicherbar", statt
+sie stillschweigend zu überspringen.
+
+Schlägt auch das fehl, bekommt die Basisebene über `_placeholderDataUrl()` eine
+schraffierte Canvas-Kachel als sichtbaren Hinweis auf eine Lücke. Overlays
+bleiben stattdessen transparent – jede fehlende Overlay-Kachel zu schraffieren
+würde die Karte zudecken.
 
 ### Datenmodell IndexedDB
 
-Datenbank `seenavi-tiles`, Version 1, ein Object Store `tiles`:
-Schlüssel `"z/x/y"` (String), Wert das PNG als `Blob`. Kein Index, da immer
-nur der Punktzugriff über den Schlüssel gebraucht wird.
+Datenbank `seenavi-tiles`, Version 2, ein Object Store `tiles`:
+Schlüssel `"quelle/z/x/y"` (String), Wert das PNG als `Blob`. Kein Index, da
+immer nur der Punktzugriff über den Schlüssel gebraucht wird.
 
-`z` ist dabei immer die **Service-Zoomstufe** – die tatsächlich angeforderte –,
-nicht die Zoomstufe der Karte. Bei High-DPI-Darstellung unterscheiden sich
-beide um `ZOOM_OFFSET` (siehe unten).
-
-## High-DPI-Darstellung
-
-Mobile Displays laufen mit `devicePixelRatio` 2–3. Eine 256-px-Kachel über
-256 CSS-Pixel gezeichnet wird dort über rund 2,6 Gerätepixel gestreckt – bei
-einer Rasterseekarte verschmieren dadurch genau die Details, auf die es
-ankommt: aufgedruckte Lotungen und Untiefen-Symbolik.
-
-Deshalb `detectRetina: true`. Leaflet halbiert dann die Kachelgröße auf 128 px
-und erhöht `zoomOffset` um 1: bei Karten-Zoom 12 wird also Service-Zoom 13
-geladen und auf halber Fläche gezeichnet, was die Pixelzuordnung wieder auf
-etwa 1:1 bringt.
-
-Das betrifft den Offline-Cache unmittelbar. Der Downloader bekommt vom UI
-Karten-Zoomstufen und rechnet sie über `ZOOM_OFFSET` in Service-Zoomstufen um.
-Täte er das nicht, würde er Kacheln speichern, die der Anzeige-Layer nie
-abfragt – der Offline-Modus wäre still kaputt und das erst ohne Empfang
-aufgefallen. `ZOOM_OFFSET` spiegelt exakt die Bedingung, unter der Leaflet
-`detectRetina` aktiviert (`L.Browser.retina` und `maxZoom > 0`).
-
-Preis: rund viermal so viele Kacheln pro Fläche. Das Offline-Panel weist darauf
-hin.
+Der Namensraum pro Quelle ist nötig, seit mehrere Ebenen denselben
+Kachelraster benutzen. Version 1 hatte bloße `z/x/y`-Schlüssel, die sich davon
+nicht unterscheiden lassen – das Upgrade leert den Store deshalb, statt
+Kacheln zurückzulassen, die nichts mehr adressieren kann.
 
 ## Warum `sw.js` im Root bleibt
 

@@ -122,6 +122,31 @@ html, body {
 
 .proj-row span:last-child { color: var(--color-accent); font-weight: 600; }
 
+/* Chart layer switches: centered, above the offline panel */
+#layerpanel {
+  top: 68px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: min(320px, 86vw);
+}
+
+.layer-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  /* Comfortable tap target for wet hands on a moving boat. */
+  min-height: 40px;
+  font-size: 15px;
+  cursor: pointer;
+}
+
+.layer-row input[type="checkbox"] {
+  width: 20px;
+  height: 20px;
+  accent-color: var(--color-accent);
+  flex: 0 0 auto;
+}
+
 /* Offline tile management panel: centered */
 #offlinepanel {
   top: 68px;

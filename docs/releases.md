@@ -6,6 +6,51 @@ Versionierung nach [SemVer](https://semver.org/lang/de/).
 Die Versionsnummer wird ausschließlich in `js/version.js` gepflegt; Footer und
 Service-Worker-Cachename leiten sich automatisch daraus ab.
 
+## [0.4.0] – 2026-08-22
+
+Umbau auf Vektor-basierte Kartenebenen. Die Rasterseekarte bleibt als
+Hintergrund, liefert aber nicht mehr den navigationsrelevanten Inhalt.
+
+### Added
+
+- **Kartverket-Tiefendaten** (`wms.dybdedata2`, Layer `Dybdedata2`) als
+  Ebene: Tiefenlinien, Lotungen, Grunde und Schären. Als WMS ohne
+  Auflösungsdeckel, also bei jedem Zoom scharf.
+- **OpenSeaMap-Seezeichen** als Ebene: Tonnen, Baken, Feuer (CC-BY-SA)
+- Ebenen-Panel (🗺️) zum Ein- und Ausschalten; die Auswahl wird pro Gerät
+  in `localStorage` gemerkt
+- „Speicher leeren" im Offline-Panel
+- Kachelspeicher-Anzeige jetzt nach Ebene aufgeschlüsselt
+- Fällt `fetch()` aus (z. B. weil ein Host keine CORS-Header sendet), lädt
+  die Kachel ersatzweise direkt als `<img>`. Sie ist dann sichtbar, nur nicht
+  offline speicherbar – vorher wäre sie ganz ausgefallen.
+
+### Changed
+
+- **Breaking:** Cache-Schlüssel heißen jetzt `quelle/z/x/y` statt `z/x/y`.
+  Die IndexedDB-Version steigt auf 2 und leert den Speicher beim ersten
+  Start, da alte Schlüssel nicht mehr zuzuordnen sind. Offline genutzte
+  Bereiche müssen einmalig neu geladen werden.
+- Tile-URLs entstehen pro Quelle in genau einer `url(z, x, y)`-Funktion,
+  die Anzeige und Downloader gemeinsam nutzen
+- Rasterseekarte auf `maxNativeZoom: 15` gedeckelt – ihre gemessene
+  Auflösungsgrenze. Darüber skaliert Leaflet die letzte echte Kachel weich,
+  statt hartkantig hochskalierte Kacheln vom Dienst zu holen und zu speichern.
+- `detectRetina` entfernt. Für die Tiefendaten wird stattdessen die doppelte
+  Pixelzahl angefordert **und** über MapServers `MAP_RESOLUTION` die
+  Symbolgröße mitskaliert – sonst wären Linien und Beschriftungen zwar
+  schärfer, aber halb so groß.
+- Offline-Download lädt alle aktiven Ebenen und meldet nicht speicherbare
+  Kacheln, statt sie stillschweigend zu überspringen
+
+### Removed
+
+- Tipp-auf-die-Karte-Tiefenabfrage wurde nicht übernommen: Der Dienst
+  antwortet auf GetFeatureInfo mit einem MapServer-Konfigurationsfehler
+  (`msShapefileOpen(): Unable to access file`). Ein Feature, das eine
+  Serverfehlermeldung anzeigt, ist schlechter als keins. Die Tiefenwerte
+  stehen ohnehin in der Karte.
+
 ## [0.3.3] – 2026-08-22
 
 ### Changed

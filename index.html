@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https://cache.kartverket.no; connect-src 'self' https://cache.kartverket.no;">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https://cache.kartverket.no https://wms.geonorge.no https://tiles.openseamap.org; connect-src 'self' https://cache.kartverket.no https://wms.geonorge.no https://tiles.openseamap.org;">
   <title>SeeNavi Bergen</title>
   <link rel="stylesheet" href="vendor/leaflet.css">
   <link rel="stylesheet" href="style.css">
@@ -56,6 +56,12 @@
     <div class="proj-row"><span>für 500 m</span><span id="val-proj-500m">–</span></div>
   </div>
 
+  <!-- Chart layer switches -->
+  <div id="layerpanel" class="panel hidden">
+    <div class="proj-title">Kartenebenen</div>
+    <div id="layer-list"></div>
+  </div>
+
   <!-- Offline tile download tool -->
   <div id="offlinepanel" class="panel hidden">
     <div class="proj-title">Kartenbereich offline speichern</div>
@@ -69,6 +75,7 @@
     <div class="offline-buttons">
       <button id="btn-download-area" class="btn-primary">Sichtbaren Bereich laden</button>
       <button id="btn-cancel-download" class="btn-small hidden">Abbrechen</button>
+      <button id="btn-clear-cache" class="btn-small">Speicher leeren</button>
     </div>
     <p class="hint" id="cache-size-hint"></p>
   </div>
@@ -76,6 +83,7 @@
   <!-- Bottom toolbar -->
   <div id="toolbar">
     <button id="btn-locate" class="fab" title="Zur eigenen Position" aria-label="Zur eigenen Position"><span aria-hidden="true">📍</span></button>
+    <button id="btn-toggle-layers" class="fab" title="Kartenebenen" aria-label="Kartenebenen"><span aria-hidden="true">🗺️</span></button>
     <button id="btn-toggle-offline" class="fab" title="Offline-Karten verwalten" aria-label="Offline-Karten verwalten"><span aria-hidden="true">⬇️</span></button>
     <button id="btn-toggle-proj" class="fab" title="Kurs-Projektion ein/aus" aria-label="Kurs-Projektion ein/aus"><span aria-hidden="true">📐</span></button>
   </div>
@@ -84,6 +92,7 @@
 
   <script src="vendor/leaflet.js"></script>
   <script src="js/version.js"></script>
+  <script src="js/sources.js"></script>
   <script src="js/tilecache.js"></script>
   <script src="js/app.js"></script>
 </body>

@@ -13,6 +13,9 @@ kein Build-Schritt.
 ## Funktionsumfang
 
 - Seekarte (Kartverket „Sjøkart Raster") als Kartenuntergrund
+- Tiefenlinien, Lotungen, Grunde und Schären aus den Kartverket-Tiefendaten
+- Seezeichen (Tonnen, Baken, Feuer) aus OpenSeaMap
+- Einzelne Kartenebenen über 🗺️ ein- und ausschaltbar
 - Eigene Position per Geräte-GPS (`navigator.geolocation`)
 - Aktueller Kurs (COG) als Linie auf der Karte
 - Ziel per Klick auf die Karte setzen, mit Distanz/Peilung/ETA
@@ -71,16 +74,18 @@ Nutzungsdaten übertragen.
 
 | Speicher | Inhalt | Zweck |
 | --- | --- | --- |
-| IndexedDB (`seenavi-tiles`) | Kartenkacheln als Blobs, Schlüssel `z/x/y` | Offline-Kartennutzung |
+| IndexedDB (`seenavi-tiles`) | Kartenkacheln als Blobs, Schlüssel `quelle/z/x/y` | Offline-Kartennutzung |
+| `localStorage` | welche Kartenebenen eingeschaltet sind | Auswahl bleibt erhalten |
 | Cache API (`seenavi-shell-v<version>`) | App-Shell: HTML/CSS/JS/Leaflet | App startet ohne Netz |
 
 Die GPS-Position wird ausschließlich im Arbeitsspeicher gehalten und nicht
 persistiert. Zurücksetzen lässt sich beides über „Websitedaten löschen" in den
 Browser-Einstellungen.
 
-Einzige ausgehende Verbindung ist der Kachelabruf von
-`cache.kartverket.no`; die Content-Security-Policy in `index.html` unterbindet
-alles darüber hinaus technisch.
+Ausgehende Verbindungen bestehen ausschließlich zum Abruf von Kartenkacheln:
+`cache.kartverket.no` (Seekarte), `wms.geonorge.no` (Tiefendaten) und
+`tiles.openseamap.org` (Seezeichen). Die Content-Security-Policy in
+`index.html` unterbindet alles darüber hinaus technisch.
 
 ## Weiterführende Dokumentation
 
