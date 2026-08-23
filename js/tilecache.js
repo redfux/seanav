@@ -234,8 +234,10 @@ function createChartLayer(source) {
     tileSize: 256,
     attribution: source.attribution,
     // Draw order must follow the registry, not the order layers happen to be
-    // switched on: without this, enabling the opaque raster chart last would
-    // put it on top and hide the depth data underneath.
+    // switched on: without this, a layer enabled last would sit on top of
+    // everything, opaque fills included.
     zIndex: CHART_SOURCES.indexOf(source) + 1,
+    // Blend mode is a property of the source, applied to its tile container.
+    className: source.blend ? `blend-${source.blend}` : '',
   });
 }

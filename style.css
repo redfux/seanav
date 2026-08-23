@@ -122,6 +122,14 @@ html, body {
 
 .proj-row span:last-child { color: var(--color-accent); font-weight: 600; }
 
+/*
+ * Overlay blending. A chart overlay that renders its own water and coastline
+ * fills would otherwise blank out the base map beneath it. Multiplying lets
+ * light fills pass the base map through while dark ink - contours, soundings,
+ * symbols - stays fully dark.
+ */
+.blend-multiply { mix-blend-mode: multiply; }
+
 /* Chart layer switches: centered, above the offline panel */
 #layerpanel {
   top: 68px;

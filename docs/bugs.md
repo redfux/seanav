@@ -9,6 +9,47 @@ _(derzeit keine)_
 
 ## Behoben
 
+### B5 – Tiefenlinien im Flachwasser fehlten
+
+**Symptom:** Im tieferen Wasser wurden Tiefenobjekte gezeichnet, im flacheren
+fehlten die Tiefenlinien. Lotungen erschienen weiterhin.
+
+**Ursache:** Selbst eingebaut mit der Symbolvergrößerung in 0.5.0. MapServer
+verwendet `MAP_RESOLUTION` zweifach: es skaliert Symbolgrößen, Linienstärken
+und Beschriftungen – und geht in den Maßstabsnenner ein, den der Server für die
+Anfrage berechnet. Die doppelte Pixelzahl halbiert diesen Nenner, die doppelte
+Resolution verdoppelt ihn; beides hebt sich auf. Genau das ist das anerkannte
+High-DPI-Rezept.
+
+Mit `72 × 2 × 2 = 288` war die Kompensation gestört: der Server hielt den
+Maßstab für doppelt so klein wie er war und blendete maßstabsabhängige Ebenen
+aus. Grobe Tiefwasser-Objekte überlebten das, feines Flachwasser-Detail nicht.
+
+**Lösung:** `MAP_RESOLUTION = 72 × DEPTH_OVERSAMPLE`, also exakt kompensiert.
+Größere Symbole sind aus diesem Dienst damit nicht zu haben, ohne Detail zu
+verlieren – und Detail hat Vorrang, gerade im Flachwasser. Nachgerechnet und
+im Browser geprüft: Kompensationsfaktor exakt 1.
+
+### B6 – Tiefendaten verdeckten die Grundkarte an Brücken
+
+**Symptom:** Wo eine Brücke oder Straße über Wasser führt, war der
+OSM-Inhalt verschwunden – im Vergleich mit abgeschalteter Tiefendatenebene
+fehlte etwa die Straßennummernplakette.
+
+**Ursache:** Der Dienst rendert eine vollständige Seekarte einschließlich
+Wasserflächen und Küstenkontur. Diese Füllungen sind undurchsichtig und
+überdecken alles darunter; `transparent=true` betrifft nur den Bildrand,
+nicht die gezeichneten Flächen.
+
+**Lösung:** `mix-blend-mode: multiply` auf dem Container der Tiefendatenebene.
+Helle Füllungen lassen die Grundkarte unverändert durch, dunkle Farbe –
+Tiefenlinien, Lotungen, Symbole – bleibt genauso dunkel wie zuvor. Das kommt
+ohne Rätselraten über die internen Sublayer-Namen des Dienstes aus.
+
+Mit synthetischen Kacheln im Browser belegt: ein deckend hellblaues Overlay
+über einer Grundkarte mit schwarzen Balken lässt diese durchscheinen; ohne den
+Blend-Modus sind sie vollständig verdeckt.
+
 ### B3 – Karte zum Navigieren zu grob aufgelöst
 
 **Ursache:** Zwei unabhängige Gründe. Erstens endet die native Auflösung von

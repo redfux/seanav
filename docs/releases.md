@@ -6,6 +6,27 @@ Versionierung nach [SemVer](https://semver.org/lang/de/).
 Die Versionsnummer wird ausschließlich in `js/version.js` gepflegt; Footer und
 Service-Worker-Cachename leiten sich automatisch daraus ab.
 
+## [0.6.1] – 2026-08-22
+
+### Fixed
+
+- Tiefenlinien im Flachwasser fehlten. `MAP_RESOLUTION` war mit
+  `72 × 2 × 2 = 288` über die High-DPI-Kompensation hinaus erhöht, um die
+  Symbole zu vergrößern. MapServer berechnet daraus aber auch den
+  Maßstabsnenner und hielt die Karte für doppelt so klein wie sie war,
+  wodurch maßstabsabhängige Detailebenen wegfielen. Jetzt exakt kompensiert
+  (`72 × DEPTH_OVERSAMPLE`). Siehe B5 in `bugs.md`.
+- Tiefendaten verdeckten die Grundkarte an Brücken. Der Dienst zeichnet
+  Wasserflächen und Küstenkontur undurchsichtig. Behoben über
+  `mix-blend-mode: multiply` auf der Ebene. Siehe B6.
+
+### Changed
+
+- **Tiefenangaben sind wieder in Nominalgröße.** Größere Symbole und
+  vollständiges Flachwasser-Detail schließen sich bei diesem Dienst
+  gegenseitig aus; Detail hat Vorrang. Zum Ablesen eine Zoomstufe weiter
+  hineinzoomen – die Karte geht bis z19.
+
 ## [0.6.0] – 2026-08-22
 
 Umstellung auf global verfügbare Quellen. Die App war auf Norwegen

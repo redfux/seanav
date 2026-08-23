@@ -43,24 +43,30 @@ function osmUrl(z, x, y) {
 const DEPTH_WMS = 'https://wms.geonorge.no/skwms1/wms.dybdedata2';
 
 /*
- * A WMS renders the requested box at the requested pixel size, so unlike a
- * tile cache it has no resolution ceiling. Two knobs matter, and they are
- * deliberately separate:
+ * Sharpness. A WMS renders the requested box at the requested pixel size, so
+ * unlike a tile cache it has no resolution ceiling: asking for OVERSAMPLE
+ * times the pixels compensates for phone screens running at devicePixelRatio
+ * 2-3.
  *
- *   - OVERSAMPLE controls sharpness: asking for more pixels than the tile is
- *     displayed at compensates for phone screens running at devicePixelRatio
- *     2-3.
- *   - SYMBOL_SCALE controls size. Oversampling alone shrinks everything,
- *     because MapServer draws lines and labels at a fixed pixel size and the
- *     larger image is then shown in the same CSS space.
+ * MAP_RESOLUTION must then rise by exactly the same factor, and no more.
+ * MapServer uses it twice: it scales symbol sizes, line widths and labels -
+ * which is what keeps them from shrinking when the image gets larger - but it
+ * also enters the scale denominator the server computes for the request.
+ * Doubling the pixel count halves that denominator, doubling the resolution
+ * doubles it, and the two cancel. The server then renders exactly the detail
+ * that belongs at this zoom, only with more pixels.
  *
- * MAP_RESOLUTION is MapServer's symbology scaling factor (default 72 dpi) -
- * that this service is MapServer is visible in its own error responses, which
- * name msShapefileOpen. The two multiply into it.
+ * Pushing MAP_RESOLUTION beyond that to enlarge the symbols breaks the
+ * cancellation: the server believes the map is zoomed further out than it is
+ * and drops scale-dependent layers. Concretely, at 72 * 2 * 2 = 288 the coarse
+ * deep-water objects still drew but the fine shallow-water contours - the ones
+ * that actually matter close inshore - silently disappeared.
+ *
+ * Larger symbols are therefore not available from this service without losing
+ * detail, and detail wins. Zooming in one more step is the way to read them.
  */
 const DEPTH_OVERSAMPLE = 2;
 const DEPTH_BASE_DPI = 72;
-const DEPTH_SYMBOL_SCALE = 2;
 
 function depthUrl(z, x, y) {
   const bbox = tileBBox3857(z, x, y);
@@ -77,7 +83,7 @@ function depthUrl(z, x, y) {
     bbox: `${bbox.minX},${bbox.minY},${bbox.maxX},${bbox.maxY}`,
     width: String(px),
     height: String(px),
-    map_resolution: String(DEPTH_BASE_DPI * DEPTH_OVERSAMPLE * DEPTH_SYMBOL_SCALE),
+    map_resolution: String(DEPTH_BASE_DPI * DEPTH_OVERSAMPLE),
   });
   return `${DEPTH_WMS}?${params}`;
 }
@@ -120,6 +126,16 @@ const CHART_SOURCES = [
     // A WMS has no tile pyramid, so it can render every zoom the map offers.
     maxNativeZoom: MAP_MAX_ZOOM,
     opaque: false,
+    /*
+     * The service renders a complete nautical chart, water areas and coastline
+     * included, and those fills are opaque - they blanked out whatever OSM had
+     * drawn underneath, most visibly bridges and road shields.
+     *
+     * Multiply blending fixes that without having to guess at sub-layer names:
+     * light fills let the base map through untouched, while the dark ink of
+     * contours, soundings and symbols stays exactly as dark as before.
+     */
+    blend: 'multiply',
     defaultOn: true,
     attribution: '&copy; Kartverket',
   },

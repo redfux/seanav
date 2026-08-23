@@ -31,27 +31,45 @@ lassen sich zudem direkt von GitHub Pages ausliefern und offline cachen.
 Aus demselben Grund kein ESLint/Prettier, sondern `.editorconfig`: beide setzen
 `package.json` und `node_modules` voraus.
 
-## Schärfe und Symbolgröße der Tiefendaten
+## Schärfe der Tiefendaten, und warum die Symbole nicht größer werden
 
-Beides hängt zusammen und lässt sich nur gemeinsam lösen. Ein Telefon läuft
-mit `devicePixelRatio` 2–3; fordert man vom WMS die doppelte Pixelzahl an,
-wird das Bild schärfer – aber alles halb so groß, weil MapServer Linien und
-Beschriftungen in festen Pixelmaßen zeichnet und wir das größere Bild in
-derselben CSS-Fläche darstellen.
+Ein Telefon läuft mit `devicePixelRatio` 2–3, eine 256-px-Kachel wird dort
+also über rund 660 Gerätepixel gestreckt. Deshalb fordert `depthUrl()` die
+doppelte Pixelzahl an (`DEPTH_OVERSAMPLE = 2`).
 
-`MAP_RESOLUTION` ist MapServers Skalierungsfaktor für Symbolik (Standard
-72 dpi) und entkoppelt beides: die Pixelzahl steuert die Schärfe, die
-Resolution die gezeichnete Größe. In `js/sources.js` sind das zwei getrennte
-Konstanten, die sich multiplizieren:
+`MAP_RESOLUTION` muss dann um exakt denselben Faktor steigen – und keinen
+größeren. MapServer nutzt den Wert zweifach:
 
-- `DEPTH_OVERSAMPLE = 2` → 512 px pro 256-CSS-px-Kachel, also doppelte Schärfe
-- `DEPTH_SYMBOL_SCALE = 2` → Symbole doppelt so groß wie nominal
+1. Er skaliert Symbolgrößen, Linienstärken und Beschriftungen. Ohne ihn würden
+   die Symbole beim größeren Bild optisch schrumpfen.
+2. Er geht in den **Maßstabsnenner** ein, den der Server für die Anfrage
+   berechnet und gegen den er maßstabsabhängige Ebenen prüft.
 
-zusammen `MAP_RESOLUTION = 72 × 2 × 2 = 288`. Nominalgröße wäre zum Ablesen
-an Bord zu klein.
+Die doppelte Pixelzahl halbiert diesen Nenner, die doppelte Resolution
+verdoppelt ihn – beides hebt sich auf, und der Server zeichnet genau das
+Detail, das zu dieser Zoomstufe gehört, nur mit mehr Pixeln.
 
-Dass der Dienst MapServer ist, verrät seine eigene Fehlermeldung
-(`msShapefileOpen`, siehe B4 in `bugs.md`).
+Ein höherer Wert, um die Symbole zusätzlich zu vergrößern, zerstört diese
+Kompensation: der Server hält die Karte für weiter herausgezoomt und lässt
+Detailebenen weg. Bei `288` blieben die groben Tiefwasser-Objekte, die feinen
+Flachwasser-Tiefenlinien verschwanden – siehe B5 in `bugs.md`.
+
+**Größere Symbole sind aus diesem Dienst deshalb nicht zu haben, ohne Detail
+zu verlieren.** Im Flachwasser ist Detail das Sicherheitsrelevante, also hat es
+Vorrang. Der Weg zum besseren Ablesen ist eine Zoomstufe mehr.
+
+### Überlagerung ohne Verdecken
+
+Der Dienst rendert eine vollständige Seekarte, Wasserflächen und Küstenkontur
+eingeschlossen, und diese Füllungen sind undurchsichtig – `transparent=true`
+betrifft nur den Bildrand. Sie überdeckten die Grundkarte, sichtbar etwa an
+Brücken und Straßennummern.
+
+`mix-blend-mode: multiply` auf dem Kachel-Container der Ebene löst das ohne
+Annahmen über die internen Sublayer-Namen des Dienstes: helle Füllungen lassen
+die Grundkarte unverändert durch, dunkle Farbe bleibt dunkel. Der Blend-Modus
+steht als Eigenschaft `blend` an der Quelle und wird über `className` auf den
+Container gelegt.
 
 ## Kartenebenen
 
