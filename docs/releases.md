@@ -6,6 +6,36 @@ Versionierung nach [SemVer](https://semver.org/lang/de/).
 Die Versionsnummer wird ausschließlich in `js/version.js` gepflegt; Footer und
 Service-Worker-Cachename leiten sich automatisch daraus ab.
 
+## [0.5.0] – 2026-08-22
+
+### Added
+
+- **Landkarte** als neue Basisebene: Kartverkets `topograatone`, eine
+  graustufige topografische Karte. Bewusst **nicht** `tile.openstreetmap.org` –
+  dessen Nutzungsbedingungen untersagen Bulk-Downloads ausdrücklich, und
+  „Bereich offline speichern" ist genau das; solche Clients werden ohne
+  Vorwarnung gesperrt. Kartverkets Dienst ist das offene, für Weiterverwendung
+  gedachte Gegenstück für Norwegen.
+
+### Changed
+
+- Tiefenangaben und Tiefenlinien werden doppelt so groß gezeichnet.
+  `DEPTH_SYMBOL_SCALE` trennt die Symbolgröße von der Schärfe: die Pixelzahl
+  steuert weiterhin die Schärfe (2×), `MAP_RESOLUTION` jetzt zusätzlich die
+  Symbolgröße (2×). Vorher hielt es die Symbole nur auf Nominalgröße.
+- Rasterseekarte ist standardmäßig **aus**. Sie bleibt zuschaltbar, weil sie
+  Symbolik trägt, die den anderen Ebenen fehlt – Verkehrstrennung,
+  Sperrgebiete, Kabel.
+- Voreinstellung, ob eine Ebene an ist, kommt jetzt aus der Quelle selbst
+  statt pauschal „an"
+
+### Fixed
+
+- Zeichenreihenfolge folgt der Quellen-Registry statt der Reihenfolge, in der
+  Ebenen eingeschaltet werden. Vorher legte sich die undurchsichtige
+  Rasterseekarte über die Tiefendaten, wenn man sie zuletzt zuschaltete, und
+  verdeckte sie vollständig.
+
 ## [0.4.0] – 2026-08-22
 
 Umbau auf Vektor-basierte Kartenebenen. Die Rasterseekarte bleibt als

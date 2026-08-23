@@ -74,16 +74,34 @@ Tiefendaten sind in Norwegen zudem zugangsbeschränkt.
 
 Drei Quellen, in Zeichenreihenfolge:
 
-| Ebene | Quelle | Rolle | Auflösungsgrenze |
-| --- | --- | --- | --- |
-| Seekarte | `cache.kartverket.no` (WMTS-Raster) | Küstenlinie, Kartenkontext | z15, gedeckelt |
-| Tiefendaten | `wms.geonorge.no/skwms1/wms.dybdedata2`, Layer `Dybdedata2` (WMS) | Tiefenlinien, Lotungen, Grunde, Schären | keine |
-| Seezeichen | `tiles.openseamap.org` (Raster) | Tonnen, Baken, Feuer | z18 |
+| Ebene | Quelle | Rolle | Standard | Auflösungsgrenze |
+| --- | --- | --- | --- | --- |
+| Landkarte | `cache.kartverket.no`, Layer `topograatone` | Land, Küstenlinie | an | z18 |
+| Seekarte (Raster) | `cache.kartverket.no`, Layer `sjokartraster` | Verkehrstrennung, Sperrgebiete, Kabel | aus | z15, gedeckelt |
+| Tiefendaten | `wms.geonorge.no/skwms1/wms.dybdedata2`, Layer `Dybdedata2` | Tiefenlinien, Lotungen, Grunde, Schären | an | keine |
+| Seezeichen | `tiles.openseamap.org` | Tonnen, Baken, Feuer | an | z18 |
 
-Die Seekarte liefert bewusst nicht mehr den navigationsrelevanten Inhalt: als
-Raster endet ihre echte Auflösung bei z15, und ihre Tiefenangaben sind
-aufgedruckte Pixel. Die beiden anderen Ebenen werden serverseitig aus
-Vektordaten gerendert und haben deshalb keinen Auflösungsdeckel.
+Die Rasterseekarte liefert bewusst nicht mehr den navigationsrelevanten
+Inhalt: als Raster endet ihre echte Auflösung bei z15, und ihre Tiefenangaben
+sind aufgedruckte Pixel. Sie bleibt nur zuschaltbar, weil sie Symbolik trägt,
+die den übrigen Ebenen fehlt.
+
+### Warum nicht OpenStreetMap als Landkarte
+
+OSM wäre die naheliegende Wahl, scheidet aber an den Nutzungsbedingungen von
+`tile.openstreetmap.org` aus: Bulk-Downloading ist untersagt, und die Policy
+nennt „Download city/country for offline use" und „Save area for later"
+ausdrücklich als Beispiele. Das ist exakt das Kernfeature dieser App; solche
+Clients werden laut Policy ohne Vorwarnung gesperrt. Kartverkets
+`topograatone` ist das offene, ausdrücklich zur Weiterverwendung gedachte
+Gegenstück für Norwegen – und als Graustufenkarte tritt sie unter den
+Tiefenlinien und Seezeichen zurück, statt mit ihnen um Aufmerksamkeit zu
+konkurrieren.
+
+Die Zeichenreihenfolge ergibt sich aus der Reihenfolge in `CHART_SOURCES` und
+wird über `zIndex` durchgesetzt – nicht daraus, in welcher Reihenfolge Ebenen
+eingeschaltet werden. Sonst legte sich eine nachträglich zugeschaltete
+undurchsichtige Ebene über alles darunter.
 
 Jede Quelle in `js/sources.js` besitzt genau eine `url(z, x, y)`-Funktion.
 Anzeige-Layer und Offline-Downloader gehen beide darüber – sie können sich
@@ -99,9 +117,15 @@ Beschriftungen in festen Pixelmaßen zeichnet und wir das größere Bild in
 derselben CSS-Fläche darstellen.
 
 `MAP_RESOLUTION` ist MapServers Skalierungsfaktor für Symbolik (Standard
-72 dpi). Im Gleichschritt mit der Pixelzahl erhöht, bleiben Linienstärken und
-Schriftgrößen wie vorgesehen, während die Details schärfer werden. Beides
-steuert `DEPTH_OVERSAMPLE` in `js/sources.js`.
+72 dpi) und entkoppelt beides: die Pixelzahl steuert die Schärfe, die
+Resolution die gezeichnete Größe. In `js/sources.js` sind das zwei getrennte
+Konstanten, die sich multiplizieren:
+
+- `DEPTH_OVERSAMPLE = 2` → 512 px pro 256-CSS-px-Kachel, also doppelte Schärfe
+- `DEPTH_SYMBOL_SCALE = 2` → Symbole doppelt so groß wie nominal
+
+zusammen `MAP_RESOLUTION = 72 × 2 × 2 = 288`. Nominalgröße wäre zum Ablesen
+an Bord zu klein.
 
 Dass der Dienst MapServer ist, verrät seine eigene Fehlermeldung
 (`msShapefileOpen`, siehe B4 in `bugs.md`).

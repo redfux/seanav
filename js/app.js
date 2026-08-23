@@ -85,21 +85,22 @@ function initMap() {
     maxZoom: MAP_MAX_ZOOM,
   });
 
-  CHART_SOURCES.forEach((source) => setLayerEnabled(source, layerPreference(source.id)));
+  CHART_SOURCES.forEach((source) => setLayerEnabled(source, layerPreference(source)));
 
   map.on('click', (e) => setTarget(e.latlng));
 }
 
 // --- Chart layers ---------------------------------------------------------
 
-// Which layers are on is remembered per device; a wrong or missing value must
-// never keep a layer off silently, so anything unreadable falls back to on.
-function layerPreference(id) {
+// Which layers are on is remembered per device. Without a stored choice the
+// source's own default applies, and an unreadable store must never silently
+// differ from a fresh install either.
+function layerPreference(source) {
   try {
-    const stored = localStorage.getItem(`seenavi.layer.${id}`);
-    return stored === null ? true : stored === '1';
+    const stored = localStorage.getItem(`seenavi.layer.${source.id}`);
+    return stored === null ? source.defaultOn : stored === '1';
   } catch (e) {
-    return true;
+    return source.defaultOn;
   }
 }
 
@@ -141,7 +142,7 @@ function wireLayerPanel() {
     const box = document.createElement('input');
     box.type = 'checkbox';
     box.id = id;
-    box.checked = layerPreference(source.id);
+    box.checked = layerPreference(source);
     box.addEventListener('change', () => {
       setLayerEnabled(source, box.checked);
       refreshCacheStats();

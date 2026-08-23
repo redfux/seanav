@@ -32,12 +32,25 @@ const WMTS_BASE = 'https://cache.kartverket.no/v1/service';
 const SEA_CHART_NATIVE_MAX_ZOOM = 15;
 
 // Capabilities declare the tile matrix identifiers zero-padded, "00".."18".
-function seaChartUrl(z, x, y) {
-  return `${WMTS_BASE}?service=WMTS&request=GetTile&version=1.0.0` +
-    '&layer=sjokartraster&style=default&format=image/png' +
-    `&tilematrixset=webmercator&tilematrix=${String(z).padStart(2, '0')}` +
-    `&tilerow=${y}&tilecol=${x}`;
+function kartverketWmtsUrl(layerName) {
+  return function (z, x, y) {
+    return `${WMTS_BASE}?service=WMTS&request=GetTile&version=1.0.0` +
+      `&layer=${layerName}&style=default&format=image/png` +
+      `&tilematrixset=webmercator&tilematrix=${String(z).padStart(2, '0')}` +
+      `&tilerow=${y}&tilecol=${x}`;
+  };
 }
+
+/*
+ * Land base. Deliberately not tile.openstreetmap.org: its usage policy
+ * forbids bulk downloading, and "save this area for offline use" is exactly
+ * what this app does - such clients get blocked without notice. Kartverket's
+ * own topographic map is the open, reuse-friendly equivalent for Norway, and
+ * "graatone" (grey tone) stays quiet under the depth contours and seamarks
+ * instead of competing with them for attention.
+ */
+const landUrl = kartverketWmtsUrl('topograatone');
+const seaChartUrl = kartverketWmtsUrl('sjokartraster');
 
 // --- Kartverket depth data (WMS) -----------------------------------------
 
@@ -55,11 +68,22 @@ const DEPTH_WMS = 'https://wms.geonorge.no/skwms1/wms.dybdedata2';
  *
  * MAP_RESOLUTION is MapServer's scaling factor for symbology (default 72 dpi),
  * and this service is MapServer - its error responses name msShapefileOpen.
- * Raising it in step with the pixel count keeps lines and labels at their
- * intended size while the detail gets sharper.
+ * It is what decouples the two: the pixel count controls sharpness, the
+ * resolution controls how large lines and labels are drawn.
  */
 const DEPTH_OVERSAMPLE = 2;
 const DEPTH_BASE_DPI = 72;
+
+/*
+ * How much larger than nominal the depth figures and contour lines should
+ * draw. This is a separate knob from the oversampling on purpose: raising
+ * MAP_RESOLUTION in step with the pixel count only keeps symbols at their
+ * nominal size, and nominal is too small to read at a glance on a boat.
+ * The two multiply, so 2x oversampling with 2x symbols means
+ * MAP_RESOLUTION = 72 * 2 * 2 = 288 while the tile still carries 2x the
+ * pixels - bigger and sharper, not one at the cost of the other.
+ */
+const DEPTH_SYMBOL_SCALE = 2;
 
 function depthUrl(z, x, y) {
   const bbox = tileBBox3857(z, x, y);
@@ -76,7 +100,7 @@ function depthUrl(z, x, y) {
     bbox: `${bbox.minX},${bbox.minY},${bbox.maxX},${bbox.maxY}`,
     width: String(px),
     height: String(px),
-    map_resolution: String(DEPTH_BASE_DPI * DEPTH_OVERSAMPLE),
+    map_resolution: String(DEPTH_BASE_DPI * DEPTH_OVERSAMPLE * DEPTH_SYMBOL_SCALE),
   });
   return `${DEPTH_WMS}?${params}`;
 }
@@ -90,18 +114,33 @@ function seamarkUrl(z, x, y) {
 // --- Registry ------------------------------------------------------------
 
 /*
- * Order is draw order: the raster chart gives coastline and context, the
- * depth data goes on top because it is the layer that stays sharp, and the
- * seamarks sit above both so buoys and beacons are never hidden.
+ * Order is draw order: land at the bottom, depth data above it because that
+ * is the layer that stays sharp at every zoom, seamarks on top so buoys and
+ * beacons are never hidden by anything.
  */
 const CHART_SOURCES = [
   {
+    id: 'land',
+    label: 'Landkarte',
+    url: landUrl,
+    minZoom: 4,
+    maxNativeZoom: 18,
+    opaque: true,
+    defaultOn: true,
+    attribution: '&copy; Kartverket',
+  },
+  {
     id: 'seachart',
-    label: 'Seekarte',
+    label: 'Seekarte (Raster)',
     url: seaChartUrl,
     minZoom: 4,
+    // Measured native limit, see docs/bugs.md B3.
     maxNativeZoom: SEA_CHART_NATIVE_MAX_ZOOM,
     opaque: true,
+    // Off by default: too coarse to navigate by, but it still carries chart
+    // symbology the other layers lack - traffic separation, restricted areas,
+    // cables - so it stays available rather than being deleted.
+    defaultOn: false,
     attribution: '&copy; Kartverket',
   },
   {
@@ -111,6 +150,7 @@ const CHART_SOURCES = [
     minZoom: 8,
     maxNativeZoom: 18,
     opaque: false,
+    defaultOn: true,
     attribution: '&copy; Kartverket',
   },
   {
@@ -120,6 +160,7 @@ const CHART_SOURCES = [
     minZoom: 9,
     maxNativeZoom: 18,
     opaque: false,
+    defaultOn: true,
     attribution: '&copy; OpenSeaMap (CC-BY-SA)',
   },
 ];

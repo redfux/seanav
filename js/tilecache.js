@@ -200,6 +200,10 @@ function createChartLayer(source) {
     maxNativeZoom: source.maxNativeZoom,
     tileSize: 256,
     attribution: source.attribution,
+    // Draw order must follow the registry, not the order layers happen to be
+    // switched on: without this, enabling the opaque raster chart last would
+    // put it on top and hide the depth data underneath.
+    zIndex: CHART_SOURCES.indexOf(source) + 1,
   });
 }
 

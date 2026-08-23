@@ -12,9 +12,10 @@ kein Build-Schritt.
 
 ## Funktionsumfang
 
-- Seekarte (Kartverket „Sjøkart Raster") als Kartenuntergrund
+- Graustufige topografische Landkarte (Kartverket) als Kartenuntergrund
 - Tiefenlinien, Lotungen, Grunde und Schären aus den Kartverket-Tiefendaten
 - Seezeichen (Tonnen, Baken, Feuer) aus OpenSeaMap
+- Rasterseekarte optional zuschaltbar (Verkehrstrennung, Sperrgebiete, Kabel)
 - Einzelne Kartenebenen über 🗺️ ein- und ausschaltbar
 - Eigene Position per Geräte-GPS (`navigator.geolocation`)
 - Aktueller Kurs (COG) als Linie auf der Karte
