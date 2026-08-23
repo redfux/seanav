@@ -12,16 +12,15 @@ kein Build-Schritt.
 
 ## Funktionsumfang
 
-- Graustufige topografische Landkarte (Kartverket) als Kartenuntergrund
-- Tiefenlinien, Lotungen, Grunde und Schären aus den Kartverket-Tiefendaten
+- Weltweite Grundkarte (OpenStreetMap)
+- Tiefenlinien, Lotungen, Grunde und Schären aus den Kartverket-Tiefendaten (nur norwegische Gewässer)
 - Seezeichen (Tonnen, Baken, Feuer) aus OpenSeaMap
-- Rasterseekarte optional zuschaltbar (Verkehrstrennung, Sperrgebiete, Kabel)
 - Einzelne Kartenebenen über 🗺️ ein- und ausschaltbar
 - Eigene Position per Geräte-GPS (`navigator.geolocation`)
 - Aktueller Kurs (COG) als Linie auf der Karte
 - Ziel per Klick auf die Karte setzen, mit Distanz/Peilung/ETA
 - Projektion „wie weit in 1 min" / „wie lange für 200 m / 500 m" bei aktuellem Tempo
-- Kartenausschnitte vorab für Offline-Nutzung herunterladen
+- Angesehene Kartenausschnitte bleiben ohne Empfang verfügbar
 
 ## Setup
 
@@ -49,23 +48,15 @@ relativ und funktionieren daher auch unter dem Unterpfad `/seanav/`.
    Distanz, Peilung und ETA, „Ziel löschen" entfernt es wieder
 3. 📍 springt zur eigenen Position, 📐 blendet die Kurs-Projektion ein/aus
 
-### Kartenausschnitte offline speichern
+### Kartenspeicher
 
-Der Download muss bei bestehendem Internetzugang durchgeführt werden (z. B.
-zuhause oder im Hafen mit WLAN). Auf See ohne Empfang können keine neuen
-Kacheln nachgeladen werden – fehlende Kacheln erscheinen dann als schraffierte
-Platzhalter statt als kaputtes Bild.
+Kartenausschnitte, die du angesehen hast, werden automatisch gespeichert und
+stehen ohne Empfang weiter zur Verfügung. Eine bereits abgefahrene Strecke
+bleibt also verfügbar, ein unbekanntes Revier nicht.
 
-1. Gewünschten Kartenausschnitt einstellen (zoomen/verschieben)
-2. Über den ⬇️-Button das Offline-Panel öffnen
-3. Maximale Zoomstufe wählen (höhere Stufe = mehr Detail, aber deutlich mehr
-   Kacheln und Speicherbedarf). Auf hochauflösenden Displays lädt die App eine
-   Zoomstufe tiefer, um die Karte scharf darzustellen – das sind rund viermal
-   so viele Kacheln pro Fläche.
-4. „Sichtbaren Bereich laden" antippen – lädt alle Zoomstufen vom aktuellen
-   bis zum gewählten Maximum für den sichtbaren Ausschnitt herunter
-5. Bereits vorhandene Kacheln werden übersprungen; die App kann also mehrfach
-   für angrenzende/überlappende Bereiche genutzt werden, ohne doppelt zu laden
+Einen Vorab-Download ganzer Gebiete gibt es nicht: die Nutzungsbedingungen von
+`tile.openstreetmap.org` untersagen das Herunterladen von Kacheln, die niemand
+angesehen hat. Über 💾 lässt sich der Speicherstand einsehen und leeren.
 
 ## Datenspeicherung
 
@@ -75,7 +66,7 @@ Nutzungsdaten übertragen.
 
 | Speicher | Inhalt | Zweck |
 | --- | --- | --- |
-| IndexedDB (`seenavi-tiles`) | Kartenkacheln als Blobs, Schlüssel `quelle/z/x/y` | Offline-Kartennutzung |
+| IndexedDB (`seenavi-tiles`) | Kartenkacheln als Blobs, Schlüssel `quelle/z/x/y` | angesehene Ausschnitte ohne Empfang |
 | `localStorage` | welche Kartenebenen eingeschaltet sind | Auswahl bleibt erhalten |
 | Cache API (`seenavi-shell-v<version>`) | App-Shell: HTML/CSS/JS/Leaflet | App startet ohne Netz |
 
@@ -84,7 +75,7 @@ persistiert. Zurücksetzen lässt sich beides über „Websitedaten löschen" in
 Browser-Einstellungen.
 
 Ausgehende Verbindungen bestehen ausschließlich zum Abruf von Kartenkacheln:
-`cache.kartverket.no` (Seekarte), `wms.geonorge.no` (Tiefendaten) und
+`tile.openstreetmap.org` (Grundkarte), `wms.geonorge.no` (Tiefendaten) und
 `tiles.openseamap.org` (Seezeichen). Die Content-Security-Policy in
 `index.html` unterbindet alles darüber hinaus technisch.
 

@@ -36,14 +36,32 @@ ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 POSSIBILITY OF SUCH DAMAGE.
 ```
 
+## Kartendaten – OpenStreetMap
+
+- **Bezug:** zur Laufzeit als Kacheln von `tile.openstreetmap.org`, nicht im
+  Repository enthalten
+- **Rechteinhaber:** OpenStreetMap-Mitwirkende
+- **Lizenz:** Open Database License (ODbL) 1.0. Die Namensnennung ist
+  **verpflichtend** und erscheint als „© OpenStreetMap" mit Link auf
+  https://www.openstreetmap.org/copyright im Leaflet-Attribution-Control.
+- **Nutzungsbedingungen:** https://operations.osmfoundation.org/policies/tiles/
+  Bulk-Downloading ist untersagt; die App speichert ausschließlich Kacheln,
+  die tatsächlich angezeigt wurden, und bietet keinen Vorab-Download.
+
 ## Kartendaten – Kartverket
 
-- **Bezug:** zur Laufzeit als WMTS-Kacheln von `cache.kartverket.no`, nicht im
+- **Bezug:** zur Laufzeit als WMS-Bilder von `wms.geonorge.no`, nicht im
   Repository enthalten
 - **Rechteinhaber:** Kartverket (norwegische Kartenbehörde)
 - **Nutzung:** offener, kostenfreier Dienst ohne API-Key
+- **Abdeckung:** norwegische Gewässer
 - **Attribution:** wird als „© Kartverket" im Leaflet-Attribution-Control
-  angezeigt (`createSeaChartLayer()` in `js/tilecache.js`)
+  angezeigt (Quellen-Registry in `js/sources.js`)
+
+## Kartendaten – OpenSeaMap
+
+- **Bezug:** zur Laufzeit als Kacheln von `tiles.openseamap.org`
+- **Lizenz:** CC-BY-SA, Namensnennung im Attribution-Control
 
 ## Schriften und Icons
 

@@ -14,7 +14,7 @@
 importScripts('js/version.js');
 
 // Chart tile hosts, handled by the IndexedDB cache rather than here.
-const TILE_HOSTS = ['kartverket.no', 'geonorge.no', 'openseamap.org'];
+const TILE_HOSTS = ['openstreetmap.org', 'geonorge.no', 'openseamap.org'];
 
 // Version in the cache name doubles as cache busting: a new APP_VERSION
 // creates a new cache and the activate handler drops the previous one.

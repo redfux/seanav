@@ -147,8 +147,8 @@ html, body {
   flex: 0 0 auto;
 }
 
-/* Offline tile management panel: centered */
-#offlinepanel {
+/* Tile storage panel: centered */
+#storagepanel {
   top: 68px;
   left: 50%;
   transform: translateX(-50%);

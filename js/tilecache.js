@@ -1,15 +1,20 @@
 /*
- * Offline tile cache for Leaflet using IndexedDB.
- * Tiles are stored as Blobs keyed by "source/z/x/y" so the map keeps working
- * without a network connection once an area has been downloaded.
+ * Tile cache for Leaflet using IndexedDB.
+ *
+ * Tiles are stored as Blobs keyed by "source/z/x/y" as they are viewed, so a
+ * stretch already looked at keeps working when the signal drops. There is no
+ * area pre-download: tile.openstreetmap.org forbids prefetching tiles nobody
+ * has viewed yet, and keeping what was actually displayed is the permitted
+ * case. See docs/architecture.md.
  *
  * thought up by human, coded by ai
  */
 
 const TILE_DB_NAME = 'seenavi-tiles';
-// v2 namespaces keys by source. v1 keys were bare "z/x/y" from the single
-// raster layer and cannot be told apart from the new ones, so the upgrade
-// clears the store rather than leaving tiles behind that nothing can address.
+// v2 introduced the "source/z/x/y" key namespace. v1 keys were bare "z/x/y"
+// and cannot be told apart from them, so that one upgrade had to clear the
+// store. Since then stale entries are removed per source instead - see
+// pruneRemovedSources() - which keeps everything still in use.
 const TILE_DB_VERSION = 2;
 const TILE_STORE = 'tiles';
 
@@ -69,6 +74,34 @@ const TileStore = {
       const tx = db.transaction(TILE_STORE, 'readwrite');
       tx.objectStore(TILE_STORE).clear();
       tx.oncomplete = () => resolve();
+      tx.onerror = () => reject(tx.error);
+    });
+  },
+
+  // Deletes every tile belonging to sources that no longer exist. Keeping a
+  // source's id stable is what makes this safe: a source that starts serving
+  // something else gets a new id, so its old tiles land here and go, instead
+  // of being handed out as if they came from the new service.
+  async pruneRemovedSources(validIds) {
+    const db = await this.open();
+    return new Promise((resolve, reject) => {
+      const tx = db.transaction(TILE_STORE, 'readwrite');
+      const store = tx.objectStore(TILE_STORE);
+      let removed = 0;
+      const cursorReq = store.openCursor();
+      cursorReq.onsuccess = (e) => {
+        const cursor = e.target.result;
+        if (cursor) {
+          const id = String(cursor.key).split('/')[0];
+          if (!validIds.includes(id)) {
+            cursor.delete();
+            removed++;
+          }
+          cursor.continue();
+        }
+      };
+      cursorReq.onerror = () => reject(cursorReq.error);
+      tx.oncomplete = () => resolve(removed);
       tx.onerror = () => reject(tx.error);
     });
   },
@@ -205,94 +238,4 @@ function createChartLayer(source) {
     // put it on top and hide the depth data underneath.
     zIndex: CHART_SOURCES.indexOf(source) + 1,
   });
-}
-
-/*
- * Downloads every tile the given sources need for the current map bounds
- * across a zoom range, and stores them in IndexedDB. Reports progress via
- * onProgress(done, total) and can be aborted via the returned cancel().
- *
- * Zooms are clamped per source to its maxNativeZoom, matching exactly what
- * the display layer will ask for: the raster chart has nothing beyond z15,
- * so storing z16+ for it would waste space on tiles nobody requests.
- */
-function downloadAreaForOffline(map, sources, minZoom, maxZoom, onProgress) {
-  let cancelled = false;
-  const CONCURRENCY = 6;
-
-  async function run() {
-    const bounds = map.getBounds();
-    const jobs = [];
-    const seen = new Set();
-
-    for (const source of sources) {
-      for (let z = minZoom; z <= maxZoom; z++) {
-        const effectiveZ = Math.min(Math.max(z, source.minZoom), source.maxNativeZoom);
-        const nw = latLngToTile(bounds.getNorthWest(), effectiveZ);
-        const se = latLngToTile(bounds.getSouthEast(), effectiveZ);
-        for (let x = nw.x; x <= se.x; x++) {
-          for (let y = nw.y; y <= se.y; y++) {
-            const key = tileKey(source.id, effectiveZ, x, y);
-            // Clamping can map several map zooms onto one source zoom; drop
-            // the duplicates so the progress total stays honest.
-            if (seen.has(key)) continue;
-            seen.add(key);
-            jobs.push({ source, z: effectiveZ, x, y, key });
-          }
-        }
-      }
-    }
-
-    const total = jobs.length;
-    let done = 0;
-    let failed = 0;
-    onProgress(done, total, failed);
-
-    let cursor = 0;
-    async function worker() {
-      while (cursor < jobs.length) {
-        if (cancelled) return;
-        const job = jobs[cursor++];
-        if (!(await TileStore.has(job.key))) {
-          try {
-            const res = await fetch(job.source.url(job.z, job.x, job.y));
-            if (res.ok) {
-              await TileStore.put(job.key, await res.blob());
-            } else {
-              failed++;
-            }
-          } catch (e) {
-            // A single network hiccup - or a host without CORS headers, which
-            // cannot be cached at all - must not abort the whole batch.
-            failed++;
-          }
-        }
-        done++;
-        onProgress(done, total, failed);
-      }
-    }
-
-    const workers = [];
-    for (let i = 0; i < CONCURRENCY; i++) workers.push(worker());
-    await Promise.all(workers);
-    return { total, failed };
-  }
-
-  const promise = run();
-
-  return {
-    promise,
-    cancel() { cancelled = true; }
-  };
-}
-
-// Converts a LatLng to tile x/y at a given zoom (standard slippy-map math).
-function latLngToTile(latlng, z) {
-  const n = Math.pow(2, z);
-  const x = Math.floor(((latlng.lng + 180) / 360) * n);
-  const latRad = (latlng.lat * Math.PI) / 180;
-  const y = Math.floor(
-    ((1 - Math.log(Math.tan(latRad) + 1 / Math.cos(latRad)) / Math.PI) / 2) * n
-  );
-  return { x, y };
 }

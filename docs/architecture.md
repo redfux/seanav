@@ -31,84 +31,7 @@ lassen sich zudem direkt von GitHub Pages ausliefern und offline cachen.
 Aus demselben Grund kein ESLint/Prettier, sondern `.editorconfig`: beide setzen
 `package.json` und `node_modules` voraus.
 
-## Kartenquelle
-
-WMTS-Cache-Dienst des Kartverket (norwegische Seekartenbehörde), kostenlos und
-ohne API-Key nutzbar:
-
-```
-https://cache.kartverket.no/v1/service
-Layer:            sjokartraster
-Tile-Matrix-Set:  webmercator (EPSG:3857)
-```
-
-`webmercator` entspricht der üblichen XYZ-/Slippy-Map-Kachelmathematik, sodass
-Leaflets Kachelkoordinaten und die eigene Berechnung in `latLngToTile()` ohne
-Umrechnung zusammenpassen.
-
-Gegen die Live-Capabilities verifiziert (siehe B1 in `bugs.md`):
-
-- Der Dienst bietet 19 Stufen, `"00"` … `"18"` – die Identifier sind
-  **zweistellig null-aufgefüllt**, `seaTileUrl()` füllt entsprechend auf.
-- `tilematrix={z}` ist korrekt; die qualifizierte Form `webmercator:{z}`
-  liefert HTTP 500.
-- Unbekannte Layer-Namen werden abgewiesen, es gibt also keinen still
-  ausgelieferten Default-Layer.
-
-Tile-URLs entstehen ausschließlich in `seaTileUrl()`. Anzeige-Layer und
-Offline-Downloader teilen sich diese Funktion, damit sie nicht auseinanderlaufen.
-
-Bewusst Rasterkarten statt offizieller ENC-Vektordaten (S-57/S-63): letztere
-erfordern Lizenzierung und einen Vektor-Renderer mit S-52-Symbolik, was für
-reine Streckenplanung und Orientierung nicht nötig ist.
-
-Der Preis ist prinzipiell und nicht durch Darstellungsarbeit behebbar: Ein
-Rasterbild trägt keine Attribute. Tiefen sind als Zahlen *aufgedruckt* und
-damit ablesbar, aber nicht abfragbar – kein Antippen einer Stelle für die
-Tiefe, keine Tiefenlinien-Filter, keine automatische Warnung bei
-Unterschreitung. Dafür bräuchte es Vektordaten (ENC/S-57, für Norwegen über
-PRIMAR lizenzpflichtig) oder ein separates Bathymetrie-Dataset; hochauflösende
-Tiefendaten sind in Norwegen zudem zugangsbeschränkt.
-
-## Kartenebenen
-
-Drei Quellen, in Zeichenreihenfolge:
-
-| Ebene | Quelle | Rolle | Standard | Auflösungsgrenze |
-| --- | --- | --- | --- | --- |
-| Landkarte | `cache.kartverket.no`, Layer `topograatone` | Land, Küstenlinie | an | z18 |
-| Seekarte (Raster) | `cache.kartverket.no`, Layer `sjokartraster` | Verkehrstrennung, Sperrgebiete, Kabel | aus | z15, gedeckelt |
-| Tiefendaten | `wms.geonorge.no/skwms1/wms.dybdedata2`, Layer `Dybdedata2` | Tiefenlinien, Lotungen, Grunde, Schären | an | keine |
-| Seezeichen | `tiles.openseamap.org` | Tonnen, Baken, Feuer | an | z18 |
-
-Die Rasterseekarte liefert bewusst nicht mehr den navigationsrelevanten
-Inhalt: als Raster endet ihre echte Auflösung bei z15, und ihre Tiefenangaben
-sind aufgedruckte Pixel. Sie bleibt nur zuschaltbar, weil sie Symbolik trägt,
-die den übrigen Ebenen fehlt.
-
-### Warum nicht OpenStreetMap als Landkarte
-
-OSM wäre die naheliegende Wahl, scheidet aber an den Nutzungsbedingungen von
-`tile.openstreetmap.org` aus: Bulk-Downloading ist untersagt, und die Policy
-nennt „Download city/country for offline use" und „Save area for later"
-ausdrücklich als Beispiele. Das ist exakt das Kernfeature dieser App; solche
-Clients werden laut Policy ohne Vorwarnung gesperrt. Kartverkets
-`topograatone` ist das offene, ausdrücklich zur Weiterverwendung gedachte
-Gegenstück für Norwegen – und als Graustufenkarte tritt sie unter den
-Tiefenlinien und Seezeichen zurück, statt mit ihnen um Aufmerksamkeit zu
-konkurrieren.
-
-Die Zeichenreihenfolge ergibt sich aus der Reihenfolge in `CHART_SOURCES` und
-wird über `zIndex` durchgesetzt – nicht daraus, in welcher Reihenfolge Ebenen
-eingeschaltet werden. Sonst legte sich eine nachträglich zugeschaltete
-undurchsichtige Ebene über alles darunter.
-
-Jede Quelle in `js/sources.js` besitzt genau eine `url(z, x, y)`-Funktion.
-Anzeige-Layer und Offline-Downloader gehen beide darüber – sie können sich
-also nicht darüber uneinig werden, welche Kachel gemeint ist. Eine solche
-Abweichung würde erst offline auffallen, im denkbar schlechtesten Moment.
-
-### Schärfe und Symbolgröße
+## Schärfe und Symbolgröße der Tiefendaten
 
 Beides hängt zusammen und lässt sich nur gemeinsam lösen. Ein Telefon läuft
 mit `devicePixelRatio` 2–3; fordert man vom WMS die doppelte Pixelzahl an,
@@ -130,6 +53,55 @@ an Bord zu klein.
 Dass der Dienst MapServer ist, verrät seine eigene Fehlermeldung
 (`msShapefileOpen`, siehe B4 in `bugs.md`).
 
+## Kartenebenen
+
+Drei Quellen, in Zeichenreihenfolge:
+
+| Ebene | Quelle | Rolle | Abdeckung | Auflösungsgrenze |
+| --- | --- | --- | --- | --- |
+| Grundkarte | `tile.openstreetmap.org` | Land, Küstenlinie, Häfen | weltweit | z19 |
+| Tiefendaten | `wms.geonorge.no/skwms1/wms.dybdedata2`, Layer `Dybdedata2` | Tiefenlinien, Lotungen, Grunde, Schären | Norwegen | keine (WMS) |
+| Seezeichen | `tiles.openseamap.org` | Tonnen, Baken, Feuer | weltweit | z18 |
+
+Die Wahl fiel auf weltweit verfügbare Quellen, weil das Boot dieses Jahr in
+Norwegen und nächstes womöglich im Mittelmeer liegt – eine nationale Karte
+müsste dann getauscht werden. Die Tiefendaten sind die Ausnahme: eine freie
+globale Entsprechung existiert nicht, und außerhalb Norwegens zeichnet die
+Ebene schlicht nichts, was nichts kostet.
+
+Jede Quelle in `js/sources.js` besitzt genau eine `url(z, x, y)`-Funktion und
+eine stabile ID. Die ID ist zugleich der Namensraum im Kachelspeicher – eine
+Quelle, die etwas anderes ausliefert als bisher, muss deshalb eine **neue** ID
+bekommen, sonst würden Kacheln des alten Dienstes als Kacheln des neuen
+ausgegeben.
+
+Die Zeichenreihenfolge ergibt sich aus der Reihenfolge in `CHART_SOURCES` und
+wird über `zIndex` durchgesetzt – nicht daraus, in welcher Reihenfolge Ebenen
+eingeschaltet werden. Sonst legte sich eine nachträglich zugeschaltete
+undurchsichtige Ebene über alles darunter.
+
+### Kein Vorab-Download
+
+Die Nutzungsbedingungen von `tile.openstreetmap.org` untersagen
+Bulk-Downloading und nennen "Download city/country for offline use" sowie
+"Save area for later" ausdrücklich als Beispiele; solche Clients werden ohne
+Vorwarnung gesperrt. Ausdrücklich erlaubt ist der umgekehrte Fall: Kacheln
+behalten, die der Nutzer tatsächlich angesehen hat.
+
+Die App speichert deshalb beim Betrachten und bietet keinen Gebiets-Download.
+Praktisch heißt das: eine einmal abgefahrene Strecke bleibt ohne Empfang
+verfügbar, ein unbekanntes Revier nicht. Wer echte Offline-Nutzung braucht,
+müsste zu einem Anbieter wechseln, der Prefetching gestattet – die meisten
+verlangen dafür einen API-Schlüssel.
+
+Zwei Mechanismen halten den Speicher dabei brauchbar:
+
+- `pruneRemovedSources()` löscht beim Start Kacheln von Quellen, die es nicht
+  mehr gibt, statt sie dauerhaft Platz belegen zu lassen.
+- `navigator.storage.persist()` bittet den Browser, den Speicher nicht bei
+  Speicherdruck zu verwerfen. Ohne das gilt IndexedDB als "best effort" – und
+  würde vermutlich genau dann geleert, wenn kein Empfang zum Nachladen ist.
+
 ## Zwei getrennte Cache-Mechanismen
 
 Bewusst nicht vermischt, weil sie unterschiedliche Anforderungen haben:
@@ -137,7 +109,7 @@ Bewusst nicht vermischt, weil sie unterschiedliche Anforderungen haben:
 | Ebene | Mechanismus | Warum |
 | --- | --- | --- |
 | App-Shell (HTML/CSS/JS/Leaflet) | Cache API im Service Worker (`sw.js`) | wenige, bekannte Dateien; Cache-API-Standardfall |
-| Kartenkacheln aller Ebenen | IndexedDB (`js/tilecache.js`) | tausende Einzeldateien mit Fortschrittsanzeige, Größenermittlung und Duplikatprüfung – dafür ist die Cache API zu grobkörnig |
+| Kartenkacheln aller Ebenen | IndexedDB (`js/tilecache.js`) | tausende Einzeldateien mit Größenermittlung, Aufräumen pro Quelle und Duplikatprüfung – dafür ist die Cache API zu grobkörnig |
 
 Der `fetch`-Handler im Service Worker klammert alle Kachel-Hosts deshalb
 explizit aus: Kacheln laufen ausschließlich über `js/tilecache.js`, sonst
@@ -149,9 +121,7 @@ bei Empfang baut den Offline-Cache also nebenbei mit auf.
 
 Scheitert `fetch()`, wird die Kachel ersatzweise direkt als `<img>` geladen.
 Das deckt Hosts ab, die keine CORS-Header senden: dort schlägt `fetch()` fehl,
-obwohl ein gewöhnliches Bild lädt. Solche Kacheln sind sichtbar, aber nicht
-offline speicherbar – der Downloader zählt sie als „nicht speicherbar", statt
-sie stillschweigend zu überspringen.
+obwohl ein gewöhnliches Bild lädt. Solche Kacheln sind sichtbar, aber nicht speicherbar.
 
 Schlägt auch das fehl, bekommt die Basisebene über `_placeholderDataUrl()` eine
 schraffierte Canvas-Kachel als sichtbaren Hinweis auf eine Lücke. Overlays
@@ -166,8 +136,9 @@ immer nur der Punktzugriff über den Schlüssel gebraucht wird.
 
 Der Namensraum pro Quelle ist nötig, seit mehrere Ebenen denselben
 Kachelraster benutzen. Version 1 hatte bloße `z/x/y`-Schlüssel, die sich davon
-nicht unterscheiden lassen – das Upgrade leert den Store deshalb, statt
-Kacheln zurückzulassen, die nichts mehr adressieren kann.
+nicht unterscheiden lassen – jenes eine Upgrade musste den Store deshalb
+leeren. Seither werden veraltete Einträge gezielt pro Quelle entfernt, sodass
+alles Weiterverwendbare erhalten bleibt.
 
 ## Warum `sw.js` im Root bleibt
 
@@ -236,27 +207,31 @@ Rasterbild, sondern ein anderer Datentyp:
 Kein Rasterendpunkt kann diese Lücke schließen; die Suche nach einer besseren
 Rasterquelle war der falsche Weg.
 
-### Frei verfügbare Alternativen
+### Umgesetzt
 
-- **Kartverket „Sjøkart – Dybdedata" (WMS/WFS)** – die öffentliche,
-  unklassifizierte Tiefendatensammlung, die auch norgeskart.no verwendet:
-  `https://wms.geonorge.no/skwms1/wms.dybdedata2`. Tiefenpunkte mit 50 m
-  Abstand, Tiefenlinien in Intervallen 2/5/10/15/20/30/40/50/100 m. Als WMS
-  nicht an eine Kachelpyramide gebunden und per GetFeatureInfo abfragbar –
-  damit wäre „Antippen → Tiefe" möglich.
-  Wichtige Einschränkung: Detaillierte Bathymetrie ist in Norwegen
-  zugangsbeschränkt. Auflösungen ab 25×25 m gelten als vertraulich, 25–50 m als
-  beschränkt; frei nutzbar ist nur 50×50 m und gröber.
+- **Kartverket "Sjøkart – Dybdedata" (WMS)** – die öffentliche,
+  unklassifizierte Tiefendatensammlung, die auch norgeskart.no verwendet.
+  Tiefenpunkte mit 50 m Abstand, Tiefenlinien in Intervallen
+  2/5/10/15/20/30/40/50/100 m. Als WMS nicht an eine Kachelpyramide gebunden.
+  Einschränkung: detaillierte Bathymetrie ist in Norwegen zugangsbeschränkt –
+  Auflösungen ab 25×25 m gelten als vertraulich, 25–50 m als beschränkt; frei
+  nutzbar ist nur 50×50 m und gröber. Und der Dienst deckt nur norwegische
+  Gewässer ab.
 - **OpenSeaMap Seezeichen** – Tonnen, Baken und Feuer als transparentes
-  Raster-Overlay, `https://tiles.openseamap.org/seamark/{z}/{x}/{y}.png`,
-  CC-BY-SA. Deckung ist community-abhängig.
-- **OpenSeaMap Tiefenlinien** – WMS unter
-  `https://depth.openseamap.org/cgi-bin/mapserv.fcgi`, Layer `contour`/`contour2`.
-- **Offizielle ENC** – der einzige echte Ersatz, erfordert aber eine
-  Vereinbarung mit einem PRIMAR-Distributor.
+  Overlay, CC-BY-SA. Deckung ist community-abhängig.
 
-`compare.html` legt diese Quellen übereinander, damit sich am realen Revier
-beurteilen lässt, ob die Kombination reicht.
+### Verworfen oder offen
+
+- **OpenSeaMap Tiefenlinien** (`depth.openseamap.org`, Layer
+  `contour`/`contour2`) – nicht eingebunden; die Kartverket-Daten sind im
+  aktuellen Revier dichter. Käme als globaler Ersatz in Frage, wenn sich das
+  Revier verlagert.
+- **Offizielle ENC** – der einzige vollwertige Ersatz für Rasterkarten,
+  erfordert aber eine Vereinbarung mit einem PRIMAR-Distributor. Siehe O7 in
+  `features.md`.
+
+`compare.html` legt Kandidatenquellen übereinander, damit sich am realen
+Revier beurteilen lässt, ob eine Kombination reicht.
 
 ## Bewusste Abweichung: kein Material Design
 

@@ -16,7 +16,7 @@ Mobilfunkempfang. Kein Ersatz für vorschriftsmäßige Seekarten und Ausrüstung
 | F5 | Ziel per Klick/Tap setzen und wieder löschen | 0.1.0 |
 | F6 | Distanz, Peilung und ETA zum Ziel | 0.1.0 |
 | F7 | Projektion: Strecke in 1 min, Zeit für 200 m / 500 m | 0.1.0 |
-| F8 | Kartenausschnitt für Offline-Nutzung herunterladen, mit Fortschritt und Abbruch | 0.1.0 |
+| ~~F8~~ | ~~Kartenausschnitt vorab herunterladen~~ – entfernt in 0.6.0, siehe O8 | – |
 | F9 | App startet ohne Netzverbindung (App-Shell im Service Worker) | 0.1.0 |
 | F10 | Fehlende Kacheln als erkennbarer Platzhalter statt kaputtem Bild | 0.1.0 |
 | F11 | Anzeige des belegten Kachelspeichers | 0.1.0 |
@@ -25,7 +25,8 @@ Mobilfunkempfang. Kein Ersatz für vorschriftsmäßige Seekarten und Ausrüstung
 | F14 | Seezeichen (Tonnen, Baken, Feuer) aus OpenSeaMap | 0.4.0 |
 | F15 | Kartenebenen einzeln ein-/ausschaltbar, Auswahl bleibt erhalten | 0.4.0 |
 | F16 | Kachelspeicher nach Ebene aufgeschlüsselt, manuell leerbar | 0.4.0 |
-| F17 | Graustufige topografische Landkarte als Basisebene | 0.5.0 |
+| F17 | Kachelspeicher füllt sich beim Betrachten; bereits gefahrene Strecken bleiben ohne Empfang verfügbar | 0.6.0 |
+| F18 | Verwaiste Kacheln entfernter Ebenen werden beim Start automatisch geräumt | 0.6.0 |
 
 ## Nichtfunktionale Anforderungen
 
@@ -44,6 +45,8 @@ Mobilfunkempfang. Kein Ersatz für vorschriftsmäßige Seekarten und Ausrüstung
 | O1 | PWA-Icons (`manifest.json` → `icons` ist derzeit leer), damit die Installation auf dem Homescreen ein eigenes Symbol bekommt | offen |
 | O2 | Gezieltes Löschen einzelner Offline-Bereiche bzw. des gesamten Kachelcaches aus der App heraus | offen |
 | O5 | Abfragbare Tiefenwerte (Antippen → Tiefe) – blockiert durch einen Serverfehler des Dienstes, siehe B4 in `bugs.md` | extern blockiert |
+| O8 | Vorab-Download ganzer Gebiete. Untersagt durch die Nutzungsbedingungen von `tile.openstreetmap.org`; möglich nur mit einem Anbieter, der Prefetching gestattet – die meisten verlangen dafür einen API-Schlüssel | zu entscheiden |
+| O9 | Tiefendaten außerhalb Norwegens. Eine freie globale Entsprechung ist nicht bekannt | offen |
 | O7 | Offizielle ENC-Vektorkarten (S-57) über einen PRIMAR-Distributor – der einzige vollwertige Ersatz für Rasterkarten, aber lizenzpflichtig | Beschaffungsentscheidung |
 | O3 | Routen mit mehreren Wegpunkten statt nur einem Einzelziel | offen |
 | O4 | Google Material Design als gestalterische Grundlage (Masterprompt-Vorgabe) – siehe Begründung der aktuellen Abweichung in `architecture.md` | zu entscheiden |

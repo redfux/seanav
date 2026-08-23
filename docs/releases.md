@@ -6,6 +6,48 @@ Versionierung nach [SemVer](https://semver.org/lang/de/).
 Die Versionsnummer wird ausschließlich in `js/version.js` gepflegt; Footer und
 Service-Worker-Cachename leiten sich automatisch daraus ab.
 
+## [0.6.0] – 2026-08-22
+
+Umstellung auf global verfügbare Quellen. Die App war auf Norwegen
+zugeschnitten; Ziel ist, dass sie ohne Umbau auch im Mittelmeer funktioniert.
+
+### Changed
+
+- **Breaking:** Grundkarte ist jetzt OpenStreetMap
+  (`tile.openstreetmap.org`) statt der norwegischen `topograatone`. Weltweite
+  Abdeckung, bis z19.
+- Höchste Zoomstufe der Karte von 18 auf 19 angehoben
+- Tiefendaten sind als „nur Norwegen" gekennzeichnet. Sie bleiben, weil es
+  keine freie globale Entsprechung gibt und die Ebene außerhalb Norwegens
+  einfach nichts zeichnet – das kostet nichts.
+- Kachelspeicher-Panel ersetzt das Offline-Panel: es zeigt den Bestand und
+  erlaubt das Leeren, bietet aber keinen Vorab-Download mehr.
+
+### Added
+
+- Verwaiste Kacheln entfernter Quellen werden beim Start automatisch aus dem
+  Speicher geräumt (`pruneRemovedSources`). Entscheidend dafür ist, dass die
+  Quellen-ID stabil bleibt: eine Quelle, die etwas anderes ausliefert, bekommt
+  eine neue ID – sonst würden alte Kacheln als neue ausgegeben.
+- Die App fordert beim Start persistenten Speicher an
+  (`navigator.storage.persist()`). Ohne das gilt IndexedDB als „best effort"
+  und kann bei Speicherdruck verworfen werden – lautlos, und vermutlich genau
+  dann, wenn kein Empfang zum Nachladen da ist.
+
+### Removed
+
+- **Rasterseekarte** vollständig entfernt
+- **Vorab-Download ganzer Gebiete** entfernt. Die Nutzungsbedingungen von
+  `tile.openstreetmap.org` untersagen Prefetching von Kacheln, die niemand
+  angesehen hat. Das Zwischenspeichern tatsächlich angezeigter Kacheln ist
+  ausdrücklich erlaubt und bleibt.
+
+### Fixed
+
+- Ebenen- und Speicher-Panel liegen an derselben Bildschirmposition; beide
+  gleichzeitig geöffnet, verdeckte das obere das untere und verschluckte
+  dessen Taps. Die beiden schließen sich jetzt gegenseitig.
+
 ## [0.5.0] – 2026-08-22
 
 ### Added

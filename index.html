@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https://cache.kartverket.no https://wms.geonorge.no https://tiles.openseamap.org; connect-src 'self' https://cache.kartverket.no https://wms.geonorge.no https://tiles.openseamap.org;">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https://tile.openstreetmap.org https://wms.geonorge.no https://tiles.openseamap.org; connect-src 'self' https://tile.openstreetmap.org https://wms.geonorge.no https://tiles.openseamap.org;">
   <title>SeeNavi Bergen</title>
   <link rel="stylesheet" href="vendor/leaflet.css">
   <link rel="stylesheet" href="style.css">
@@ -62,29 +62,23 @@
     <div id="layer-list"></div>
   </div>
 
-  <!-- Offline tile download tool -->
-  <div id="offlinepanel" class="panel hidden">
-    <div class="proj-title">Kartenbereich offline speichern</div>
-    <p class="hint">Zoomstufe und Ausschnitt so wählen wie benötigt, dann Download starten.</p>
-    <label class="zoomlabel" for="zoom-range">Max. Zoomstufe: <span id="zoom-range-val">15</span></label>
-    <input type="range" id="zoom-range" min="8" max="17" value="15">
-    <div id="download-progress" class="hidden">
-      <div class="progress-bar"><div id="progress-fill"></div></div>
-      <span id="progress-text">0 / 0 Kacheln</span>
-    </div>
+  <!-- Tile storage -->
+  <div id="storagepanel" class="panel hidden">
+    <div class="proj-title">Kachelspeicher</div>
+    <p class="hint">Angesehene Kartenausschnitte werden automatisch gespeichert und
+      stehen ohne Empfang weiter zur Verfügung. Ein Vorab-Download ganzer Gebiete
+      ist nicht möglich – die Nutzungsbedingungen von OpenStreetMap untersagen das.</p>
+    <p class="hint" id="cache-size-hint"></p>
     <div class="offline-buttons">
-      <button id="btn-download-area" class="btn-primary">Sichtbaren Bereich laden</button>
-      <button id="btn-cancel-download" class="btn-small hidden">Abbrechen</button>
       <button id="btn-clear-cache" class="btn-small">Speicher leeren</button>
     </div>
-    <p class="hint" id="cache-size-hint"></p>
   </div>
 
   <!-- Bottom toolbar -->
   <div id="toolbar">
     <button id="btn-locate" class="fab" title="Zur eigenen Position" aria-label="Zur eigenen Position"><span aria-hidden="true">📍</span></button>
     <button id="btn-toggle-layers" class="fab" title="Kartenebenen" aria-label="Kartenebenen"><span aria-hidden="true">🗺️</span></button>
-    <button id="btn-toggle-offline" class="fab" title="Offline-Karten verwalten" aria-label="Offline-Karten verwalten"><span aria-hidden="true">⬇️</span></button>
+    <button id="btn-toggle-storage" class="fab" title="Kachelspeicher" aria-label="Kachelspeicher"><span aria-hidden="true">💾</span></button>
     <button id="btn-toggle-proj" class="fab" title="Kurs-Projektion ein/aus" aria-label="Kurs-Projektion ein/aus"><span aria-hidden="true">📐</span></button>
   </div>
 

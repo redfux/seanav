@@ -145,7 +145,6 @@ function wireLayerPanel() {
     box.checked = layerPreference(source);
     box.addEventListener('change', () => {
       setLayerEnabled(source, box.checked);
-      refreshCacheStats();
     });
 
     const text = document.createElement('span');
@@ -157,7 +156,7 @@ function wireLayerPanel() {
   });
 
   document.getElementById('btn-toggle-layers').addEventListener('click', () => {
-    document.getElementById('layerpanel').classList.toggle('hidden');
+    togglePanel('layerpanel');
   });
 }
 
@@ -355,67 +354,26 @@ function formatDuration(sec) {
   return `${h} h ${min % 60} min`;
 }
 
-// --- Offline download panel wiring --------------------------------------
+// --- Panels ---------------------------------------------------------------
 
-let activeDownload = null;
+// The layer and storage panels occupy the same spot, so showing one has to
+// hide the other - otherwise the top one silently swallows taps meant for the
+// panel underneath.
+const EXCLUSIVE_PANELS = ['layerpanel', 'storagepanel'];
 
-function wireOfflinePanel() {
-  const zoomRange = document.getElementById('zoom-range');
-  const zoomVal = document.getElementById('zoom-range-val');
-
-  // The layer decides the usable maximum: with high-DPI rendering Leaflet
-  // lowers the map's maxZoom by one, so a hardcoded slider bound would offer
-  // a level that can never be displayed.
-  zoomRange.max = String(map.getMaxZoom());
-  if (parseInt(zoomRange.value, 10) > map.getMaxZoom()) {
-    zoomRange.value = String(map.getMaxZoom());
-  }
-  zoomVal.textContent = zoomRange.value;
-  zoomRange.addEventListener('input', () => { zoomVal.textContent = zoomRange.value; });
-
-  document.getElementById('btn-download-area').addEventListener('click', () => {
-    const maxZoom = parseInt(zoomRange.value, 10);
-    // Guard against the current view already being zoomed in further than the
-    // selected maximum - the range would be empty and the download a silent
-    // no-op showing "0 / 0".
-    const minZoom = Math.min(map.getZoom(), maxZoom);
-    const progressBox = document.getElementById('download-progress');
-    const fill = document.getElementById('progress-fill');
-    const text = document.getElementById('progress-text');
-    const cancelBtn = document.getElementById('btn-cancel-download');
-
-    progressBox.classList.remove('hidden');
-    cancelBtn.classList.remove('hidden');
-
-    const sources = enabledSources();
-    if (sources.length === 0) {
-      text.textContent = 'Keine Ebene aktiv – bitte oben eine auswählen.';
-      cancelBtn.classList.add('hidden');
-      return;
-    }
-
-    activeDownload = downloadAreaForOffline(map, sources, minZoom, maxZoom,
-      (done, total, failed) => {
-        const pct = total > 0 ? Math.round((done / total) * 100) : 0;
-        fill.style.width = `${pct}%`;
-        text.textContent = total > 0
-          ? `${done} / ${total} Kacheln${failed ? ` · ${failed} fehlgeschlagen` : ''}`
-          : 'Keine Kacheln für diesen Bereich';
-      });
-
-    activeDownload.promise.then((result) => {
-      cancelBtn.classList.add('hidden');
-      refreshCacheStats();
-      if (result && result.failed > 0) {
-        // Most likely a source that sends no CORS headers - it still displays,
-        // it just cannot be stored. Saying so beats a silently short cache.
-        text.textContent =
-          `${result.total - result.failed} von ${result.total} Kacheln gespeichert, ` +
-          `${result.failed} nicht speicherbar`;
-      }
-    });
+function togglePanel(id) {
+  const panel = document.getElementById(id);
+  const wasHidden = panel.classList.contains('hidden');
+  EXCLUSIVE_PANELS.forEach((other) => {
+    document.getElementById(other).classList.add('hidden');
   });
+  if (wasHidden) panel.classList.remove('hidden');
+  return wasHidden;
+}
 
+// --- Tile storage panel ---------------------------------------------------
+
+function wireStoragePanel() {
   document.getElementById('btn-clear-cache').addEventListener('click', async () => {
     const hint = document.getElementById('cache-size-hint');
     hint.textContent = 'Wird gelöscht…';
@@ -429,11 +387,6 @@ function wireOfflinePanel() {
     refreshCacheStats();
   });
 
-  document.getElementById('btn-cancel-download').addEventListener('click', () => {
-    if (activeDownload) activeDownload.cancel();
-    document.getElementById('btn-cancel-download').classList.add('hidden');
-  });
-
   refreshCacheStats();
 }
 
@@ -443,7 +396,7 @@ async function refreshCacheStats() {
     const stats = await TileStore.stats();
     const perSource = CHART_SOURCES
       .filter((s) => stats.bySource[s.id])
-      .map((s) => `${s.label} ${stats.bySource[s.id].count}`)
+      .map((s) => `${s.label.replace(/ \(.*\)/, '')} ${stats.bySource[s.id].count}`)
       .join(', ');
     hint.textContent =
       `Gespeichert: ${stats.count} Kacheln (~${stats.mb.toFixed(1)} MB)` +
@@ -453,6 +406,33 @@ async function refreshCacheStats() {
   }
 }
 
+/*
+ * Housekeeping at startup, both aimed at the cache surviving as long as it
+ * usefully can:
+ *
+ *  - drop tiles from sources that no longer exist, so a removed or replaced
+ *    layer does not occupy space forever;
+ *  - ask the browser to treat the storage as persistent. Without this,
+ *    IndexedDB is "best effort" and can be evicted under storage pressure -
+ *    quietly, and most likely exactly when there is no signal to refill it.
+ */
+async function maintainCache() {
+  try {
+    const removed = await TileStore.pruneRemovedSources(CHART_SOURCES.map((s) => s.id));
+    if (removed > 0) chartLayers.forEach((layer) => layer.redraw());
+  } catch (e) {
+    // Housekeeping is not worth failing the app over.
+  }
+  try {
+    if (navigator.storage && navigator.storage.persist) {
+      await navigator.storage.persist();
+    }
+  } catch (e) {
+    // Not supported everywhere; the cache then just is not protected.
+  }
+  refreshCacheStats();
+}
+
 // --- Toolbar wiring ------------------------------------------------------
 
 function wireToolbar() {
@@ -460,8 +440,8 @@ function wireToolbar() {
     if (positionMarker) map.setView(positionMarker.getLatLng(), 15);
   });
 
-  document.getElementById('btn-toggle-offline').addEventListener('click', () => {
-    document.getElementById('offlinepanel').classList.toggle('hidden');
+  document.getElementById('btn-toggle-storage').addEventListener('click', () => {
+    if (togglePanel('storagepanel')) refreshCacheStats();
   });
 
   document.getElementById('btn-toggle-proj').addEventListener('click', () => {
@@ -478,8 +458,9 @@ function wireToolbar() {
 function boot() {
   document.getElementById('app-version').textContent = APP_VERSION;
   initMap();
+  maintainCache();
   wireLayerPanel();
-  wireOfflinePanel();
+  wireStoragePanel();
   wireToolbar();
   startTracking();
 

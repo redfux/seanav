@@ -2,9 +2,10 @@
  * Chart sources.
  *
  * Each source owns exactly one function that turns a tile coordinate into a
- * URL. Display layer and offline downloader both go through it, so the two
- * can never disagree about what a given tile is - a mismatch would only
- * surface offline, which is the worst possible moment.
+ * URL, and one stable id. The id is also the cache namespace, so changing
+ * what a source actually serves means giving it a new id - otherwise tiles
+ * cached from the old service would be handed out as if they came from the
+ * new one.
  *
  * thought up by human, coded by ai
  */
@@ -21,68 +22,44 @@ function tileBBox3857(z, x, y) {
   return { minX, minY: maxY - span, maxX: minX + span, maxY };
 }
 
-// --- Kartverket raster sea chart (WMTS) ----------------------------------
-
-const WMTS_BASE = 'https://cache.kartverket.no/v1/service';
-
-// Measured against the live service: real chart detail stops at about z15,
-// above that the cache only upsamples (see docs/bugs.md, B3). Capping here
-// means Leaflet scales the z15 tile smoothly instead of the service handing
-// back hard-edged blocks - and nothing is stored that carries no information.
-const SEA_CHART_NATIVE_MAX_ZOOM = 15;
-
-// Capabilities declare the tile matrix identifiers zero-padded, "00".."18".
-function kartverketWmtsUrl(layerName) {
-  return function (z, x, y) {
-    return `${WMTS_BASE}?service=WMTS&request=GetTile&version=1.0.0` +
-      `&layer=${layerName}&style=default&format=image/png` +
-      `&tilematrixset=webmercator&tilematrix=${String(z).padStart(2, '0')}` +
-      `&tilerow=${y}&tilecol=${x}`;
-  };
-}
+// --- OpenStreetMap base --------------------------------------------------
 
 /*
- * Land base. Deliberately not tile.openstreetmap.org: its usage policy
- * forbids bulk downloading, and "save this area for offline use" is exactly
- * what this app does - such clients get blocked without notice. Kartverket's
- * own topographic map is the open, reuse-friendly equivalent for Norway, and
- * "graatone" (grey tone) stays quiet under the depth contours and seamarks
- * instead of competing with them for attention.
+ * Global coverage, which is the point: the boat may be in Norway this year
+ * and in the Mediterranean the next, and a national map would have to be
+ * swapped every time.
+ *
+ * The usage policy of tile.openstreetmap.org forbids bulk downloading -
+ * prefetching tiles nobody has looked at yet, which is what an "download this
+ * area" button does. Keeping tiles the user actually viewed is explicitly the
+ * permitted case, so the cache stays; the area downloader does not.
  */
-const landUrl = kartverketWmtsUrl('topograatone');
-const seaChartUrl = kartverketWmtsUrl('sjokartraster');
+function osmUrl(z, x, y) {
+  return `https://tile.openstreetmap.org/${z}/${x}/${y}.png`;
+}
 
 // --- Kartverket depth data (WMS) -----------------------------------------
 
 const DEPTH_WMS = 'https://wms.geonorge.no/skwms1/wms.dybdedata2';
 
 /*
- * A WMS renders the requested box at the requested pixel size, so unlike the
- * tile cache it has no resolution ceiling. Two knobs matter together:
+ * A WMS renders the requested box at the requested pixel size, so unlike a
+ * tile cache it has no resolution ceiling. Two knobs matter, and they are
+ * deliberately separate:
  *
- *   - asking for OVERSAMPLE times the pixels sharpens the image on a phone
- *     screen, which runs at devicePixelRatio 2-3;
- *   - on its own that also shrinks everything, because the server draws lines
- *     and labels at a fixed pixel size and we then display the larger image
- *     in the same CSS space.
+ *   - OVERSAMPLE controls sharpness: asking for more pixels than the tile is
+ *     displayed at compensates for phone screens running at devicePixelRatio
+ *     2-3.
+ *   - SYMBOL_SCALE controls size. Oversampling alone shrinks everything,
+ *     because MapServer draws lines and labels at a fixed pixel size and the
+ *     larger image is then shown in the same CSS space.
  *
- * MAP_RESOLUTION is MapServer's scaling factor for symbology (default 72 dpi),
- * and this service is MapServer - its error responses name msShapefileOpen.
- * It is what decouples the two: the pixel count controls sharpness, the
- * resolution controls how large lines and labels are drawn.
+ * MAP_RESOLUTION is MapServer's symbology scaling factor (default 72 dpi) -
+ * that this service is MapServer is visible in its own error responses, which
+ * name msShapefileOpen. The two multiply into it.
  */
 const DEPTH_OVERSAMPLE = 2;
 const DEPTH_BASE_DPI = 72;
-
-/*
- * How much larger than nominal the depth figures and contour lines should
- * draw. This is a separate knob from the oversampling on purpose: raising
- * MAP_RESOLUTION in step with the pixel count only keeps symbols at their
- * nominal size, and nominal is too small to read at a glance on a boat.
- * The two multiply, so 2x oversampling with 2x symbols means
- * MAP_RESOLUTION = 72 * 2 * 2 = 288 while the tile still carries 2x the
- * pixels - bigger and sharper, not one at the cost of the other.
- */
 const DEPTH_SYMBOL_SCALE = 2;
 
 function depthUrl(z, x, y) {
@@ -113,42 +90,35 @@ function seamarkUrl(z, x, y) {
 
 // --- Registry ------------------------------------------------------------
 
+// Highest zoom the map allows. Above a source's maxNativeZoom Leaflet scales
+// its last real tile rather than requesting one that does not exist.
+const MAP_MAX_ZOOM = 19;
+
 /*
- * Order is draw order: land at the bottom, depth data above it because that
- * is the layer that stays sharp at every zoom, seamarks on top so buoys and
- * beacons are never hidden by anything.
+ * Order is draw order: base at the bottom, depth data above it, seamarks on
+ * top so buoys and beacons are never hidden by anything.
  */
 const CHART_SOURCES = [
   {
-    id: 'land',
-    label: 'Landkarte',
-    url: landUrl,
-    minZoom: 4,
-    maxNativeZoom: 18,
+    id: 'osm',
+    label: 'Grundkarte (OSM)',
+    url: osmUrl,
+    minZoom: 3,
+    maxNativeZoom: 19,
     opaque: true,
     defaultOn: true,
-    attribution: '&copy; Kartverket',
-  },
-  {
-    id: 'seachart',
-    label: 'Seekarte (Raster)',
-    url: seaChartUrl,
-    minZoom: 4,
-    // Measured native limit, see docs/bugs.md B3.
-    maxNativeZoom: SEA_CHART_NATIVE_MAX_ZOOM,
-    opaque: true,
-    // Off by default: too coarse to navigate by, but it still carries chart
-    // symbology the other layers lack - traffic separation, restricted areas,
-    // cables - so it stays available rather than being deleted.
-    defaultOn: false,
-    attribution: '&copy; Kartverket',
+    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
   },
   {
     id: 'depth',
-    label: 'Tiefendaten',
+    // Kartverket covers Norwegian waters only. Outside them the layer simply
+    // renders nothing, which costs nothing - so it stays available rather
+    // than being dropped for the sake of portability.
+    label: 'Tiefendaten (nur Norwegen)',
     url: depthUrl,
     minZoom: 8,
-    maxNativeZoom: 18,
+    // A WMS has no tile pyramid, so it can render every zoom the map offers.
+    maxNativeZoom: MAP_MAX_ZOOM,
     opaque: false,
     defaultOn: true,
     attribution: '&copy; Kartverket',
@@ -164,10 +134,6 @@ const CHART_SOURCES = [
     attribution: '&copy; OpenSeaMap (CC-BY-SA)',
   },
 ];
-
-// Highest zoom the map itself allows. Above a source's maxNativeZoom Leaflet
-// scales its last real tile rather than requesting one that does not exist.
-const MAP_MAX_ZOOM = 18;
 
 function sourceById(id) {
   return CHART_SOURCES.find((s) => s.id === id) || null;
