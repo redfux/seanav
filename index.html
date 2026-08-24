@@ -59,16 +59,6 @@
         <path d="M3 14.2h6.6M3 9.6h3.2" stroke="currentColor" stroke-width="1.7"
               stroke-linecap="round"></path>
       </g>
-      <g id="ic-northup">
-        <path d="M12 2.6 6.4 21.4 12 17.4l5.6 4z" fill="none" stroke="currentColor"
-              stroke-width="1.9" stroke-linejoin="round"></path>
-        <path d="M12 2.6 12 17.4" fill="none" stroke="currentColor" stroke-width="1.9"></path>
-      </g>
-      <g id="ic-courseup">
-        <circle cx="12" cy="12" r="9.2" fill="none" stroke="currentColor"
-                stroke-width="1.8" opacity="0.55"></circle>
-        <path d="M12 5.4 16.4 16.6 12 14.2 7.6 16.6z"></path>
-      </g>
       <g id="ic-plus">
         <path d="M12 6v12M6 12h12" fill="none" stroke="currentColor"
               stroke-width="2.2" stroke-linecap="round"></path>
@@ -90,10 +80,16 @@
       <span class="stat-label">Kurs</span>
       <span class="stat-value" id="val-heading">–</span>
     </div>
-    <div class="stat">
+    <!-- Tapping switches the unit; the whole tile is the target, not just the
+         two words of the unit itself. -->
+    <button id="btn-speed-unit" class="stat stat-tap" title="Einheit umschalten"
+            aria-label="Geschwindigkeitseinheit umschalten">
       <span class="stat-label">Speed</span>
-      <span class="stat-value" id="val-speed">–</span>
-    </div>
+      <span class="stat-figure">
+        <span class="stat-value" id="val-speed">–</span>
+        <span class="stat-unit" id="val-speed-unit">kn</span>
+      </span>
+    </button>
     <div class="stat stat-narrow">
       <span class="stat-label">GPS</span>
       <span class="stat-value stat-value-sm" id="val-gps-status">suche…</span>
@@ -127,7 +123,10 @@
           <span class="row-label">Distanz</span>
           <span class="row-value" id="val-distance">–</span>
         </span>
-        <span class="nav-eta"><span class="nav-eta-label">ETA</span> <span id="val-eta">–</span></span>
+        <span class="nav-figure-line nav-eta">
+          <span class="row-label">ETA</span>
+          <span class="row-value nav-eta-value" id="val-eta">–</span>
+        </span>
       </span>
       <svg class="icon chevron" viewBox="0 0 24 24" aria-hidden="true"><use href="#ic-chevron"></use></svg>
     </button>
@@ -168,6 +167,23 @@
     <button id="btn-locate" class="fab" title="Zur eigenen Position" aria-label="Zur eigenen Position">
       <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><use href="#ic-locate"></use></svg>
     </button>
+    <!-- Drawn inline rather than pulled from the icon set: the needle has to be
+         reachable for CSS, and a <use> reference hides its contents. It turns
+         with --map-rot, the same angle the map turns by - so it points at
+         north whatever the map is doing, and stands upright by itself while
+         the map is north-up. -->
+    <button id="btn-toggle-orientation" class="fab" aria-pressed="false"
+            title="Karte nach Norden ausgerichtet" aria-label="Kartenausrichtung">
+      <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
+        <circle cx="12" cy="12" r="8.6" fill="none" stroke="currentColor"
+                stroke-width="1.5" opacity="0.45"></circle>
+        <g class="fab-needle">
+          <path d="M12 6.4 15.3 15.4 12 13.6 8.7 15.4z"></path>
+          <text class="fab-north" x="12" y="4.9" text-anchor="middle"
+                font-size="6.4" font-weight="700" fill="currentColor">N</text>
+        </g>
+      </svg>
+    </button>
     <button id="btn-toggle-layers" class="fab" title="Kartenebenen" aria-label="Kartenebenen">
       <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><use href="#ic-layers"></use></svg>
     </button>
@@ -176,10 +192,6 @@
     </button>
     <button id="btn-toggle-proj" class="fab" title="Distanzmarken auf der Kurslinie" aria-label="Distanzmarken auf der Kurslinie">
       <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><use href="#ic-projection"></use></svg>
-    </button>
-    <button id="btn-toggle-orientation" class="fab" aria-pressed="false"
-            title="Karte nach Norden ausrichten" aria-label="Kartenausrichtung">
-      <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><use id="ic-orientation-use" href="#ic-northup"></use></svg>
     </button>
   </nav>
 

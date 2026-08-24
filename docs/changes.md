@@ -11,6 +11,20 @@ _(derzeit keine offenen Punkte)_
 
 ## Erledigt
 
+- **„die ETA soll nur klein dargestellt werden, wenn die Zielkachel eingeklappt
+  ist, ansonsten … in der selben Größe/Schriftart wie die Entfernung"**,
+  **„die ETA soll immer nur auf volle Minuten gerundet werden"**,
+  **„wenn die Anzeige minimiert ist, soll die Breite nicht ständig schwanken …
+  und ‚ETA' muss dann nicht mit angezeigt werden"** (2026-08-24)
+  Umgesetzt in 0.12.0.
+- **„der Speed soll zw. kn und km/h wechseln, wenn man auf die Einheit tippt"**
+  (2026-08-24) Umgesetzt in 0.12.0, Wahl bleibt gespeichert.
+- **„das Symbol zum Umschalten … soll als zweiter Button gesetzt werden … und
+  in das Symbol sollte noch ein ‚N' eingearbeitet werden … bei der dynamischen
+  Ansicht eine kleine sich drehende Kompassnadel, die immer nach Norden
+  zeigt"** (2026-08-24) Umgesetzt in 0.12.0; die Nadel hängt an derselben
+  Variablen wie die Kartendrehung.
+
 - **„warum wird mir im pwa-Modus keine Akku-Anzeige/Uhrzeit mehr gezeigt, bzw.
   wo ist die Statusleiste des Handys hin? bitte wieder sichtbar machen"**
   (2026-08-24) Ursache war `display: fullscreen` im Manifest; behoben in

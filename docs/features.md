@@ -28,7 +28,7 @@ Mobilfunkempfang. Kein Ersatz für vorschriftsmäßige Seekarten und Ausrüstung
 | F17 | Kachelspeicher füllt sich beim Betrachten; bereits gefahrene Strecken bleiben ohne Empfang verfügbar | 0.6.0 |
 | F18 | Verwaiste Kacheln entfernter Ebenen werden beim Start automatisch geräumt | 0.6.0 |
 | F19 | Oberfläche nach Material 3, kontraststark und mit großen Messwerten | 0.7.0 |
-| F20 | Zielkarte einklappbar, eingeklappt Distanz und darunter klein die ETA; Zustand bleibt erhalten | 0.7.1 |
+| F20 | Zielkarte einklappbar: ausgeklappt Distanz, ETA und Peilung in gleicher Größe, eingeklappt Distanz mit der ETA klein darunter; Zustand bleibt erhalten | 0.7.1 |
 | F21 | Marken passen sich dynamisch an: nicht darstellbare Marken entfallen | 0.8.0 |
 | F22 | Tiefenzonen farblich unterscheidbar – gemessene Sättigungsanhebung statt blasser Stufen | 0.9.2 |
 | F23 | Als App installierbar: Manifest, eigene Icons, Installationshinweis im Browser (inkl. iOS-Weg über das Teilen-Menü) | 0.10.0 |
@@ -36,7 +36,8 @@ Mobilfunkempfang. Kein Ersatz für vorschriftsmäßige Seekarten und Ausrüstung
 | F25 | Bildschirm bleibt an, solange die App im Vordergrund ist | 0.11.0 |
 | F26 | Karte folgt der Position, bis sie verschoben wird; der Positionsknopf schaltet das Folgen wieder ein, ohne die Zoomstufe zu ändern | 0.11.0 |
 | F27 | Eigene Position als Bootssymbol mit spitzem Bug und flachem Heck, gedreht in den Kurs | 0.11.0 |
-| F28 | Karte wahlweise nach Norden oder dynamisch in Fahrtrichtung ausgerichtet | 0.11.0 |
+| F28 | Karte wahlweise nach Norden oder dynamisch in Fahrtrichtung ausgerichtet; die Kompassnadel im Schalter zeigt dabei immer nach Norden | 0.11.0 |
+| F29 | Geschwindigkeit auf Tippen zwischen Knoten und km/h umschaltbar, Wahl bleibt erhalten | 0.12.0 |
 
 ## Nichtfunktionale Anforderungen
 

@@ -385,6 +385,13 @@ der Linie liegen, und die Linie dreht mit. Das Boot bekommt immer den
 geografischen Kurs: in der Nordung dreht sich das Boot, im Fahrtrichtungsmodus
 dreht sich die Karte darunter, und das Boot zeigt nach oben.
 
+Die Kompassnadel im Umschaltknopf hängt an derselben Variablen `--map-rot` wie
+die Karte selbst. Damit zeigt sie immer dorthin, wo Norden auf dem Bildschirm
+liegt – und in der Nordung ist der Winkel null, die Nadel steht also von selbst
+aufrecht, mit dem N obenauf. Deshalb ist dieses eine Symbol inline gezeichnet
+statt aus dem Symbolsatz geholt: hinter einem `<use>` wäre die Nadel für CSS
+nicht erreichbar.
+
 Zoomknöpfe und Kartennachweis waren Leaflet-Controls **innerhalb** der Karte.
 Das geht nicht mehr: sie säßen an den Ecken des übergroßen Containers, also
 außerhalb des Fensters, und würden mitdrehen. Beides ist jetzt eigenes Markup

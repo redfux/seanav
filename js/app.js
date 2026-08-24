@@ -62,6 +62,14 @@ const SNACK_MS = 3500;
 const INITIAL_FIX_ZOOM = 14;
 
 const ORIENTATION_KEY = 'seenavi.map.orientation';
+const SPEED_UNIT_KEY = 'seenavi.speed.unit';
+
+// Knots is what a chart is drawn in, km/h what a road sign says - which one is
+// wanted depends on the day, so both are a tap apart.
+const SPEED_UNITS = {
+  kn: { label: 'kn', perMs: 1.94384 },
+  kmh: { label: 'km/h', perMs: 3.6 },
+};
 
 // --- State -------------------------------------------------------------
 let map;
@@ -75,6 +83,7 @@ let targetLatLng = null;
 let targetLine;
 let followMode = true;        // map keeps the boat centred until the map is dragged
 let mapZooming = false;       // true while a zoom animation is running
+let speedUnit = 'kn';         // 'kn' | 'kmh', see SPEED_UNITS
 let targetLocked = false;     // set after TARGET_LOCK_MS without a change
 let targetLockTimer = null;
 let snackTimer = null;
@@ -621,10 +630,28 @@ function showSnack(text) {
 // --- UI updates --------------------------------------------------------
 
 function updateStatusBar() {
+  const unit = SPEED_UNITS[speedUnit];
   document.getElementById('val-heading').textContent =
     currentHeadingDeg !== null ? `${Math.round(currentHeadingDeg)}°` : '–';
   document.getElementById('val-speed').textContent =
-    `${(currentSpeedMs * 1.94384).toFixed(1)} kn`; // m/s -> knots
+    (currentSpeedMs * unit.perMs).toFixed(1);
+  document.getElementById('val-speed-unit').textContent = unit.label;
+}
+
+function storedSpeedUnit() {
+  try {
+    return localStorage.getItem(SPEED_UNIT_KEY) === 'kmh' ? 'kmh' : 'kn';
+  } catch (e) {
+    return 'kn';
+  }
+}
+
+function setSpeedUnit(unit) {
+  speedUnit = SPEED_UNITS[unit] ? unit : 'kn';
+  try {
+    localStorage.setItem(SPEED_UNIT_KEY, speedUnit);
+  } catch (e) { /* the choice then just will not survive a reload */ }
+  updateStatusBar();
 }
 
 function updateNavPanel(fix) {
@@ -637,7 +664,7 @@ function updateNavPanel(fix) {
 
   if (currentSpeedMs > 0.1) {
     const etaSec = dist / currentSpeedMs;
-    document.getElementById('val-eta').textContent = formatDuration(etaSec);
+    document.getElementById('val-eta').textContent = formatEta(etaSec);
   } else {
     document.getElementById('val-eta').textContent = '–';
   }
@@ -648,14 +675,18 @@ function formatDistance(m) {
   return `${Math.round(m)} m`;
 }
 
-function formatDuration(sec) {
+/*
+ * Whole minutes, never seconds. An ETA computed from a smoothed GPS speed is
+ * not accurate to the second, and a seconds digit that races is only noise on
+ * a figure meant to be glanced at.
+ */
+function formatEta(sec) {
   if (!Number.isFinite(sec) || sec < 0) return '–';
-  if (sec < 60) return `${Math.round(sec)} s`;
-  const min = Math.floor(sec / 60);
-  const rem = Math.round(sec % 60);
-  if (min < 60) return `${min} min ${rem}s`;
+  const min = Math.round(sec / 60);
+  if (min < 1) return '< 1 min';
+  if (min < 60) return `${min} min`;
   const h = Math.floor(min / 60);
-  return `${h} h ${min % 60} min`;
+  return `${h} h ${String(min % 60).padStart(2, '0')} min`;
 }
 
 // --- Destination card -----------------------------------------------------
@@ -788,6 +819,10 @@ function wireToolbar() {
     if (positionMarker) map.setView(positionMarker.getLatLng(), map.getZoom());
   });
 
+  document.getElementById('btn-speed-unit').addEventListener('click', () => {
+    setSpeedUnit(speedUnit === 'kn' ? 'kmh' : 'kn');
+  });
+
   document.getElementById('btn-zoom-in').addEventListener('click', () => map.zoomIn());
   document.getElementById('btn-zoom-out').addEventListener('click', () => map.zoomOut());
 
@@ -818,6 +853,7 @@ function wireToolbar() {
   document.getElementById('btn-toggle-proj').classList.add('is-active');
   setFollow(true);
   setOrientation(storedOrientation());
+  setSpeedUnit(storedSpeedUnit());
 }
 
 /*
@@ -841,8 +877,6 @@ function setOrientation(mode) {
   button.classList.toggle('is-active', courseUp);
   button.setAttribute('aria-pressed', courseUp ? 'true' : 'false');
   button.title = courseUp ? 'Karte dreht sich in Fahrtrichtung' : 'Karte nach Norden ausgerichtet';
-  document.getElementById('ic-orientation-use')
-    .setAttribute('href', courseUp ? '#ic-courseup' : '#ic-northup');
   try {
     localStorage.setItem(ORIENTATION_KEY, mode);
   } catch (e) { /* the choice then just will not survive a reload */ }

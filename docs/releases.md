@@ -6,6 +6,32 @@ Versionierung nach [SemVer](https://semver.org/lang/de/).
 Die Versionsnummer wird ausschließlich in `js/version.js` gepflegt; Footer und
 Service-Worker-Cachename leiten sich automatisch daraus ab.
 
+## [0.12.0] – 2026-08-24
+
+### Added
+
+- **Geschwindigkeit auf Tippen in Knoten oder km/h.** Die Kachel im Kopf ist
+  der Schalter, die Wahl bleibt gespeichert. Die Einheit steht klein neben der
+  Zahl, damit „km/h" die beiden Nachbarwerte nicht aus der Leiste drängt.
+- **Die Kompassnadel im Ausrichtungsknopf zeigt immer nach Norden.** Sie hängt
+  an derselben Variablen wie die Kartendrehung; in der Nordung ist der Winkel
+  null, die Nadel steht also aufrecht und trägt ein N. Im Fahrtrichtungsmodus
+  dreht sie mit und das N entfällt – mitgedreht läge es nur auf der Seite.
+
+### Changed
+
+- Die ETA wird **auf volle Minuten gerundet**. Aus einer geglätteten
+  GPS-Geschwindigkeit gerechnet ist sie nicht sekundengenau, und eine
+  rennende Sekundenstelle ist auf einer Zahl zum Hinsehen nur Unruhe.
+- Die ETA steht ausgeklappt in derselben Größe und Schrift wie die Distanz und
+  wird erst eingeklappt zur kleinen Zeile darunter; das Wort „ETA" erscheint
+  nur ausgeklappt.
+- Eingeklappt hat die Zielkarte eine feste Mindestbreite, die auch die längste
+  ETA trägt: die Karte bleibt stehen, wenn die Minutenzahl umspringt, statt
+  bei jedem Wechsel zu zucken.
+- Der Ausrichtungsknopf sitzt als zweiter direkt unter dem Positionsknopf, weil
+  beide zur Frage „wo bin ich und wie herum" gehören.
+
 ## [0.11.1] – 2026-08-24
 
 ### Fixed

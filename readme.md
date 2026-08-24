@@ -22,6 +22,7 @@ kein Build-Schritt.
 - Karte folgt der Position, bis man sie verschiebt
 - Bildschirm bleibt an, solange die App vorn ist
 - Aktueller Kurs (COG) als Linie auf der Karte
+- Geschwindigkeit wahlweise in Knoten oder km/h – Antippen schaltet um
 - Ziel per Klick auf die Karte setzen, mit Distanz/Peilung/ETA; nach einer
   Minute ohne Änderung fixiert es sich gegen versehentliches Verschieben
 - Marken bei 200 m und 500 m auf der Kurslinie, mit der jeweils benötigten Fahrzeit
@@ -56,8 +57,10 @@ relativ und funktionieren daher auch unter dem Unterpfad `/seanav/`.
    Zoomstufe bleibt dabei, wie sie ist. Die Karte folgt dem Boot von selbst,
    bis man sie einmal verschiebt
 4. Der Kompassknopf schaltet zwischen **Nordung** (Karte steht, Boot dreht) und
-   **Fahrtrichtung** (Karte dreht, Boot zeigt nach oben)
-5. 📐 blendet die Distanzmarken auf der Kurslinie ein/aus
+   **Fahrtrichtung** (Karte dreht, Boot zeigt nach oben). Die Nadel im Knopf
+   zeigt dabei immer nach Norden
+5. Ein Tipp auf die Geschwindigkeit schaltet zwischen Knoten und km/h
+6. 📐 blendet die Distanzmarken auf der Kurslinie ein/aus
 
 Der Bildschirm bleibt an, solange die App im Vordergrund ist. Lehnt der Browser
 das ab, sagt die App es einmal – dann schaltet sich das Display wie gewohnt ab.

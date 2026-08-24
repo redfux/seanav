@@ -159,6 +159,34 @@ html, body {
 
 .stat-narrow { flex: 0 1 26%; }
 
+/* A reading that is also a switch. Looks like the others - the tap is the
+   discovery, not a button frame in the middle of the display. */
+.stat-tap {
+  appearance: none;
+  border: none;
+  background: none;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+}
+
+/* Number and unit on one baseline: the unit stays small, so km/h does not
+   crowd the two neighbouring readings out of the bar. */
+.stat-figure {
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+  min-width: 0;
+}
+
+.stat-unit {
+  font-family: var(--font-numeric);
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--md-on-surface-variant);
+  white-space: nowrap;
+}
+
 .stat-label {
   font-size: 11px;
   font-weight: 500;
@@ -321,30 +349,36 @@ html, body {
 .nav-figures {
   display: flex;
   flex-direction: column;
-  gap: 1px;
+  gap: 2px;
+  width: 100%;
   min-width: 0;
 }
 
 .nav-figure-line {
   display: flex;
   align-items: baseline;
+  justify-content: space-between;
   gap: 10px;
 }
 
-.nav-eta {
-  font-family: var(--font-numeric);
+/*
+ * Open, the ETA is a reading like the distance and is set like one. Collapsed
+ * it drops to a caption underneath: at that point the card is a glance, and
+ * the distance is what the glance is for.
+ */
+#navpanel.is-collapsed .nav-eta-value {
   font-size: 13px;
-  line-height: 1.2;
+  font-weight: 500;
   color: var(--md-on-surface-variant);
-  white-space: nowrap;
 }
 
-.nav-eta-label {
-  font-family: var(--font);
-  font-size: 11px;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-}
+/*
+ * Collapsed the card must not breathe with every minute that ticks over.
+ * Tabular figures keep digits equal in width, and this floor keeps the card
+ * from following the length of the ETA text - "9 min" and "10 min" then leave
+ * it exactly where it was.
+ */
+#navpanel.is-collapsed .nav-figures { min-width: 110px; }
 
 /* Sheets are wider and centred: they carry controls, not readings. */
 .sheet {
@@ -500,6 +534,27 @@ html, body {
 .fab.is-active {
   background: var(--md-primary);
   color: var(--md-on-primary);
+}
+
+/*
+ * Compass needle in the orientation button. It turns by the same angle as the
+ * map, so it points at north whichever way the map is facing - and while the
+ * map is north-up the angle is zero, which leaves the needle standing upright
+ * with its N on top, exactly the north-up symbol.
+ */
+.fab-needle {
+  transform-box: view-box;
+  transform-origin: 12px 12px;
+  transform: rotate(var(--map-rot, 0deg));
+  transition: transform 240ms ease-out;
+}
+
+/* The letter belongs to the standing needle. Turned along with the map it
+   would only lie on its side, so the turning mode shows the needle alone. */
+#btn-toggle-orientation.is-active .fab-north { display: none; }
+
+@media (prefers-reduced-motion: reduce) {
+  .fab-needle { transition: none; }
 }
 
 /* --- Footer -------------------------------------------------------------- */
