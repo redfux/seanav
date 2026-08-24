@@ -15,7 +15,7 @@ Mobilfunkempfang. Kein Ersatz für vorschriftsmäßige Seekarten und Ausrüstung
 | F4 | Geschwindigkeit in Knoten, geglättet | 0.1.0 |
 | F5 | Ziel per Klick/Tap setzen und wieder löschen | 0.1.0 |
 | F6 | Distanz, Peilung und ETA zum Ziel | 0.1.0 |
-| F7 | Zeitmarken auf der Kurslinie: wo das Boot in 1, 2 und 5 min sein wird | 0.8.0 |
+| F7 | Distanzmarken auf der Kurslinie (200 m, 500 m) mit der jeweils benötigten Fahrzeit | 0.9.0 |
 | ~~F8~~ | ~~Kartenausschnitt vorab herunterladen~~ – entfernt in 0.6.0, siehe O8 | – |
 | F9 | App startet ohne Netzverbindung (App-Shell im Service Worker) | 0.1.0 |
 | F10 | Fehlende Kacheln als erkennbarer Platzhalter statt kaputtem Bild | 0.1.0 |
@@ -29,7 +29,7 @@ Mobilfunkempfang. Kein Ersatz für vorschriftsmäßige Seekarten und Ausrüstung
 | F18 | Verwaiste Kacheln entfernter Ebenen werden beim Start automatisch geräumt | 0.6.0 |
 | F19 | Oberfläche nach Material 3, kontraststark und mit großen Messwerten | 0.7.0 |
 | F20 | Zielkarte einklappbar, eingeklappt nur die Distanz; Zustand bleibt erhalten | 0.7.1 |
-| F21 | Zeitmarken passen sich dynamisch an: nicht darstellbare Marken entfallen | 0.8.0 |
+| F21 | Marken passen sich dynamisch an: nicht darstellbare Marken entfallen | 0.8.0 |
 
 ## Nichtfunktionale Anforderungen
 

@@ -306,26 +306,43 @@ html, body {
   margin: 0;
 }
 
-/* --- Time marks on the course line ---------------------------------------
+/* --- Marks on the course line ---------------------------------------------
  * The divIcon anchors a zero-sized box on the point; the span inside is what
  * is centred on it. Doing the centring in CSS keeps Leaflet's own positioning
- * transform on the outer element untouched. */
+ * transform on the outer element untouched. The --rot custom property carries
+ * the along-line rotation so the transform stays composed here. */
 
-.course-mark-label { width: 0; height: 0; }
+.course-mark-label,
+.course-mark-dist { width: 0; height: 0; }
 
-.course-mark-label span {
+.course-mark-label span,
+.course-mark-dist span {
   position: absolute;
-  transform: translate(-50%, -50%);
   white-space: nowrap;
   font-family: var(--font-numeric);
-  font-size: 12px;
-  font-weight: 600;
   line-height: 1;
-  padding: 3px 6px;
   border-radius: var(--md-radius-s);
-  color: var(--md-on-surface);
   /* Legible over both the pale sea and the beige land of the base map. */
   background: color-mix(in srgb, var(--md-surface) 82%, transparent);
+}
+
+/* Travel time: the figure being read, so it gets the weight. */
+.course-mark-label span {
+  transform: translate(-50%, -50%);
+  font-size: 12px;
+  font-weight: 600;
+  padding: 3px 6px;
+  color: var(--md-on-surface);
+}
+
+/* Distance: a caption telling you which mark this is, running along the line
+   and deliberately quieter than the time. */
+.course-mark-dist span {
+  transform: translate(-50%, -50%) rotate(var(--rot, 0deg));
+  font-size: 10px;
+  font-weight: 500;
+  padding: 2px 4px;
+  color: var(--md-on-surface-variant);
 }
 
 /* --- Floating action buttons --------------------------------------------- */

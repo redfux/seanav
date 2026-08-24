@@ -191,40 +191,43 @@ Release erfordert damit genau eine Änderung im Code plus den Eintrag in
 - **Keine Secrets:** der Kartverket-Dienst braucht keinen API-Key, es gibt
   daher weder `.env` noch Zugangsdaten im Repo.
 
-## Zeitmarken auf der Kurslinie
+## Distanzmarken auf der Kurslinie
 
-Statt einer Kachel mit Projektionswerten trägt die Kurslinie kleine Punkte für
-1, 2 und 5 Minuten Fahrt, mit der Zeitangabe daneben. Der Wert steht damit
-dort, wo er hingehört: an der Stelle, die er beschreibt.
+Statt einer Kachel mit Projektionswerten trägt die Kurslinie Punkte bei festen
+Distanzen – 200 m und 500 m. Der Wert steht damit dort, wo er hingehört: an der
+Stelle, die er beschreibt.
 
-Eine Marke wird nur gezeichnet, wenn sie etwas aussagt. Drei Regeln, in dieser
+An jeder Marke stehen zwei Angaben auf gegenüberliegenden Seiten der Linie:
+
+- die **Fahrzeit** bis dorthin bei aktueller Geschwindigkeit, waagerecht und in
+  der kräftigeren Schrift – das ist die Zahl, die abgelesen wird. Gerundet auf
+  volle Minuten; unter einer halben Minute stünde sonst „0 min", dort steht
+  `<1 min`.
+- die **Distanz** klein und parallel zur Linie laufend, als Beschriftung der
+  Marke selbst.
+
+Der Rotationswinkel für die mitlaufende Beschriftung wird aus dem Kurs
+berechnet: Kurs 0 zeigt nach oben, die Bildschirmrichtung der Linie ist also
+`(sin h, −cos h)`. Winkel jenseits der Senkrechten werden um 180° gedreht, sonst
+stünde die Schrift auf westlichen Kursen auf dem Kopf. Geprüft über alle acht
+Hauptrichtungen: der Winkel bleibt stets zwischen −90° und 90°.
+
+Eine Marke wird nur gezeichnet, wenn sie lesbar ist. Drei Regeln, in dieser
 Reihenfolge:
 
-1. Unterhalb von `MIN_PROJECTION_SPEED_MS` gibt es keinen sinnvoll
-   projizierbaren Kurs – dann keine Marken.
-2. Liegt eine Marke außerhalb des sichtbaren Ausschnitts, ist sie nicht
-   ablesbar und entfällt. Bei Reisegeschwindigkeit trifft das meist die
-   5-min-Marke.
+1. Unterhalb von `MIN_PROJECTION_SPEED_MS` gibt es weder einen projizierbaren
+   Kurs noch eine sinnvolle Fahrzeit – dann keine Marken.
+2. Liegt eine Marke außerhalb des sichtbaren Ausschnitts, entfällt sie. Weit
+   hineingezoomt trifft das die 500-m-Marke.
 3. Liegen zwei Marken auf dem Bildschirm näher beieinander als
    `MIN_MARK_SPACING_PX`, würden ihre Labels sich überdecken. Gemessen wird
    gegen die zuletzt **behaltene** Marke, nicht gegen die zuletzt geprüfte –
    sonst könnte eine übersprungene Marke die nächste doch wieder zu nah
-   heranlassen. Beim langsamen Manövrieren fallen so die Marken weg, die sich
-   ohnehin nicht auseinanderhalten ließen.
+   heranlassen. Herausgezoomt fallen so beide weg.
 
-Beispielhaft gemessen bei Kurs 20°:
-
-| Fahrt | Zoom | sichtbare Breite | gezeichnete Marken |
-| --- | --- | --- | --- |
-| 6 kn | z15 | 920 m | 1, 2, 5 min |
-| 6 kn | z16 | 460 m | 1, 2 min |
-| 6 kn | z17 | 230 m | 1 min |
-| 1,5 kn | z16 | 460 m | 1, 2, 5 min |
-| 0,6 kn | z16 | 460 m | 5 min |
-| 0,2 kn | z16 | 460 m | keine |
-
-Die Linie endet knapp hinter der letzten gezeichneten Marke statt nach einer
-festen Strecke, damit das äußerste Label nicht auf dem Linienende sitzt.
+Da die Distanzen fest sind, hängt die Sichtbarkeit nur noch am Zoom, nicht mehr
+an der Geschwindigkeit. Bei Kurs 20°: z14–z16 beide Marken, z17 nur 200 m,
+z18 und z12 keine.
 
 Zwei Details, die sonst still Ärger machen:
 
@@ -233,10 +236,10 @@ Zwei Details, die sonst still Ärger machen:
 - Neu bewertet wird auch bei `moveend`/`zoomend`, nicht nur beim GPS-Fix:
   welche Marken hineinpassen, hängt am Kartenausschnitt.
 
-Die Labels sitzen senkrecht zum Kurs neben der Linie, damit sie unabhängig von
-der Fahrtrichtung frei stehen. Der Versatz muss größer sein als die halbe
-Labelbreite, da das Label auf dem Versatzpunkt zentriert wird – bei 15 px lag
-es noch auf der Linie, bei 34 px bleiben 8–17 px Abstand.
+Der Versatz der Zeitangabe muss größer sein als ihre halbe Breite, da sie auf
+dem Versatzpunkt zentriert wird – bei 15 px lag sie noch auf der Linie, bei
+34 px bleiben 8–17 px Abstand. Die Distanzbeschriftung sitzt mit 13 px enger,
+weil sie an der Linie entlangläuft statt quer dazu.
 
 ## Genauigkeit und Glättung
 

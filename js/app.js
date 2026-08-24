@@ -11,30 +11,39 @@
 // --- Constants -------------------------------------------------------
 const BERGEN_CENTER = [60.39, 5.32];
 const EARTH_RADIUS_M = 6371000;
-const COURSE_LINE_LOOKAHEAD_M = 800; // fallback length when no marker is shown
+/*
+ * Fixed distances marked along the course line. The distance is the constant;
+ * what changes with speed is how long it takes to get there.
+ */
+const PROJECTION_DISTANCES_M = [200, 500];
 
-// Time marks placed along the course line. Each is where the boat will be
-// after that many minutes at the current speed and heading.
-const PROJECTION_MINUTES = [1, 2, 5];
+// The line runs just past the furthest mark, so the outermost label does not
+// sit on its end. Constant, so the line does not change length as marks come
+// and go.
+const COURSE_LINE_LOOKAHEAD_M = Math.max(...PROJECTION_DISTANCES_M) * 1.15;
 
 /*
- * A mark is only drawn where it actually tells the helmsman something:
+ * A mark is only drawn where it can actually be read:
  *
- *  - below MIN_PROJECTION_SPEED_MS there is no meaningful course to project;
- *  - a mark outside the current view cannot be read, so it is dropped. At
- *    cruising speed that is usually the 5 min mark;
+ *  - below MIN_PROJECTION_SPEED_MS there is no course to project along, and
+ *    no meaningful travel time either;
+ *  - a mark outside the current view cannot be read, so it is dropped. Zoomed
+ *    in close that is usually the 500 m mark;
  *  - marks closer together on screen than MIN_MARK_SPACING_PX would have
- *    overlapping labels. Manoeuvring slowly, all three land nearly on top of
- *    the boat, and the ones that cannot be told apart are dropped.
+ *    overlapping labels. Zoomed far out both distances land nearly on top of
+ *    the boat, and what cannot be told apart is dropped.
  */
 const MIN_PROJECTION_SPEED_MS = 0.15;
 const MIN_MARK_SPACING_PX = 34;
+
 /*
- * Perpendicular gap between line and label. The label is centred on the offset
- * point, so it reaches back toward the line by half its own width - the gap
- * has to exceed that or the text sits on the line.
+ * The two labels sit on opposite sides of the line: the travel time out to one
+ * side in horizontal text, the distance to the other running along the line.
+ * The time label is centred on its offset point, so the gap has to exceed half
+ * its width or the text lands on the line.
  */
-const MARK_LABEL_OFFSET_PX = 34;
+const MARK_TIME_OFFSET_PX = 34;
+const MARK_DISTANCE_OFFSET_PX = 13;
 const SPEED_SMOOTHING_SAMPLES = 6;   // moving average window for speed/heading
 const STALE_FIX_MS = 8000;           // GPS fix older than this counts as lost
 
@@ -295,13 +304,7 @@ function updateCourseLine(fix) {
   if (currentHeadingDeg === null) return;
 
   const marks = projectionMarks(fix);
-  // The line runs a little past the last mark, so the furthest label does not
-  // sit on the very end of it.
-  const lookahead = marks.length
-    ? marks[marks.length - 1].distanceM * 1.15
-    : COURSE_LINE_LOOKAHEAD_M;
-
-  const ahead = destinationPoint(fix, currentHeadingDeg, lookahead);
+  const ahead = destinationPoint(fix, currentHeadingDeg, COURSE_LINE_LOOKAHEAD_M);
   const points = [[fix.lat, fix.lng], [ahead.lat, ahead.lng]];
   if (!courseLine) {
     courseLine = L.polyline(points, {
@@ -334,8 +337,7 @@ function projectionMarks(fix) {
   const kept = [];
   let lastPoint = map.latLngToContainerPoint([fix.lat, fix.lng]);
 
-  for (const minutes of PROJECTION_MINUTES) {
-    const distanceM = currentSpeedMs * minutes * 60;
+  for (const distanceM of PROJECTION_DISTANCES_M) {
     const at = destinationPoint(fix, currentHeadingDeg, distanceM);
     const latlng = L.latLng(at.lat, at.lng);
     if (!bounds.contains(latlng)) continue;
@@ -345,10 +347,32 @@ function projectionMarks(fix) {
     // so skipping one does not let the next crowd it either.
     if (point.distanceTo(lastPoint) < MIN_MARK_SPACING_PX) continue;
 
-    kept.push({ minutes, latlng, distanceM });
+    kept.push({ distanceM, latlng, seconds: distanceM / currentSpeedMs });
     lastPoint = point;
   }
   return kept;
+}
+
+// Travel time rounded to whole minutes. Under half a minute that rounds to
+// zero, which says nothing - "<1 min" is both shorter and true.
+function formatMarkMinutes(seconds) {
+  if (!Number.isFinite(seconds) || seconds <= 0) return '–';
+  if (seconds < 30) return '<1 min';
+  return `${Math.round(seconds / 60)} min`;
+}
+
+/*
+ * Rotation for text running along the course line, in screen degrees. Heading
+ * 0 points up, so the line's screen direction is (sin h, -cos h). Text past
+ * the vertical is flipped by 180 degrees, otherwise it would read upside down
+ * on westerly courses.
+ */
+function courseTextAngle() {
+  const rad = toRad(currentHeadingDeg);
+  let deg = toDeg(Math.atan2(-Math.cos(rad), Math.sin(rad)));
+  if (deg > 90) deg -= 180;
+  if (deg < -90) deg += 180;
+  return deg;
 }
 
 function drawProjectionMarks(marks) {
@@ -356,10 +380,10 @@ function drawProjectionMarks(marks) {
   projectionLayer.clearLayers();
   if (marks.length === 0) return;
 
-  // Labels sit beside the line rather than on it, offset perpendicular to the
-  // heading so they stay clear whichever way the boat points.
-  const offsetM = MARK_LABEL_OFFSET_PX * metresPerPixel();
-  const labelBearing = (currentHeadingDeg + 90) % 360;
+  const metres = metresPerPixel();
+  const timeBearing = (currentHeadingDeg + 90) % 360;
+  const distanceBearing = (currentHeadingDeg + 270) % 360;
+  const angle = courseTextAngle();
 
   marks.forEach((mark) => {
     L.circleMarker(mark.latlng, {
@@ -372,21 +396,29 @@ function drawProjectionMarks(marks) {
       interactive: false,
     }).addTo(projectionLayer);
 
-    const labelAt = destinationPoint(
-      { lat: mark.latlng.lat, lng: mark.latlng.lng }, labelBearing, offsetM
-    );
-    L.marker([labelAt.lat, labelAt.lng], {
-      // Not interactive: a tap here has to reach the map and set a target.
-      interactive: false,
-      keyboard: false,
-      icon: L.divIcon({
-        className: 'course-mark-label',
-        // Content is a number from PROJECTION_MINUTES, never user input.
-        html: `<span>${mark.minutes} min</span>`,
-        iconSize: [0, 0],
-      }),
-    }).addTo(projectionLayer);
+    addMarkLabel(mark.latlng, timeBearing, MARK_TIME_OFFSET_PX * metres,
+      'course-mark-label', formatMarkMinutes(mark.seconds), 0);
+    addMarkLabel(mark.latlng, distanceBearing, MARK_DISTANCE_OFFSET_PX * metres,
+      'course-mark-dist', `${mark.distanceM} m`, angle);
   });
+}
+
+// Places one label beside a mark, offset perpendicular to the course.
+function addMarkLabel(latlng, bearing, offsetM, className, text, angle) {
+  const at = destinationPoint({ lat: latlng.lat, lng: latlng.lng }, bearing, offsetM);
+  L.marker([at.lat, at.lng], {
+    // Not interactive: a tap here has to reach the map and set a target.
+    interactive: false,
+    keyboard: false,
+    icon: L.divIcon({
+      className,
+      // Text is built from constants and computed numbers, never user input.
+      // The rotation travels as a custom property so the centring transform
+      // stays in the stylesheet.
+      html: `<span style="--rot:${angle.toFixed(1)}deg">${text}</span>`,
+      iconSize: [0, 0],
+    }),
+  }).addTo(projectionLayer);
 }
 
 function setTarget(latlng) {

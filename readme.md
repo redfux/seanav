@@ -19,7 +19,7 @@ kein Build-Schritt.
 - Eigene Position per Geräte-GPS (`navigator.geolocation`)
 - Aktueller Kurs (COG) als Linie auf der Karte
 - Ziel per Klick auf die Karte setzen, mit Distanz/Peilung/ETA
-- Zeitmarken auf der Kurslinie: wo das Boot in 1, 2 und 5 Minuten sein wird
+- Marken bei 200 m und 500 m auf der Kurslinie, mit der jeweils benötigten Fahrzeit
 - Angesehene Kartenausschnitte bleiben ohne Empfang verfügbar
 
 ## Setup
@@ -46,7 +46,7 @@ relativ und funktionieren daher auch unter dem Unterpfad `/seanav/`.
    Kurs, Geschwindigkeit (in Knoten) und GPS-Status
 2. Ziel per Klick/Tap auf die Karte setzen – das Navigationspanel zeigt
    Distanz, Peilung und ETA, „Ziel löschen" entfernt es wieder
-3. 📍 springt zur eigenen Position, 📐 blendet die Zeitmarken auf der Kurslinie ein/aus
+3. 📍 springt zur eigenen Position, 📐 blendet die Distanzmarken auf der Kurslinie ein/aus
 
 ### Kartenspeicher
 

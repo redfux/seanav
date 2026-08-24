@@ -6,6 +6,19 @@ Versionierung nach [SemVer](https://semver.org/lang/de/).
 Die Versionsnummer wird ausschließlich in `js/version.js` gepflegt; Footer und
 Service-Worker-Cachename leiten sich automatisch daraus ab.
 
+## [0.9.0] – 2026-08-22
+
+### Changed
+
+- **Die Marken stehen jetzt bei festen Distanzen, nicht bei festen Zeiten.**
+  Punkte bei 200 m und 500 m; daneben steht, wie lange die Strecke bei der
+  aktuellen Geschwindigkeit dauert, auf volle Minuten gerundet. Die Distanz
+  selbst steht klein und parallel zur Linie auf der anderen Seite, damit
+  erkennbar bleibt, um welche Marke es sich handelt.
+- Unter einer halben Minute würde die Rundung 0 ergeben; dort steht `<1 min`
+- Die Kurslinie hat wieder eine feste Länge (575 m, knapp über der 500-m-Marke),
+  statt mit den Marken zu wachsen und zu schrumpfen
+
 ## [0.8.0] – 2026-08-22
 
 ### Changed
