@@ -358,6 +358,36 @@ function formatDuration(sec) {
   return `${h} h ${min % 60} min`;
 }
 
+// --- Destination card -----------------------------------------------------
+
+const NAV_COLLAPSED_KEY = 'seenavi.nav.collapsed';
+
+// Starts expanded so the bearing and ETA are visible the first time a target
+// is set; once collapsed, the choice sticks.
+function setNavCollapsed(collapsed) {
+  document.getElementById('navpanel').classList.toggle('is-collapsed', collapsed);
+  document.getElementById('btn-toggle-nav').setAttribute('aria-expanded', String(!collapsed));
+  try {
+    localStorage.setItem(NAV_COLLAPSED_KEY, collapsed ? '1' : '0');
+  } catch (e) {
+    // Blocked storage only costs the memory of the choice.
+  }
+}
+
+function wireNavCollapse() {
+  let collapsed = false;
+  try {
+    collapsed = localStorage.getItem(NAV_COLLAPSED_KEY) === '1';
+  } catch (e) {
+    collapsed = false;
+  }
+  setNavCollapsed(collapsed);
+
+  document.getElementById('btn-toggle-nav').addEventListener('click', () => {
+    setNavCollapsed(!document.getElementById('navpanel').classList.contains('is-collapsed'));
+  });
+}
+
 // --- Panels ---------------------------------------------------------------
 
 // The layer and storage panels occupy the same spot, so showing one has to
@@ -467,6 +497,8 @@ function wireToolbar() {
   });
 
   document.getElementById('btn-clear-target').addEventListener('click', clearTarget);
+
+  wireNavCollapse();
 
   // The projection panel starts enabled, so its control starts active.
   document.getElementById('btn-toggle-proj').classList.add('is-active');

@@ -192,6 +192,9 @@ html, body {
   line-height: 1.15;
   color: var(--md-primary);
   font-variant-numeric: tabular-nums;
+  /* A wrapped reading is unreadable at a glance and costs the height the
+     collapsed card is meant to save. */
+  white-space: nowrap;
 }
 
 /*
@@ -203,7 +206,7 @@ html, body {
   z-index: 1000;
   top: calc(var(--inset-top) + 84px);
   left: 12px;
-  width: min(230px, 60vw);
+  width: min(252px, 72vw);
   display: flex;
   flex-direction: column;
   gap: 10px;
@@ -214,6 +217,42 @@ html, body {
   position: static;
   pointer-events: auto;
 }
+
+/* Collapsible destination card. Collapsed it keeps only the distance, which
+   is what the card is worth permanent space for. */
+.nav-head {
+  appearance: none;
+  width: 100%;
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 0;
+  min-height: 44px;
+  border: none;
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.nav-head .chevron {
+  width: 22px;
+  height: 22px;
+  align-self: center;
+  color: var(--md-on-surface-variant);
+  transition: transform 0.18s ease;
+}
+
+#navpanel.is-collapsed .nav-head .chevron { transform: rotate(-90deg); }
+#navpanel.is-collapsed #nav-details { display: none; }
+
+/* Collapsed, the figure is the only thing on the card - a unit-bearing number
+   needs no label, and dropping it keeps the card narrow. */
+#navpanel.is-collapsed .nav-head .row-label { display: none; }
+
+#nav-details { margin-top: 6px; }
 
 /* Sheets are wider and centred: they carry controls, not readings. */
 .sheet {

@@ -45,6 +45,10 @@
         <path d="M3 14.2h6.6M3 9.6h3.2" stroke="currentColor" stroke-width="1.7"
               stroke-linecap="round"></path>
       </g>
+      <g id="ic-chevron">
+        <path d="M6.5 9.5 12 15l5.5-5.5" fill="none" stroke="currentColor"
+              stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"></path>
+      </g>
     </defs>
   </svg>
 
@@ -70,21 +74,26 @@
 
   <!-- Navigation card: shown once a destination is set -->
   <section id="navpanel" class="card hidden" role="status" aria-live="polite">
-    <div class="card-rows">
-      <div class="row">
-        <span class="row-label">Distanz</span>
-        <span class="row-value" id="val-distance">–</span>
+    <!-- The distance stays in the header, so it is readable collapsed too -
+         it is the one figure worth permanent screen space. -->
+    <button id="btn-toggle-nav" class="nav-head" aria-expanded="true" aria-controls="nav-details">
+      <span class="row-label">Distanz</span>
+      <span class="row-value" id="val-distance">–</span>
+      <svg class="icon chevron" viewBox="0 0 24 24" aria-hidden="true"><use href="#ic-chevron"></use></svg>
+    </button>
+    <div id="nav-details">
+      <div class="card-rows">
+        <div class="row">
+          <span class="row-label">Peilung</span>
+          <span class="row-value" id="val-bearing">–</span>
+        </div>
+        <div class="row">
+          <span class="row-label">ETA</span>
+          <span class="row-value" id="val-eta">–</span>
+        </div>
       </div>
-      <div class="row">
-        <span class="row-label">Peilung</span>
-        <span class="row-value" id="val-bearing">–</span>
-      </div>
-      <div class="row">
-        <span class="row-label">ETA</span>
-        <span class="row-value" id="val-eta">–</span>
-      </div>
+      <button id="btn-clear-target" class="btn-text">Ziel löschen</button>
     </div>
-    <button id="btn-clear-target" class="btn-text">Ziel löschen</button>
   </section>
 
   <!-- Distance-per-time projection -->

@@ -28,6 +28,7 @@ Mobilfunkempfang. Kein Ersatz für vorschriftsmäßige Seekarten und Ausrüstung
 | F17 | Kachelspeicher füllt sich beim Betrachten; bereits gefahrene Strecken bleiben ohne Empfang verfügbar | 0.6.0 |
 | F18 | Verwaiste Kacheln entfernter Ebenen werden beim Start automatisch geräumt | 0.6.0 |
 | F19 | Oberfläche nach Material 3, kontraststark und mit großen Messwerten | 0.7.0 |
+| F20 | Zielkarte einklappbar, eingeklappt nur die Distanz; Zustand bleibt erhalten | 0.7.1 |
 
 ## Nichtfunktionale Anforderungen
 
@@ -48,6 +49,7 @@ Mobilfunkempfang. Kein Ersatz für vorschriftsmäßige Seekarten und Ausrüstung
 | O5 | Abfragbare Tiefenwerte (Antippen → Tiefe) – blockiert durch einen Serverfehler des Dienstes, siehe B4 in `bugs.md` | extern blockiert |
 | O8 | Vorab-Download ganzer Gebiete. Untersagt durch die Nutzungsbedingungen von `tile.openstreetmap.org`; möglich nur mit einem Anbieter, der Prefetching gestattet – die meisten verlangen dafür einen API-Schlüssel | zu entscheiden |
 | O9 | Tiefendaten außerhalb Norwegens. Eine freie globale Entsprechung ist nicht bekannt | offen |
+| O10 | Tiefenlinien im küstennahen Flachwasser. Nicht durch Code lösbar – Kartverket hat diese Bereiche nur begrenzt vermessen, siehe B7 in `bugs.md` | extern begrenzt |
 | O7 | Offizielle ENC-Vektorkarten (S-57) über einen PRIMAR-Distributor – der einzige vollwertige Ersatz für Rasterkarten, aber lizenzpflichtig | Beschaffungsentscheidung |
 | O3 | Routen mit mehreren Wegpunkten statt nur einem Einzelziel | offen |
 | ~~O4~~ | ~~Google Material Design als gestalterische Grundlage~~ – umgesetzt in 0.7.0 (F19) | – |

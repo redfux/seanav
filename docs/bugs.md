@@ -5,31 +5,32 @@ stehen, damit sie bei einem Rückfall wiederauffindbar sind.
 
 ## Offen
 
-### B7 – Keine Tiefenlinien, weder im Flachen noch im Tiefen
-
-**Symptom:** Der Tiefendaten-Layer zeichnet Lotungen, Grunde und Schären, aber
-keine Tiefenkonturlinien. Anfangs sah es nach einem reinen Flachwasserproblem
-aus; bei genauerem Hinsehen waren die vermeintlichen Konturen im Tiefwasser die
-Umrisse von Grunden mit ihren Tiefenwerten.
-
-**Vermutung:** Der Sublayer für Konturen ist im Gruppen-Request `Dybdedata2`
-nicht enthalten. Die Layer-Liste des Dienstes führt neben der Gruppe unter
-anderem `Dybdelag`, `Dybdekontur`, `Grunne`, `Skjær`, `Dybdepunkt` und
-`Kystkontur`.
-
-**Aktueller Versuch (0.7.0):** `Dybdekontur` wird als **eigene Ebene**
-angefordert, nicht in denselben Request gemischt. Grund: ein WMS weist die
-gesamte GetMap-Anfrage zurück, sobald ein Layer-Name unbekannt ist. Getrennt
-kostet ein falscher Name nur diese eine Ebene, statt die Tiefendaten
-komplett auszublenden.
-
-**Falls die Ebene leer bleibt:** Der Name stimmt nicht oder der Layer ist an
-dieser Stelle leer. Die tatsächlichen Namen listet `compare.html` live aus den
-Capabilities – dort lassen sich die Sublayer auch einzeln durchschalten.
-
-**Status:** offen, Prüfung durch den Nutzer ausstehend.
+_(derzeit keine)_
 
 ## Behoben
+
+### B7 – Keine Tiefenlinien: kein Fehler, sondern Datenlage
+
+**Symptom:** Der Tiefendaten-Layer zeichnete Lotungen, Grunde und Schären, aber
+keine Tiefenkonturlinien.
+
+**Erste Ursache (behoben in 0.7.0):** Der Sublayer `Dybdekontur` ist im
+Gruppen-Request `Dybdedata2` nicht enthalten. Er wird jetzt als eigene Ebene
+angefordert – bewusst in einem getrennten Request, weil ein WMS die gesamte
+GetMap-Anfrage zurückweist, sobald ein Layer-Name unbekannt ist. Seitdem
+erscheinen die Konturen im offenen und tiefen Wasser, der Layer-Name war also
+richtig.
+
+**Verbleibende Lücke im Flachwasser: keine, die sich beheben ließe.** Kartverket
+weist ausdrücklich darauf hin, dass die flachsten küstennahen Bereiche nur
+begrenzt vermessen sind – aus technischen Gründen und wegen der Kosten. Die
+Konturen fehlen dort, weil keine Vermessungsdaten vorliegen, nicht wegen der
+Anfrage oder der Darstellung.
+
+Praktisch heißt das: küstennah tragen die Lotungen (`Dybdepunkt`) die
+Tiefeninformation, so wie auf der Papierseekarte auch. Wo Kartverket im
+Programm „Marine grunnkart i kystsonen" neu vermisst, kommen Konturen mit der
+Zeit dazu – ohne Zutun der App, da der WMS live abgefragt wird.
 
 ### B5 – Tiefenlinien im Flachwasser fehlten
 

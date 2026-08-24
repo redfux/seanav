@@ -6,6 +6,30 @@ Versionierung nach [SemVer](https://semver.org/lang/de/).
 Die Versionsnummer wird ausschließlich in `js/version.js` gepflegt; Footer und
 Service-Worker-Cachename leiten sich automatisch daraus ab.
 
+## [0.7.1] – 2026-08-22
+
+### Added
+
+- **Zielkarte einklappbar.** Eingeklappt bleibt nur die Distanz stehen; die
+  Karte schrumpft von 204 px auf 76 px Höhe. Der Zustand wird pro Gerät
+  gemerkt, Voreinstellung ausgeklappt, damit Peilung und ETA beim ersten Ziel
+  sichtbar sind. Eingeklappt entfällt zusätzlich das Label „Distanz" – eine
+  Zahl mit Einheit spricht für sich und die Karte bleibt schmal.
+
+### Fixed
+
+- Messwerte konnten in den Karten umbrechen. Ein umgebrochener Wert ist im
+  Vorbeischauen unlesbar und kostet genau die Höhe, die das Einklappen sparen
+  soll. Spalte auf 252 px verbreitert, Werte einzeilig erzwungen.
+
+### Notes
+
+- **B7 geklärt:** Die Tiefenlinien erscheinen seit 0.7.0 im offenen Wasser –
+  der Layer-Name `Dybdekontur` war also richtig. Dass sie küstennah fehlen,
+  liegt an fehlenden Vermessungsdaten: Kartverket weist darauf hin, dass die
+  flachsten küstennahen Bereiche nur begrenzt vermessen sind. Dort tragen die
+  Lotungen die Tiefeninformation, wie auf der Papierseekarte auch.
+
 ## [0.7.0] – 2026-08-22
 
 Oberfläche auf Material 3 umgebaut.
