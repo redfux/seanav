@@ -6,6 +6,30 @@ Versionierung nach [SemVer](https://semver.org/lang/de/).
 Die Versionsnummer wird ausschließlich in `js/version.js` gepflegt; Footer und
 Service-Worker-Cachename leiten sich automatisch daraus ab.
 
+## [0.9.1] – 2026-08-22
+
+### Fixed
+
+- **Die Konturebene lief im Multiply-Blend-Modus und war dadurch praktisch
+  unsichtbar.** Multiply war für die Gruppenebene richtig, die undurchsichtige
+  Flächenfüllungen hat; eine reine Linienebene hat nichts zu überdecken. Und
+  Tiefenlinien sind blass blau – multipliziert mit dem blassen Blau des
+  OSM-Wassers ergibt das fast keinen Unterschied. Die Lotungen sind nahezu
+  schwarz und überlebten es, die Linien nicht.
+  Die Ebene rendert jetzt ohne Blend, mit `brightness(0.5) saturate(2.2)`;
+  beides lässt Alpha unangetastet, der transparente Grund bleibt transparent.
+- Blend-Modus und Filter sind jetzt getrennte Eigenschaften der Quelle, statt
+  dass ein Blend-Modus für alle Overlays gilt
+
+### Changed
+
+- `compare.html` ist jetzt ein Tiefenlinien-Test statt eines Kartenlabors: es
+  holt dieselbe Kachel wie die App und wertet sie pixelweise aus – Anteil
+  gezeichneter Pixel, dunkelste Helligkeit, Farbanzahl –, zeigt sie vergrößert
+  über Schachbrett und stellt Gruppen-, Kontur-, Flächen- und Lotungsebene
+  nebeneinander. Damit lässt sich unterscheiden, ob eine Kachel leer ist oder
+  gezeichnet und nur unsichtbar dargestellt wird.
+
 ## [0.9.0] – 2026-08-22
 
 ### Changed

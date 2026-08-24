@@ -451,5 +451,13 @@ html, body {
  */
 .blend-multiply { mix-blend-mode: multiply; }
 
+/*
+ * Depth contours come off the service as pale hairlines, which vanish against
+ * the pale blue of the base map's water. Darkening and saturating brings them
+ * out. Both operate on the colour channels only, so fully transparent parts of
+ * the tile stay fully transparent.
+ */
+.filter-contours { filter: brightness(0.5) saturate(2.2); }
+
 /* Tiles missing from the cache while offline: visible as a gap, not alarming. */
 .tile-missing { opacity: 0.85; }

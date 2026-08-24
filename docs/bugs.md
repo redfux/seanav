@@ -5,7 +5,38 @@ stehen, damit sie bei einem Rückfall wiederauffindbar sind.
 
 ## Offen
 
-_(derzeit keine)_
+### B8 – Tiefenlinien weiterhin nicht sichtbar
+
+**Symptom:** Die Konturebene zeigt küstennah nichts, obwohl Lotungen und
+Seezeichen erscheinen.
+
+**Bisher dreimal falsch diagnostiziert** – erst der `tilematrix`-Parameter,
+dann die Maßstabs-Kompensation über `MAP_RESOLUTION`, dann die Datenlage. Die
+ersten beiden waren echte Fehler und sind behoben, erklären das Symptom aber
+nicht. Die dritte Erklärung stützt sich auf eine Aussage von Kartverket zur
+begrenzten Vermessung küstennaher Bereiche; sie kann stimmen, ist aber nicht
+belegt.
+
+**Jetzt behoben, unabhängig davon:** Die Konturebene lief im
+Multiply-Blend-Modus. Der war für die Gruppenebene richtig, die undurchsichtige
+Flächenfüllungen hat. Eine reine Linienebene hat nichts zu überdecken – und
+Tiefenlinien sind auf Seekarten blass blau. Blass blau multipliziert mit dem
+blassen Blau des OSM-Wassers ergibt fast keinen Unterschied. Die Lotungen sind
+nahezu schwarz und überlebten das, die Linien nicht.
+
+Die Ebene rendert jetzt ohne Blend und mit `brightness(0.5) saturate(2.2)`,
+was blasse Haarlinien gegen das Wasser lesbar macht. Beides lässt Alpha
+unangetastet, der transparente Grund bleibt transparent.
+
+**Offene Messung:** Ob der Dienst an der fraglichen Stelle überhaupt etwas
+zeichnet, ist damit noch nicht belegt. `compare.html` misst es jetzt: es holt
+dieselbe Kachel, die die App holt, und wertet sie pixelweise aus – Anteil
+gezeichneter Pixel, dunkelste Helligkeit, Anzahl Farben, dazu die Kachel
+vergrößert über Schachbrett. Das trennt die drei Fälle, die auf der Karte
+gleich aussehen: leere Kachel, gezeichnete aber unsichtbar gerenderte Kachel,
+oder gar keine Antwort.
+
+**Status:** Rendering-Fehler behoben, Datenfrage offen bis zur Messung.
 
 ## Behoben
 

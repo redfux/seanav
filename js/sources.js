@@ -164,7 +164,19 @@ const CHART_SOURCES = [
     minZoom: 8,
     maxNativeZoom: MAP_MAX_ZOOM,
     opaque: false,
-    blend: 'multiply',
+    /*
+     * No multiply here, unlike the group layer. Multiply exists to let opaque
+     * area fills through, and a contour layer draws only lines on a
+     * transparent ground - it has nothing to blend away. Worse, chart contours
+     * are drawn in a pale blue, and pale blue multiplied with the pale blue of
+     * OSM's water is very nearly no change at all. The soundings are almost
+     * black and survived it; the lines did not.
+     *
+     * The filter darkens and saturates what the service draws, so a hairline
+     * contour reads against the water instead of disappearing into it. Alpha
+     * is untouched by both, so the transparent ground stays transparent.
+     */
+    filter: 'contours',
     defaultOn: true,
     attribution: '&copy; Kartverket',
   },

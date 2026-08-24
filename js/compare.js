@@ -1,20 +1,18 @@
 /*
- * Chart source lab.
+ * Contour probe.
  *
- * The raster sea chart (sjokartraster) runs out of native resolution around
- * z15 and carries depths only as printed pixels, so it cannot answer "how
- * deep is it here". These are the freely available sources that can, layered
- * over it so their combination can be judged at real zoom levels:
+ * The depth contours are missing inshore and three explanations have already
+ * turned out wrong, so this page stops guessing and measures instead. For the
+ * current view it fetches the tiles the app would fetch and reports what the
+ * service actually returned: status, content type, byte size, and whether the
+ * image contains any drawing at all.
  *
- *   - Kartverket "Sjøkart - Dybdedata" (WMS): the public, unclassified depth
- *     data - contours and depth points - also used on norgeskart.no. Being a
- *     WMS it renders at the requested pixel size, so it stays sharp, and its
- *     layers are queryable via GetFeatureInfo.
- *   - OpenSeaMap seamarks: buoys, beacons and lights as a transparent raster
- *     overlay, CC-BY-SA.
- *   - OpenSeaMap depth contours (WMS).
+ * That separates the three possibilities that look identical on the map:
+ *   - the service returns an empty, fully transparent tile: no data here;
+ *   - it returns a tile with drawing that the app then renders invisibly;
+ *   - it returns an error or nothing at all.
  *
- * Maintenance page, not part of the app. Safe to delete once decided.
+ * Maintenance page, not part of the app.
  *
  * thought up by human, coded by ai
  */
@@ -23,211 +21,205 @@ const BERGEN = [60.39, 5.32];
 const START_ZOOM = 14;
 const NET_TIMEOUT_MS = 15000;
 
-const WMTS_BASE = 'https://cache.kartverket.no/v1/service';
+const OSM = 'https://tile.openstreetmap.org/{z}/{x}/{y}.png';
 const DEPTH_WMS = 'https://wms.geonorge.no/skwms1/wms.dybdedata2';
-const OSM_SEAMARK = 'https://tiles.openseamap.org/seamark/{z}/{x}/{y}.png';
-const OSM_DEPTH_WMS = 'https://depth.openseamap.org/cgi-bin/mapserv.fcgi';
+
+// Probed side by side: the group the app uses, and the contour sub-layer.
+const PROBE_LAYERS = ['Dybdedata2', 'Dybdekontur', 'Dybdelag', 'Dybdepunkt'];
 
 const logEl = document.getElementById('log');
-const logLines = [];
+const lines = [];
 function say(line, cls) {
-  logLines.push(cls ? `<span class="${cls}">${line}</span>` : line);
-  logEl.innerHTML = logLines.join('\n');
+  lines.push(cls ? `<span class="${cls}">${line}</span>` : line);
+  logEl.innerHTML = lines.join('\n');
   logEl.scrollTop = logEl.scrollHeight;
 }
 
-// --- Map and layers -------------------------------------------------------
+// --- Map ------------------------------------------------------------------
 
 const map = L.map('map', { center: BERGEN, zoom: START_ZOOM });
+L.tileLayer(OSM, { maxZoom: 19, attribution: '&copy; OpenStreetMap' }).addTo(map);
 
-const seaChart = L.tileLayer(
-  WMTS_BASE + '?service=WMTS&request=GetTile&version=1.0.0' +
-  '&layer=sjokartraster&style=default&format=image/png' +
-  '&tilematrixset=webmercator&tilematrix={z}&tilerow={y}&tilecol={x}',
-  { minZoom: 4, maxZoom: 18, attribution: '&copy; Kartverket' }
-).addTo(map);
+let previewLayer = null;
 
-const seamarks = L.tileLayer(OSM_SEAMARK, {
-  minZoom: 4, maxZoom: 18, opacity: 1,
-  attribution: '&copy; OpenSeaMap (CC-BY-SA)',
-});
-
-const osmDepth = L.tileLayer.wms(OSM_DEPTH_WMS, {
-  layers: 'contour,contour2',
-  format: 'image/png',
-  transparent: true,
-  version: '1.1.1',
-  attribution: '&copy; OpenSeaMap',
-});
-
-let depthLayer = null;
-const layerControl = L.control.layers(
-  { 'Sjøkartraster (Basis)': seaChart },
-  { 'OpenSeaMap Seezeichen': seamarks, 'OpenSeaMap Tiefenlinien': osmDepth }
-).addTo(map);
-
-// --- Kartverket depth data ------------------------------------------------
-
-let depthCaps = null;
-
-function buildDepthLayer(layerName) {
-  return L.tileLayer.wms(DEPTH_WMS, {
-    layers: layerName,
-    format: 'image/png',
-    transparent: true,
-    version: '1.3.0',
-    // A WMS renders on demand, so a high-DPI screen gets genuinely more
-    // pixels rather than an upsampled tile.
-    detectRetina: true,
-    maxZoom: 20,
-    opacity: document.getElementById('opacity').value / 100,
-    attribution: '&copy; Kartverket',
-  });
+// Deliberately no blending and no filter here: this page has to show what the
+// service sends, not what the app makes of it.
+function showLayer(name) {
+  if (previewLayer) map.removeLayer(previewLayer);
+  previewLayer = L.tileLayer.wms(DEPTH_WMS, {
+    layers: name, format: 'image/png', transparent: true, version: '1.3.0',
+    maxZoom: 19, attribution: '&copy; Kartverket',
+  }).addTo(map);
+  say(`Vorschau: ${name} (ohne Blend, ohne Filter)`);
 }
 
-function applyDepthLayer() {
-  const name = document.getElementById('depth-layer').value;
-  if (!name) return;
-  if (depthLayer) { layerControl.removeLayer(depthLayer); map.removeLayer(depthLayer); }
-  depthLayer = buildDepthLayer(name);
+// --- Tile maths -----------------------------------------------------------
 
-  let failed = 0;
-  depthLayer.on('tileerror', () => {
-    if (++failed === 1) say(`Tiefendaten "${name}": Kacheln laden nicht.`, 'bad');
-  });
-  depthLayer.on('load', () => { if (!failed) say(`Tiefendaten "${name}": geladen.`, 'ok'); });
+const WEB_MERCATOR_HALF = 20037508.342789244;
 
-  depthLayer.addTo(map);
-  layerControl.addOverlay(depthLayer, `Tiefendaten: ${name}`);
+function tileBBox3857(z, x, y) {
+  const span = (WEB_MERCATOR_HALF * 2) / Math.pow(2, z);
+  const minX = -WEB_MERCATOR_HALF + x * span;
+  const maxY = WEB_MERCATOR_HALF - y * span;
+  return { minX, minY: maxY - span, maxX: minX + span, maxY };
 }
 
-async function loadDepthCapabilities() {
-  const ctrl = new AbortController();
-  const timer = setTimeout(() => ctrl.abort(), NET_TIMEOUT_MS);
-  try {
-    const res = await fetch(DEPTH_WMS + '?service=WMS&request=GetCapabilities&version=1.3.0',
-      { signal: ctrl.signal });
-    const xml = new DOMParser().parseFromString(await res.text(), 'application/xml');
-    if (xml.querySelector('parsererror')) throw new Error('XML nicht parsebar');
-
-    // Only named layers can be requested; queryable ones answer GetFeatureInfo.
-    const layers = [...xml.querySelectorAll('Layer')]
-      .filter((l) => l.querySelector(':scope > Name'))
-      .map((l) => ({
-        name: l.querySelector(':scope > Name').textContent.trim(),
-        title: l.querySelector(':scope > Title')?.textContent?.trim() || '',
-        queryable: l.getAttribute('queryable') === '1',
-      }));
-
-    const infoFormats = [...xml.querySelectorAll('GetFeatureInfo > Format')]
-      .map((n) => n.textContent.trim());
-    const crs = [...new Set([...xml.querySelectorAll('CRS, SRS')].map((n) => n.textContent.trim()))];
-
-    return { layers, infoFormats, crs };
-  } finally {
-    clearTimeout(timer);
-  }
+function latLngToTile(latlng, z) {
+  const n = Math.pow(2, z);
+  const x = Math.floor(((latlng.lng + 180) / 360) * n);
+  const latRad = (latlng.lat * Math.PI) / 180;
+  const y = Math.floor(
+    ((1 - Math.log(Math.tan(latRad) + 1 / Math.cos(latRad)) / Math.PI) / 2) * n
+  );
+  return { x, y };
 }
 
-// --- Tap to query depth ---------------------------------------------------
-//
-// Leaflet has no GetFeatureInfo helper, so the request is assembled from the
-// current view: the map's projected bounds as BBOX, its pixel size as
-// WIDTH/HEIGHT, and the click position as I/J.
-
-async function queryDepthAt(latlng, containerPoint) {
-  if (!depthLayer) { say('Kein Tiefendaten-Layer aktiv.', 'bad'); return; }
-  const name = document.getElementById('depth-layer').value;
-  const size = map.getSize();
-  const bounds = map.getBounds();
-  const sw = L.CRS.EPSG3857.project(bounds.getSouthWest());
-  const ne = L.CRS.EPSG3857.project(bounds.getNorthEast());
-  const infoFormat = (depthCaps?.infoFormats || []).find((f) => /json/i.test(f))
-    || (depthCaps?.infoFormats || []).find((f) => /html|plain/i.test(f))
-    || 'text/html';
-
+// Same request the app makes, so the result carries over directly.
+function depthTileUrl(layer, z, x, y) {
+  const bbox = tileBBox3857(z, x, y);
   const params = new URLSearchParams({
-    service: 'WMS', request: 'GetFeatureInfo', version: '1.3.0',
-    layers: name, query_layers: name,
+    service: 'WMS', request: 'GetMap', version: '1.3.0',
+    layers: layer, styles: '', format: 'image/png', transparent: 'true',
     crs: 'EPSG:3857',
-    bbox: `${sw.x},${sw.y},${ne.x},${ne.y}`,
-    width: String(size.x), height: String(size.y),
-    i: String(Math.round(containerPoint.x)), j: String(Math.round(containerPoint.y)),
-    info_format: infoFormat,
-    feature_count: '10',
+    bbox: `${bbox.minX},${bbox.minY},${bbox.maxX},${bbox.maxY}`,
+    width: '512', height: '512', map_resolution: '144',
   });
+  return `${DEPTH_WMS}?${params}`;
+}
 
-  say(`Abfrage bei ${latlng.lat.toFixed(5)}, ${latlng.lng.toFixed(5)} (${infoFormat}) …`, 'hl');
+// --- Pixel analysis -------------------------------------------------------
+
+/*
+ * What is in the tile. "Gezeichnet" counts pixels that are not fully
+ * transparent - that is the number which decides whether the service drew
+ * anything. The darkest colour found says how much contrast the drawing has
+ * to begin with, which is what decides whether it can survive multiply
+ * blending over pale water.
+ */
+async function analyseTile(bitmap) {
+  const c = document.createElement('canvas');
+  c.width = bitmap.width;
+  c.height = bitmap.height;
+  const ctx = c.getContext('2d', { willReadFrequently: true });
+  ctx.drawImage(bitmap, 0, 0);
+  const data = ctx.getImageData(0, 0, c.width, c.height).data;
+
+  let drawn = 0;
+  let opaque = 0;
+  let darkest = 255;
+  const colours = new Set();
+  for (let i = 0; i < data.length; i += 4) {
+    const a = data[i + 3];
+    if (a === 0) continue;
+    drawn++;
+    if (a === 255) opaque++;
+    const lum = (data[i] * 0.299 + data[i + 1] * 0.587 + data[i + 2] * 0.114);
+    if (lum < darkest) darkest = lum;
+    if (colours.size <= 512) {
+      colours.add((data[i] << 16) | (data[i + 1] << 8) | data[i + 2]);
+    }
+  }
+  const total = c.width * c.height;
+  return {
+    size: `${c.width}x${c.height}`,
+    gezeichnetPct: (drawn / total) * 100,
+    deckendPct: (opaque / total) * 100,
+    dunkelste: drawn ? Math.round(darkest) : null,
+    farben: colours.size,
+    canvas: c,
+  };
+}
+
+async function probeLayer(layer, z, tile) {
+  const url = depthTileUrl(layer, z, tile.x, tile.y);
   const ctrl = new AbortController();
   const timer = setTimeout(() => ctrl.abort(), NET_TIMEOUT_MS);
   try {
-    const res = await fetch(`${DEPTH_WMS}?${params}`, { signal: ctrl.signal });
-    const text = await res.text();
-    const stripped = text.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
-    say(`HTTP ${res.status}: ${stripped.slice(0, 600) || '(leere Antwort)'}`,
-      res.ok && stripped ? 'ok' : 'bad');
+    const res = await fetch(url, { signal: ctrl.signal });
+    const type = res.headers.get('content-type') || '(unbekannt)';
+    if (!res.ok || !type.startsWith('image/')) {
+      const body = (await res.text()).replace(/\s+/g, ' ').slice(0, 200);
+      say(`${layer.padEnd(12)} HTTP ${res.status} ${type} — ${body}`, 'bad');
+      return;
+    }
+    const blob = await res.blob();
+    const stats = await analyseTile(await createImageBitmap(blob));
+
+    const verdict = stats.gezeichnetPct === 0
+      ? 'LEER – der Dienst zeichnet hier nichts'
+      : `${stats.gezeichnetPct.toFixed(2)} % gezeichnet, dunkelste Helligkeit ${stats.dunkelste}/255`;
+    say(`${layer.padEnd(12)} HTTP ${res.status} ${Math.round(blob.size / 1024)} kB ` +
+        `${stats.size} — ${verdict}`, stats.gezeichnetPct === 0 ? 'warn' : 'ok');
+    if (stats.gezeichnetPct > 0) {
+      say(`${''.padEnd(12)} davon deckend: ${stats.deckendPct.toFixed(2)} %, ` +
+          `${stats.farben > 512 ? '>512' : stats.farben} Farben`);
+    }
+    addPreview(layer, stats);
   } catch (e) {
-    say(`Abfrage fehlgeschlagen: ${ctrl.signal.aborted ? 'Timeout' : (e.message || e)}`, 'bad');
+    say(`${layer.padEnd(12)} ${ctrl.signal.aborted ? 'Timeout' : (e.message || e)}`, 'bad');
   } finally {
     clearTimeout(timer);
   }
 }
 
-map.on('click', (e) => queryDepthAt(e.latlng, e.containerPoint));
+// Shown over a checkerboard so transparent areas are recognisable as such.
+function addPreview(layer, stats) {
+  const box = document.getElementById('previews');
+  const cell = document.createElement('figure');
+  cell.className = 'preview';
+  stats.canvas.className = 'tile';
+  const cap = document.createElement('figcaption');
+  cap.textContent = `${layer} · ${stats.gezeichnetPct.toFixed(2)} %`;
+  cell.appendChild(stats.canvas);
+  cell.appendChild(cap);
+  box.appendChild(cell);
+}
+
+async function runProbe() {
+  document.getElementById('previews').textContent = '';
+  const z = map.getZoom();
+  const tile = latLngToTile(map.getCenter(), z);
+  say('');
+  say(`--- Kachel z${z}/${tile.x}/${tile.y} bei ${map.getCenter().lat.toFixed(5)}, ` +
+      `${map.getCenter().lng.toFixed(5)} ---`, 'hl');
+  for (const layer of PROBE_LAYERS) {
+    await probeLayer(layer, z, tile);
+  }
+  say('Fertig. "LEER" heißt: keine Daten an dieser Stelle. Eine niedrige');
+  say('dunkelste Helligkeit heißt kontrastreiche Zeichnung, eine hohe blasse.');
+}
 
 // --- Controls -------------------------------------------------------------
 
-document.getElementById('depth-layer').addEventListener('change', applyDepthLayer);
+document.getElementById('btn-probe').addEventListener('click', runProbe);
 
-document.getElementById('opacity').addEventListener('input', (e) => {
-  if (depthLayer) depthLayer.setOpacity(e.target.value / 100);
+document.getElementById('layer-select').addEventListener('change', (e) => {
+  showLayer(e.target.value);
 });
 
 document.getElementById('btn-locate').addEventListener('click', () => {
   if (!('geolocation' in navigator)) { say('Geolocation nicht verfügbar.', 'bad'); return; }
   navigator.geolocation.getCurrentPosition(
-    (pos) => map.setView([pos.coords.latitude, pos.coords.longitude], 16),
+    (pos) => map.setView([pos.coords.latitude, pos.coords.longitude], 15),
     () => say('Position nicht ermittelbar.', 'bad'),
     { enableHighAccuracy: true, timeout: 10000 }
   );
 });
 
-function updateZoomInfo() {
-  document.getElementById('zoominfo').textContent =
-    `z${map.getZoom()} · DPR ${window.devicePixelRatio.toFixed(2)}`;
-}
-map.on('zoomend', updateZoomInfo);
-updateZoomInfo();
+map.on('zoomend', () => {
+  document.getElementById('zoominfo').textContent = `z${map.getZoom()}`;
+});
 
-// --- Boot -----------------------------------------------------------------
-
-(async function init() {
-  const select = document.getElementById('depth-layer');
-  try {
-    depthCaps = await loadDepthCapabilities();
-    say(`Tiefendaten-WMS: ${depthCaps.layers.length} Layer, ` +
-        `${depthCaps.layers.filter((l) => l.queryable).length} davon abfragbar`);
-    say(`GetFeatureInfo-Formate: ${depthCaps.infoFormats.join(', ') || '(keine)'}`);
-    if (!depthCaps.crs.some((c) => /3857|900913/.test(c))) {
-      say('WARNUNG: EPSG:3857 fehlt in der CRS-Liste.', 'bad');
-    }
-
-    select.innerHTML = '';
-    depthCaps.layers.forEach((l) => {
-      const opt = document.createElement('option');
-      opt.value = l.name;
-      opt.textContent = `${l.name}${l.queryable ? ' [abfragbar]' : ''}` +
-        (l.title && l.title !== l.name ? ` – ${l.title}` : '');
-      select.appendChild(opt);
-    });
-    // Prefer a queryable layer - those are the ones that can answer a tap.
-    const preferred = depthCaps.layers.find((l) => l.queryable) || depthCaps.layers[0];
-    if (preferred) select.value = preferred.name;
-    say(`Layer-Namen: ${depthCaps.layers.map((l) => l.name).join(', ')}`);
-    applyDepthLayer();
-  } catch (e) {
-    say(`Tiefendaten-Capabilities fehlgeschlagen: ${e.message || e}`, 'bad');
-    select.innerHTML = '<option value="all">all</option>';
-    applyDepthLayer();
-  }
+(function init() {
+  const select = document.getElementById('layer-select');
+  PROBE_LAYERS.forEach((name) => {
+    const opt = document.createElement('option');
+    opt.value = name;
+    opt.textContent = name;
+    select.appendChild(opt);
+  });
+  select.value = 'Dybdekontur';
+  showLayer('Dybdekontur');
+  document.getElementById('zoominfo').textContent = `z${map.getZoom()}`;
+  say('Zur fraglichen Stelle fahren, dann „Kacheln analysieren".');
 })();

@@ -237,7 +237,11 @@ function createChartLayer(source) {
     // switched on: without this, a layer enabled last would sit on top of
     // everything, opaque fills included.
     zIndex: CHART_SOURCES.indexOf(source) + 1,
-    // Blend mode is a property of the source, applied to its tile container.
-    className: source.blend ? `blend-${source.blend}` : '',
+    // Blend mode and filter are properties of the source, applied to its tile
+    // container.
+    className: [
+      source.blend ? `blend-${source.blend}` : '',
+      source.filter ? `filter-${source.filter}` : '',
+    ].filter(Boolean).join(' '),
   });
 }
