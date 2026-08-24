@@ -11,6 +11,17 @@ _(derzeit keine offenen Punkte)_
 
 ## Erledigt
 
+- **„warum wird mir im pwa-Modus keine Akku-Anzeige/Uhrzeit mehr gezeigt, bzw.
+  wo ist die Statusleiste des Handys hin? bitte wieder sichtbar machen"**
+  (2026-08-24) Ursache war `display: fullscreen` im Manifest; behoben in
+  0.11.1 mit `standalone` und opaker iOS-Statusleiste.
+- **„wenn die Zielkachel minimiert ist … schreibe bitte auch noch die ETA
+  kleiner darunter und verkleinere das Feld"** (2026-08-24)
+  Umgesetzt in 0.11.1.
+- **„der +/- Button links sollte nach unten hin bündig mit dem letzten Button
+  rechts sein"** (2026-08-24) Umgesetzt in 0.11.1 über eine gemeinsame
+  Unterkante `--controls-bottom`.
+
 - **„das Handy darf nicht ausgehen, wenn die App aktiv ist"** (2026-08-24)
   Umgesetzt in 0.11.0 als Screen-Wake-Lock mit Wiederholung nach der ersten
   Berührung.

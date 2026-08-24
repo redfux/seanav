@@ -281,10 +281,18 @@ weil sie an der Linie entlangläuft statt quer dazu.
 
 ## Installation als PWA
 
-Installiert ist die App das, was sie sein soll: Vollbild ohne Browserleiste,
-eigenes Icon, eigener Speicher, Start ohne Empfang. Dafür nötig sind
-`manifest.json`, ein Service Worker mit `fetch`-Handler und Icons in 192 und
-512 px – alles vorhanden.
+Installiert ist die App das, was sie sein soll: ohne Browserleiste, eigenes
+Icon, eigener Speicher, Start ohne Empfang. Dafür nötig sind `manifest.json`,
+ein Service Worker mit `fetch`-Handler und Icons in 192 und 512 px – alles
+vorhanden.
+
+`display` ist `standalone`, nicht `fullscreen`. Vollbild blendet die
+Statusleiste des Telefons aus, und damit Uhrzeit und Akkustand – zwei Angaben,
+die auf dem Wasser dazugehören. Aus demselben Grund steht die
+iOS-Statusleiste auf `black` statt `black-translucent`: sonst liefe die Karte
+unter Uhr und Akkuanzeige hindurch. Eine bereits installierte App übernimmt den
+geänderten Modus erst, wenn der Browser das Manifest neu einliest – auf Android
+nach ein paar Stunden von selbst, sofort bei einer Neuinstallation.
 
 ### Icons
 

@@ -48,6 +48,10 @@
   /* Safe areas on notched phones */
   --inset-top: env(safe-area-inset-top, 0px);
   --inset-bottom: env(safe-area-inset-bottom, 0px);
+
+  /* Buttons on the left and on the right sit on one line, clear of the
+     credits strip and the footer below it. */
+  --controls-bottom: calc(var(--inset-bottom) + 66px);
 }
 
 * { box-sizing: border-box; }
@@ -252,9 +256,13 @@ html, body {
   z-index: 1000;
   top: calc(var(--inset-top) + 84px);
   left: 12px;
-  width: min(252px, 72vw);
+  /* No width of its own: each card takes only what it needs, and what it does
+     not need stays chart. align-items keeps them from stretching to the widest
+     one among them. */
+  max-width: min(252px, 72vw);
   display: flex;
   flex-direction: column;
+  align-items: flex-start;
   gap: 10px;
   pointer-events: none;
 }
@@ -262,15 +270,22 @@ html, body {
 #readouts .card {
   position: static;
   pointer-events: auto;
+  max-width: 100%;
 }
+
+/* The install hint is text and wants the full column; the readings do not. */
+#installbanner { width: min(252px, 72vw); }
 
 /* Collapsible destination card. Collapsed it keeps only the distance, which
    is what the card is worth permanent space for. */
+/* Tighter than the other cards: this one is on screen the whole time. */
+#navpanel { padding: 8px 12px; }
+
 .nav-head {
   appearance: none;
   width: 100%;
   display: flex;
-  align-items: baseline;
+  align-items: center;
   justify-content: space-between;
   gap: 10px;
   padding: 0;
@@ -294,11 +309,42 @@ html, body {
 #navpanel.is-collapsed .nav-head .chevron { transform: rotate(-90deg); }
 #navpanel.is-collapsed #nav-details { display: none; }
 
-/* Collapsed, the figure is the only thing on the card - a unit-bearing number
-   needs no label, and dropping it keeps the card narrow. */
+/* Collapsed, the figures are the only thing on the card - a unit-bearing
+   number needs no label, and dropping it keeps the card narrow. */
 #navpanel.is-collapsed .nav-head .row-label { display: none; }
 
 #nav-details { margin-top: 6px; }
+
+/* Distance over ETA: the distance is the figure being read, the ETA the
+   footnote to it. Both stay in the header, so a collapsed card still carries
+   them. */
+.nav-figures {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+}
+
+.nav-figure-line {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+}
+
+.nav-eta {
+  font-family: var(--font-numeric);
+  font-size: 13px;
+  line-height: 1.2;
+  color: var(--md-on-surface-variant);
+  white-space: nowrap;
+}
+
+.nav-eta-label {
+  font-family: var(--font);
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
 
 /* Sheets are wider and centred: they carry controls, not readings. */
 .sheet {
@@ -424,8 +470,7 @@ html, body {
 #fabs {
   position: absolute;
   right: 12px;
-  /* Clear of both the attribution strip and the footer line below it. */
-  bottom: calc(var(--inset-bottom) + 66px);
+  bottom: var(--controls-bottom);
   z-index: 1000;
   display: flex;
   flex-direction: column;
@@ -480,7 +525,7 @@ html, body {
 #zoomctl {
   position: absolute;
   left: 12px;
-  bottom: calc(var(--inset-bottom) + 40px);
+  bottom: var(--controls-bottom);
   z-index: 1000;
   display: flex;
   flex-direction: column;

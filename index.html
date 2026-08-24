@@ -12,12 +12,14 @@
   <meta name="theme-color" content="#101418">
   <meta name="description" content="Orientierungshilfe für Bootsfahrten: Position, Kurs, Ziel und Tiefendaten, auch ohne Mobilfunkempfang.">
   <!-- iOS reads none of the manifest: installed appearance, title and icon
-       come from these instead. -->
+       come from these instead. The status bar stays visible and opaque -
+       "black-translucent" would run the map underneath the clock and the
+       battery, and on the water those two are worth reading. -->
   <link rel="icon" href="icons/icon.svg" type="image/svg+xml">
   <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-title" content="SeeNavi">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
   <meta name="mobile-web-app-capable" content="yes">
 </head>
 <body>
@@ -116,11 +118,17 @@
 
   <!-- Navigation card: shown once a destination is set -->
   <section id="navpanel" class="card hidden" role="status" aria-live="polite">
-    <!-- The distance stays in the header, so it is readable collapsed too -
-         it is the one figure worth permanent screen space. -->
+    <!-- Distance and ETA stay in the header, so both are readable collapsed -
+         they are the two figures worth permanent screen space. The card is
+         only as wide as they are; the rest belongs to the chart. -->
     <button id="btn-toggle-nav" class="nav-head" aria-expanded="true" aria-controls="nav-details">
-      <span class="row-label">Distanz</span>
-      <span class="row-value" id="val-distance">–</span>
+      <span class="nav-figures">
+        <span class="nav-figure-line">
+          <span class="row-label">Distanz</span>
+          <span class="row-value" id="val-distance">–</span>
+        </span>
+        <span class="nav-eta"><span class="nav-eta-label">ETA</span> <span id="val-eta">–</span></span>
+      </span>
       <svg class="icon chevron" viewBox="0 0 24 24" aria-hidden="true"><use href="#ic-chevron"></use></svg>
     </button>
     <div id="nav-details">
@@ -128,10 +136,6 @@
         <div class="row">
           <span class="row-label">Peilung</span>
           <span class="row-value" id="val-bearing">–</span>
-        </div>
-        <div class="row">
-          <span class="row-label">ETA</span>
-          <span class="row-value" id="val-eta">–</span>
         </div>
       </div>
       <p class="card-note hidden" id="target-lock-hint">Ziel fixiert – ein Tippen

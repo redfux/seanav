@@ -6,6 +6,28 @@ Versionierung nach [SemVer](https://semver.org/lang/de/).
 Die Versionsnummer wird ausschließlich in `js/version.js` gepflegt; Footer und
 Service-Worker-Cachename leiten sich automatisch daraus ab.
 
+## [0.11.1] – 2026-08-24
+
+### Fixed
+
+- **Die Statusleiste des Telefons war in der installierten App verschwunden.**
+  `display` stand auf `fullscreen`, was Uhrzeit und Akkustand ausblendet – auf
+  dem Wasser zwei Angaben, die dazugehören. Jetzt `standalone`, und die
+  iOS-Statusleiste steht auf `black` statt `black-translucent`, damit die Karte
+  nicht unter Uhr und Akkuanzeige hindurchläuft. Eine bereits installierte App
+  übernimmt das, sobald der Browser das Manifest neu einliest; sofort nach
+  einer Neuinstallation.
+- Die Zoomknöpfe links schließen unten bündig mit der untersten Schaltfläche
+  rechts ab; beide Seiten hängen jetzt an derselben Kante.
+
+### Changed
+
+- **Die Zielkarte ist deutlich kleiner.** Eingeklappt trägt sie die Distanz und
+  darunter klein die ETA und ist damit 157 statt 252 Pixel breit; die
+  Ablesespalte gibt keinem Feld mehr eine feste Breite vor, jede Karte nimmt
+  nur den Platz, den ihr Inhalt braucht. Die ETA ist damit auch eingeklappt
+  ablesbar, statt nur in der ausgeklappten Karte zu stehen.
+
 ## [0.11.0] – 2026-08-24
 
 ### Added
