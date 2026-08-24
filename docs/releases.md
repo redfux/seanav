@@ -6,6 +6,45 @@ Versionierung nach [SemVer](https://semver.org/lang/de/).
 Die Versionsnummer wird ausschließlich in `js/version.js` gepflegt; Footer und
 Service-Worker-Cachename leiten sich automatisch daraus ab.
 
+## [0.11.0] – 2026-08-24
+
+### Added
+
+- **Der Bildschirm bleibt an**, solange die App vorn ist. Das System gibt die
+  Sperre beim Wechsel in den Hintergrund selbst frei, ein Telefon in der Tasche
+  verbraucht also nichts. Browser, die die Sperre erst nach einer Berührung
+  erteilen, bekommen einen zweiten Versuch beim ersten Tap; erst wenn auch der
+  scheitert, meldet die App es.
+- **Die Karte folgt der Position.** Sie hält das Boot in der Mitte, bis sie
+  verschoben wird – Zoomen beendet das Folgen nicht. Der Positionsknopf
+  schaltet es wieder ein und zentriert, ohne die Zoomstufe anzufassen. Nur der
+  allererste Fix setzt noch eine Zoomstufe.
+- **Eigene Position als Boot**, spitzer Bug, flaches Heck, in den Kurs gedreht.
+  Ein Punkt sagt, wo das Boot ist; das hier sagt, wohin es zeigt.
+- **Karte wahlweise nordwärts oder in Fahrtrichtung.** Nordung ist der
+  Lesemodus und passt zur Papierkarte, Fahrtrichtung der Steuermodus: was oben
+  gezeichnet ist, liegt voraus. Umschalten über den Kompassknopf, die Wahl
+  bleibt gespeichert.
+
+### Changed
+
+- Der Zielmarker ist eine eigene Nadel statt Leaflets Standardsymbol – nur ein
+  eigenes Element lässt sich aufrecht halten, während die Karte darunter dreht.
+- Zoomknöpfe und Kartennachweis sitzen außerhalb der Karte statt als
+  Leaflet-Controls darin: im gedrehten, übergroßen Kartencontainer lägen sie
+  außerhalb des Bildschirms und würden mitdrehen. Der Nachweis wird jetzt aus
+  den eingeschalteten Ebenen zusammengesetzt.
+- Im Fahrtrichtungsmodus ist Trägheits-Panning abgeschaltet und die Karte lädt
+  rund das 2,5-fache an Kacheln: ein gedrehtes Rechteck deckt das Fenster nur,
+  wenn der Container die Diagonale als Kantenlänge hat. Die Nordung bleibt
+  unverändert fenstergroß.
+
+### Fixed
+
+- Ein GPS-Fix während einer laufenden Zoom-Animation brach diese ab und ließ
+  den Zoom auf den Ausgangswert zurückfallen. Das Folgen wartet die Animation
+  jetzt ab.
+
 ## [0.10.0] – 2026-08-24
 
 ### Added

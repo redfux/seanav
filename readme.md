@@ -17,6 +17,10 @@ kein Build-Schritt.
 - Seezeichen (Tonnen, Baken, Feuer) aus OpenSeaMap
 - Einzelne Kartenebenen über 🗺️ ein- und ausschaltbar
 - Eigene Position per Geräte-GPS (`navigator.geolocation`)
+- Eigene Position als Bootssymbol, gedreht in den aktuellen Kurs
+- Karte wahlweise nordwärts oder in Fahrtrichtung gedreht
+- Karte folgt der Position, bis man sie verschiebt
+- Bildschirm bleibt an, solange die App vorn ist
 - Aktueller Kurs (COG) als Linie auf der Karte
 - Ziel per Klick auf die Karte setzen, mit Distanz/Peilung/ETA; nach einer
   Minute ohne Änderung fixiert es sich gegen versehentliches Verschieben
@@ -48,7 +52,15 @@ relativ und funktionieren daher auch unter dem Unterpfad `/seanav/`.
    Kurs, Geschwindigkeit (in Knoten) und GPS-Status
 2. Ziel per Klick/Tap auf die Karte setzen – das Navigationspanel zeigt
    Distanz, Peilung und ETA, „Ziel löschen" entfernt es wieder
-3. 📍 springt zur eigenen Position, 📐 blendet die Distanzmarken auf der Kurslinie ein/aus
+3. 📍 schaltet das Folgen wieder ein und springt zur eigenen Position – die
+   Zoomstufe bleibt dabei, wie sie ist. Die Karte folgt dem Boot von selbst,
+   bis man sie einmal verschiebt
+4. Der Kompassknopf schaltet zwischen **Nordung** (Karte steht, Boot dreht) und
+   **Fahrtrichtung** (Karte dreht, Boot zeigt nach oben)
+5. 📐 blendet die Distanzmarken auf der Kurslinie ein/aus
+
+Der Bildschirm bleibt an, solange die App im Vordergrund ist. Lehnt der Browser
+das ab, sagt die App es einmal – dann schaltet sich das Display wie gewohnt ab.
 
 Das Ziel fixiert sich eine Minute nach der letzten Änderung: ab dann verschiebt
 ein Tap auf die Karte es nicht mehr, der Marker bekommt einen leuchtenden Rand

@@ -22,7 +22,10 @@
 </head>
 <body>
 
-  <div id="map"></div>
+  <!-- The map turns inside this window. It is deliberately larger than the
+       window (see js/rotate.js), so no empty corner shows up when it is turned
+       into the direction of travel; the window clips the overhang. -->
+  <div id="mapviewport"><div id="map"></div></div>
 
   <!-- Icon set. Drawn here once and referenced with <use>, so the markup stays
        readable and no icon font or external sprite has to be loaded. -->
@@ -53,6 +56,24 @@
               stroke-width="1.9" stroke-linejoin="round"></path>
         <path d="M3 14.2h6.6M3 9.6h3.2" stroke="currentColor" stroke-width="1.7"
               stroke-linecap="round"></path>
+      </g>
+      <g id="ic-northup">
+        <path d="M12 2.6 6.4 21.4 12 17.4l5.6 4z" fill="none" stroke="currentColor"
+              stroke-width="1.9" stroke-linejoin="round"></path>
+        <path d="M12 2.6 12 17.4" fill="none" stroke="currentColor" stroke-width="1.9"></path>
+      </g>
+      <g id="ic-courseup">
+        <circle cx="12" cy="12" r="9.2" fill="none" stroke="currentColor"
+                stroke-width="1.8" opacity="0.55"></circle>
+        <path d="M12 5.4 16.4 16.6 12 14.2 7.6 16.6z"></path>
+      </g>
+      <g id="ic-plus">
+        <path d="M12 6v12M6 12h12" fill="none" stroke="currentColor"
+              stroke-width="2.2" stroke-linecap="round"></path>
+      </g>
+      <g id="ic-minus">
+        <path d="M6 12h12" fill="none" stroke="currentColor"
+              stroke-width="2.2" stroke-linecap="round"></path>
       </g>
       <g id="ic-chevron">
         <path d="M6.5 9.5 12 15l5.5-5.5" fill="none" stroke="currentColor"
@@ -152,7 +173,25 @@
     <button id="btn-toggle-proj" class="fab" title="Distanzmarken auf der Kurslinie" aria-label="Distanzmarken auf der Kurslinie">
       <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><use href="#ic-projection"></use></svg>
     </button>
+    <button id="btn-toggle-orientation" class="fab" aria-pressed="false"
+            title="Karte nach Norden ausrichten" aria-label="Kartenausrichtung">
+      <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><use id="ic-orientation-use" href="#ic-northup"></use></svg>
+    </button>
   </nav>
+
+  <!-- Zoom, and the map credits: both used to be Leaflet controls inside the
+       map. They cannot stay there - the map is oversized and turns, so its
+       corners are off screen and would turn with it. -->
+  <div id="zoomctl">
+    <button id="btn-zoom-in" class="zoom-btn" title="Hineinzoomen" aria-label="Hineinzoomen">
+      <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><use href="#ic-plus"></use></svg>
+    </button>
+    <button id="btn-zoom-out" class="zoom-btn" title="Herauszoomen" aria-label="Herauszoomen">
+      <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><use href="#ic-minus"></use></svg>
+    </button>
+  </div>
+
+  <div id="attribution"></div>
 
   <!-- Short-lived feedback for actions that otherwise leave no trace, e.g. a
        tap on the map that a fixed destination has ignored. -->
@@ -164,7 +203,9 @@
   <script src="js/version.js"></script>
   <script src="js/sources.js"></script>
   <script src="js/tilecache.js"></script>
+  <script src="js/rotate.js"></script>
   <script src="js/app.js"></script>
   <script src="js/install.js"></script>
+  <script src="js/wakelock.js"></script>
 </body>
 </html>

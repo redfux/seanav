@@ -11,6 +11,22 @@ _(derzeit keine offenen Punkte)_
 
 ## Erledigt
 
+- **„das Handy darf nicht ausgehen, wenn die App aktiv ist"** (2026-08-24)
+  Umgesetzt in 0.11.0 als Screen-Wake-Lock mit Wiederholung nach der ersten
+  Berührung.
+- **„die Karte sollte immer mit der aktuellen Position mitwandern und die
+  Zoomstufe nicht verändern, wenn auf den 'aktuelle Position'-Button geklickt
+  würde, solange, bis die Karte manuell verschoben wurde"** (2026-08-24)
+  Umgesetzt in 0.11.0 als Folgemodus; der Positionsknopf zentriert ohne
+  Zoomwechsel, Ziehen beendet das Folgen.
+- **„das Icon für die aktuelle Position sollte eine Art Boot, mit spitzem Bug
+  und flachem Heck sein"** (2026-08-24)
+  Umgesetzt in 0.11.0, in den Kurs gedreht.
+- **„die Karte sollte einmal nordwärts und einmal dynamisch in Fahrtrichtung
+  zeigen"** (2026-08-24)
+  Umgesetzt in 0.11.0 über den Kompassknopf; die Drehung samt der nötigen
+  Leaflet-Korrekturen steht in `js/rotate.js`.
+
 - **„mach alles noch PWA-ready, mit Installationshinweis im Browser, und
   erstelle ein passendes Icon für die App"** (2026-08-24)
   Umgesetzt in 0.10.0: Manifest vervollständigt, Kompass-Icon in zwei

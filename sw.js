@@ -29,6 +29,8 @@ const SHELL_FILES = [
   './js/app.js',
   './js/tilecache.js',
   './js/install.js',
+  './js/rotate.js',
+  './js/wakelock.js',
   './vendor/leaflet.js',
   './vendor/leaflet.css',
   './vendor/images/marker-icon.png',

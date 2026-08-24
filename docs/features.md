@@ -33,6 +33,10 @@ Mobilfunkempfang. Kein Ersatz für vorschriftsmäßige Seekarten und Ausrüstung
 | F22 | Tiefenzonen farblich unterscheidbar – gemessene Sättigungsanhebung statt blasser Stufen | 0.9.2 |
 | F23 | Als App installierbar: Manifest, eigene Icons, Installationshinweis im Browser (inkl. iOS-Weg über das Teilen-Menü) | 0.10.0 |
 | F24 | Ziel fixiert sich eine Minute nach der letzten Änderung; lösbar nur über „Ziel löschen" | 0.10.0 |
+| F25 | Bildschirm bleibt an, solange die App im Vordergrund ist | 0.11.0 |
+| F26 | Karte folgt der Position, bis sie verschoben wird; der Positionsknopf schaltet das Folgen wieder ein, ohne die Zoomstufe zu ändern | 0.11.0 |
+| F27 | Eigene Position als Bootssymbol mit spitzem Bug und flachem Heck, gedreht in den Kurs | 0.11.0 |
+| F28 | Karte wahlweise nach Norden oder dynamisch in Fahrtrichtung ausgerichtet | 0.11.0 |
 
 ## Nichtfunktionale Anforderungen
 

@@ -57,6 +57,12 @@ const STALE_FIX_MS = 8000;           // GPS fix older than this counts as lost
 const TARGET_LOCK_MS = 60000;
 const SNACK_MS = 3500;
 
+// Zoom for the very first fix. Afterwards the zoom is the user's business and
+// is never changed again by following or by the position button.
+const INITIAL_FIX_ZOOM = 14;
+
+const ORIENTATION_KEY = 'seenavi.map.orientation';
+
 // --- State -------------------------------------------------------------
 let map;
 const chartLayers = new Map(); // source id -> Leaflet layer, for those switched on
@@ -67,6 +73,8 @@ let projectionEnabled = true;
 let targetMarker;
 let targetLatLng = null;
 let targetLine;
+let followMode = true;        // map keeps the boat centred until the map is dragged
+let mapZooming = false;       // true while a zoom animation is running
 let targetLocked = false;     // set after TARGET_LOCK_MS without a change
 let targetLockTimer = null;
 let snackTimer = null;
@@ -127,18 +135,31 @@ function initMap() {
     // Placed manually below: the default top-left corner is where the
     // readout cards sit.
     zoomControl: false,
-    attributionControl: true,
+    // Both are rebuilt outside the map: the map container is oversized and
+    // turns, so a control in its corner would be off screen and upside down.
+    attributionControl: false,
     center: BERGEN_CENTER,
     zoom: 12,
     minZoom: 4,
     maxZoom: MAP_MAX_ZOOM,
   });
 
-  L.control.zoom({ position: 'bottomleft' }).addTo(map);
+  MapOrientation.init(map);
 
   CHART_SOURCES.forEach((source) => setLayerEnabled(source, layerPreference(source)));
+  refreshAttribution();
 
   map.on('click', (e) => requestTarget(e.latlng));
+
+  // Dragging the map is the one gesture that means "I want to look somewhere
+  // else". Zooming is not: it keeps the boat in view, so following survives it.
+  map.on('dragstart', () => setFollow(false));
+
+  // A fix arriving mid-zoom would re-centre at the zoom level the animation
+  // has not reached yet, which cancels the zoom and drops back to where it
+  // started. Following waits the animation out; the next fix is a second away.
+  map.on('zoomstart', () => { mapZooming = true; });
+  map.on('zoomend', () => { mapZooming = false; });
 
   // Which marks fit depends on the view, not only on the fix: zooming out can
   // crowd them together, panning can move one off screen.
@@ -181,10 +202,28 @@ function setLayerEnabled(source, on) {
     chartLayers.delete(source.id);
   }
   storeLayerPreference(source.id, on);
+  refreshAttribution();
 }
 
 function enabledSources() {
   return CHART_SOURCES.filter((s) => chartLayers.has(s.id));
+}
+
+/*
+ * Map credits, rebuilt from the layers actually switched on. Every one of the
+ * three services requires attribution, so this is a licence condition rather
+ * than decoration - it used to be Leaflet's own control, which cannot stay
+ * inside a map that turns.
+ */
+function refreshAttribution() {
+  const credits = ['<a href="https://leafletjs.com/">Leaflet</a>'];
+  enabledSources().forEach((source) => {
+    if (source.attribution && !credits.includes(source.attribution)) {
+      credits.push(source.attribution);
+    }
+  });
+  // Built entirely from constants in js/sources.js, never from input.
+  document.getElementById('attribution').innerHTML = credits.join(' | ');
 }
 
 // Builds the layer checkboxes from the registry, so adding a source needs no
@@ -265,6 +304,9 @@ function onPosition(pos) {
   }
 
   setGpsStatus('Fix ok');
+  // Turn the map first: the marks drawn below are placed against the rotation
+  // that is in effect.
+  MapOrientation.setHeading(currentHeadingDeg);
   updatePositionMarker(fix);
   updateStatusBar();
   updateCourseLine(fix);
@@ -297,20 +339,61 @@ function derivedHeading() {
 
 // --- Map drawing -----------------------------------------------------------
 
+/*
+ * Own position as a hull: pointed bow, flat stern, turned into the course.
+ * A dot says where the boat is, this says which way it is pointing - the
+ * difference that matters when a channel has to be lined up.
+ *
+ * Not interactive, so a tap on the boat still reaches the map and can set a
+ * destination, and drawn above everything else.
+ */
+function boatIcon() {
+  return L.divIcon({
+    className: 'boat-icon',
+    html: '<svg viewBox="0 0 24 30" aria-hidden="true">' +
+      '<path d="M12 1.2c4.8 5.8 8.6 12.3 8.6 17.3v9.1H3.4v-9.1c0-5 3.8-11.5 8.6-17.3z" ' +
+      'fill="#2ec4b6" stroke="#06231f" stroke-width="1.7" stroke-linejoin="round"/>' +
+      '<path d="M12 7v16" stroke="#06231f" stroke-width="1.5" opacity="0.45"/>' +
+      '</svg>',
+    iconSize: [34, 40],
+    iconAnchor: [17, 20],
+  });
+}
+
 function updatePositionMarker(fix) {
   const latlng = [fix.lat, fix.lng];
   if (!positionMarker) {
-    positionMarker = L.circleMarker(latlng, {
-      radius: 7,
-      color: '#06d6a0',
-      weight: 2,
-      fillColor: '#2ec4b6',
-      fillOpacity: 0.9,
+    positionMarker = L.marker(latlng, {
+      icon: boatIcon(),
+      interactive: false,
+      keyboard: false,
+      zIndexOffset: 1000,
     }).addTo(map);
-    map.setView(latlng, 14);
+    // Only the first fix sets a zoom - from then on the zoom belongs to the
+    // user and neither following nor the position button touches it.
+    map.setView(latlng, INITIAL_FIX_ZOOM);
   } else {
     positionMarker.setLatLng(latlng);
+    if (followMode && !mapZooming) map.setView(latlng, map.getZoom(), { animate: false });
   }
+  updateBoatHeading();
+}
+
+// The heading is geographic in both modes: north-up the map stands still and
+// the boat turns, course-up the map turns underneath and the boat ends up
+// pointing at the top of the screen.
+function updateBoatHeading() {
+  const el = positionMarker && positionMarker.getElement();
+  if (!el) return;
+  const heading = currentHeadingDeg === null ? 0 : currentHeadingDeg;
+  el.style.setProperty('--rot', `${heading.toFixed(1)}deg`);
+}
+
+// Following is on until the map is dragged, and back on at the touch of the
+// position button. The button shows which of the two it is.
+function setFollow(on) {
+  followMode = on;
+  document.getElementById('btn-locate').classList.toggle('is-active', on);
 }
 
 function updateCourseLine(fix) {
@@ -375,17 +458,22 @@ function formatMarkMinutes(seconds) {
 }
 
 /*
- * Rotation for text running along the course line, in screen degrees. Heading
- * 0 points up, so the line's screen direction is (sin h, -cos h). Text past
- * the vertical is flipped by 180 degrees, otherwise it would read upside down
- * on westerly courses.
+ * Rotation for text running along the course line. Heading 0 points up on a
+ * north-up map, so the line's direction there is (sin h, -cos h).
+ *
+ * The label is a child of the map, so a turned map turns it as well: the angle
+ * it is given is a local one, while whether it reads upside down depends on
+ * where it ends up on screen. The flip is therefore decided on the screen
+ * angle and the result converted back.
  */
 function courseTextAngle() {
   const rad = toRad(currentHeadingDeg);
-  let deg = toDeg(Math.atan2(-Math.cos(rad), Math.sin(rad)));
-  if (deg > 90) deg -= 180;
-  if (deg < -90) deg += 180;
-  return deg;
+  const local = toDeg(Math.atan2(-Math.cos(rad), Math.sin(rad)));
+  const mapRot = -MapOrientation.bearing;
+  let screen = ((local + mapRot + 540) % 360) - 180;
+  if (screen > 90) screen -= 180;
+  if (screen < -90) screen += 180;
+  return screen - mapRot;
 }
 
 function drawProjectionMarks(marks) {
@@ -444,10 +532,25 @@ function requestTarget(latlng) {
   setTarget(latlng);
 }
 
+// Own pin instead of Leaflet's image: only an element of our own can be kept
+// upright while the map turns underneath it.
+function targetIcon() {
+  return L.divIcon({
+    className: 'target-icon',
+    html: '<svg viewBox="0 0 24 34" aria-hidden="true">' +
+      '<path d="M12 1.6c5 0 9.1 4 9.1 8.9 0 6.4-9.1 21.9-9.1 21.9S2.9 16.9 2.9 10.5' +
+      'c0-4.9 4.1-8.9 9.1-8.9z" fill="#4a9bff" stroke="#06131f" stroke-width="1.6"/>' +
+      '<circle cx="12" cy="10.5" r="3.5" fill="#e6eaef"/>' +
+      '</svg>',
+    iconSize: [30, 42],
+    iconAnchor: [15, 40],
+  });
+}
+
 function setTarget(latlng) {
   targetLatLng = { lat: latlng.lat, lng: latlng.lng };
   if (!targetMarker) {
-    targetMarker = L.marker(latlng, { title: 'Ziel' }).addTo(map);
+    targetMarker = L.marker(latlng, { title: 'Ziel', icon: targetIcon() }).addTo(map);
   } else {
     targetMarker.setLatLng(latlng);
   }
@@ -679,7 +782,17 @@ async function maintainCache() {
 
 function wireToolbar() {
   document.getElementById('btn-locate').addEventListener('click', () => {
-    if (positionMarker) map.setView(positionMarker.getLatLng(), 15);
+    setFollow(true);
+    // Keeping the zoom is the point: the button means "back to me", not
+    // "start over at some zoom level I did not choose".
+    if (positionMarker) map.setView(positionMarker.getLatLng(), map.getZoom());
+  });
+
+  document.getElementById('btn-zoom-in').addEventListener('click', () => map.zoomIn());
+  document.getElementById('btn-zoom-out').addEventListener('click', () => map.zoomOut());
+
+  document.getElementById('btn-toggle-orientation').addEventListener('click', () => {
+    setOrientation(MapOrientation.isCourseUp() ? 'north' : 'course');
   });
 
   document.getElementById('btn-toggle-storage').addEventListener('click', () => {
@@ -700,8 +813,45 @@ function wireToolbar() {
 
   wireNavCollapse();
 
-  // The marks start enabled, so their control starts active.
+  // The marks start enabled, so their control starts active; following starts
+  // on as well.
   document.getElementById('btn-toggle-proj').classList.add('is-active');
+  setFollow(true);
+  setOrientation(storedOrientation());
+}
+
+/*
+ * North-up or course-up. North-up is the chart-reading mode: it matches the
+ * paper chart and the surroundings keep their places. Course-up is the
+ * steering mode: what is drawn ahead is what lies ahead. Which one is wanted
+ * is a matter of the moment, so it is a switch, and the choice is remembered.
+ */
+function storedOrientation() {
+  try {
+    return localStorage.getItem(ORIENTATION_KEY) === 'course' ? 'course' : 'north';
+  } catch (e) {
+    return 'north';
+  }
+}
+
+function setOrientation(mode) {
+  MapOrientation.setMode(mode);
+  const courseUp = mode === 'course';
+  const button = document.getElementById('btn-toggle-orientation');
+  button.classList.toggle('is-active', courseUp);
+  button.setAttribute('aria-pressed', courseUp ? 'true' : 'false');
+  button.title = courseUp ? 'Karte dreht sich in Fahrtrichtung' : 'Karte nach Norden ausgerichtet';
+  document.getElementById('ic-orientation-use')
+    .setAttribute('href', courseUp ? '#ic-courseup' : '#ic-northup');
+  try {
+    localStorage.setItem(ORIENTATION_KEY, mode);
+  } catch (e) { /* the choice then just will not survive a reload */ }
+
+  // Take up the current heading straight away instead of waiting for the next
+  // fix, and redraw the marks: their angles are computed against the rotation.
+  MapOrientation.setHeading(currentHeadingDeg);
+  const last = lastFixes[lastFixes.length - 1];
+  if (last) updateCourseLine(last);
 }
 
 // --- Boot ----------------------------------------------------------------

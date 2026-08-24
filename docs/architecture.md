@@ -13,6 +13,8 @@ js/sources.js       Kartenquellen: je eine url(z,x,y)-Funktion pro Quelle
 js/tilecache.js     IndexedDB-Kachelspeicher + generischer Leaflet-Layer
 js/app.js           Geodäsie, GPS-Handling, UI-Verdrahtung, Boot
 js/install.js       Installationshinweis (PWA), getrennt von der Karten-Logik
+js/rotate.js        Kartenausrichtung Nord/Fahrtrichtung samt Leaflet-Korrekturen
+js/wakelock.js      hält den Bildschirm an, solange die App vorn ist
 sw.js               Service Worker für den App-Shell (muss im Root liegen)
 manifest.json       PWA-Manifest
 icons/              App-Icons: zwei SVG-Vorlagen und die daraus gerenderten PNGs
@@ -21,7 +23,9 @@ docs/               Dokumentation
 ```
 
 Ladereihenfolge in `index.html`: Leaflet → `version.js` → `sources.js` →
-`tilecache.js` → `app.js` → `install.js`. Klassische Skripte ohne Module, damit die App auch ohne Server-
+`tilecache.js` → `rotate.js` → `app.js` → `install.js` → `wakelock.js`.
+`rotate.js` steht vor `app.js`, weil es Leaflet patcht, bevor die Karte
+entsteht. Klassische Skripte ohne Module, damit die App auch ohne Server-
 Konfiguration (MIME-Typen, CORS) läuft.
 
 ## Kein Framework, kein Build
@@ -332,6 +336,90 @@ einen leuchtenden Rand, die Zielkarte eine Zeile, und ein ignorierter Tap
 beantwortet sich selbst über die Snackbar – eine stille Nichtreaktion wäre
 nicht von einem Fehler zu unterscheiden. Der Marker ist ein `<img>`, an das
 sich kein Pseudoelement hängen lässt; deshalb der Filter statt eines Symbols.
+
+## Kartenausrichtung: Nord oder Fahrtrichtung
+
+Zwei Modi, weil zwei Aufgaben: **Nordung** ist der Lesemodus – er passt zur
+Papierkarte, und die Umgebung behält ihre Plätze. **Fahrtrichtung** ist der
+Steuermodus – was oben gezeichnet ist, liegt voraus. Die Wahl bleibt
+gespeichert.
+
+Leaflet kann keine Karte drehen, also dreht CSS sie: `#map` wird um seine Mitte
+rotiert, `#mapviewport` schneidet ab. Daraus folgen drei Dinge, und die sind der
+ganze Inhalt von `js/rotate.js`.
+
+**1. Ein gedrehtes Rechteck deckt das Fenster nicht mehr ab.** Der Container
+bekommt deshalb im Fahrtrichtungsmodus die Diagonale des Fensters als Kantenlänge –
+dann ist bei jedem Winkel jede Ecke gedeckt. Das kostet: die Fläche wächst auf
+gut das 2,5-fache, also lädt die Karte entsprechend mehr Kacheln. In der Nordung
+bleibt der Container fenstergroß, der Normalfall lädt also nichts zusätzlich.
+
+**2. Zeigerpositionen stimmen nicht mehr.** Leaflet rechnet Klicks über das
+Bounding-Rect des Containers um, und das ist bei einem gedrehten Element der
+achsenparallele Kasten darum – ein Tap würde das Ziel woanders hinsetzen.
+Korrigiert wird in `L.Map.prototype.mouseEventToContainerPoint`: Der Mittelpunkt
+bleibt bei einer Drehung um die Mitte, wo er ist, also wird von dort gemessen und
+um den Kurswinkel zurückgedreht. Nicht an `L.DomEvent.getMousePosition`, denn
+das gebündelte Leaflet ruft diesen Helfer intern über einen modulinternen Namen
+auf – das exportierte Alias zu ersetzen bewirkt nichts.
+
+**3. Ziehen ginge schräg.** Leaflet verschiebt die Karte um den rohen
+Bildschirmversatz. Korrigiert wird in `L.Draggable.prototype._updatePosition`,
+der einzigen Stelle, die die Pane-Position schreibt – `_onMove` rechnet und
+schreibt in einem Zug, eine Korrektur danach käme jedes Mal einen Schritt zu
+spät. Leaflets `_startPos` ist nicht die Startposition, sondern diese minus dem
+Versatz, der das Ziehen über die Schwelle gebracht hat; die echte Startposition
+wird deshalb beim ersten Update des Ziehens am Element abgelesen.
+
+Was aufrecht bleiben muss, dreht zurück: die Zeitmarken an der Kurslinie und die
+Zielnadel über `--map-counter-rot`. Die Distanzbeschriftung nicht – sie soll an
+der Linie liegen, und die Linie dreht mit. Das Boot bekommt immer den
+geografischen Kurs: in der Nordung dreht sich das Boot, im Fahrtrichtungsmodus
+dreht sich die Karte darunter, und das Boot zeigt nach oben.
+
+Zoomknöpfe und Kartennachweis waren Leaflet-Controls **innerhalb** der Karte.
+Das geht nicht mehr: sie säßen an den Ecken des übergroßen Containers, also
+außerhalb des Fensters, und würden mitdrehen. Beides ist jetzt eigenes Markup
+außerhalb der Karte, der Nachweis wird aus den eingeschalteten Ebenen
+zusammengesetzt.
+
+**Nicht genommen:** das Plugin `leaflet-rotate` macht dieselbe Arbeit
+gründlicher, steht aber unter GPL-3.0. Dieses Projekt ist MIT; es einzubinden
+würde die ganze App unter Copyleft stellen. Für zwei Koordinatentransformationen
+ist das zu teuer.
+
+Trägheits-Panning ist im Fahrtrichtungsmodus abgeschaltet: der Schwung wird aus
+rohen Zeigerpositionen berechnet, die diese Korrektur nicht durchlaufen, und
+würde in die falsche Richtung auslaufen. Geradliniges Ziehen ist korrigiert und
+stimmt exakt.
+
+## Der Karte folgen
+
+Die Karte hält das Boot in der Mitte, bis sie **gezogen** wird – das ist die eine
+Geste, die „ich will woanders hinsehen" heißt. Zoomen zählt nicht dazu, es
+behält das Boot im Blick, also überlebt das Folgen einen Zoom. Der
+Positionsknopf schaltet das Folgen wieder ein und zentriert, **ohne die
+Zoomstufe anzufassen**: er heißt „zurück zu mir", nicht „fang mit einer
+Zoomstufe von vorn an, die du nicht gewählt hast". Nur der allererste Fix setzt
+eine Zoomstufe, danach gehört sie dem Bedienenden.
+
+Eine Ausnahme: Während eine Zoom-Animation läuft, zentriert das Folgen nicht.
+Sonst würde es auf die Zoomstufe zentrieren, die die Animation noch nicht
+erreicht hat, und die Animation damit abbrechen – der Zoom fiele auf den
+Ausgangswert zurück. Der nächste Fix ist eine Sekunde später da.
+
+## Bildschirm an
+
+Eine Navigationsanzeige, die nach 30 Sekunden dunkel wird, ist keine. Solange
+die App vorn ist, hält ein `screen`-Wake-Lock das Telefon wach. Das System gibt
+ihn beim Wechsel in den Hintergrund von selbst frei, es muss also nichts
+zurückgegeben werden und ein Telefon in der Tasche verbraucht nichts – deshalb
+die erneute Anforderung bei jedem `visibilitychange`.
+
+Manche Browser erteilen die Sperre erst nach einer Berührung der Seite. Die
+erste Ablehnung wird daher nicht gemeldet, sondern beim ersten Tap wiederholt;
+erst wenn auch das scheitert, sagt die App es – dass der Bildschirm ausgehen
+kann, will man vor dem Ablegen wissen, nicht danach.
 
 ## Genauigkeit und Glättung
 
