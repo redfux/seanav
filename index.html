@@ -10,6 +10,15 @@
   <link rel="stylesheet" href="style.css">
   <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#101418">
+  <meta name="description" content="Orientierungshilfe für Bootsfahrten: Position, Kurs, Ziel und Tiefendaten, auch ohne Mobilfunkempfang.">
+  <!-- iOS reads none of the manifest: installed appearance, title and icon
+       come from these instead. -->
+  <link rel="icon" href="icons/icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="SeeNavi">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="mobile-web-app-capable" content="yes">
 </head>
 <body>
 
@@ -72,6 +81,18 @@
        hidden ones collapse out of the flow by themselves. -->
   <div id="readouts">
 
+  <!-- Install hint. Hidden by default; js/install.js shows it only when the
+       browser actually offers an installation and the hint was not dismissed. -->
+  <section id="installbanner" class="card hidden" aria-live="polite">
+    <h2 class="card-title">Als App installieren</h2>
+    <p class="card-text" id="install-text">Auf dem Homescreen startet SeeNavi ohne
+      Browserleiste und öffnet auch ohne Empfang.</p>
+    <div class="card-actions">
+      <button id="btn-install" class="btn-text">Installieren</button>
+      <button id="btn-install-later" class="btn-text btn-quiet">Nicht jetzt</button>
+    </div>
+  </section>
+
   <!-- Navigation card: shown once a destination is set -->
   <section id="navpanel" class="card hidden" role="status" aria-live="polite">
     <!-- The distance stays in the header, so it is readable collapsed too -
@@ -92,6 +113,8 @@
           <span class="row-value" id="val-eta">–</span>
         </div>
       </div>
+      <p class="card-note hidden" id="target-lock-hint">Ziel fixiert – ein Tippen
+        auf die Karte verschiebt es nicht mehr.</p>
       <button id="btn-clear-target" class="btn-text">Ziel löschen</button>
     </div>
   </section>
@@ -131,6 +154,10 @@
     </button>
   </nav>
 
+  <!-- Short-lived feedback for actions that otherwise leave no trace, e.g. a
+       tap on the map that a fixed destination has ignored. -->
+  <div id="snackbar" role="status" aria-live="polite"></div>
+
   <div id="footer">thought up by human, coded by ai · v<span id="app-version"></span></div>
 
   <script src="vendor/leaflet.js"></script>
@@ -138,5 +165,6 @@
   <script src="js/sources.js"></script>
   <script src="js/tilecache.js"></script>
   <script src="js/app.js"></script>
+  <script src="js/install.js"></script>
 </body>
 </html>

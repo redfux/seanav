@@ -18,9 +18,11 @@ kein Build-Schritt.
 - Einzelne Kartenebenen über 🗺️ ein- und ausschaltbar
 - Eigene Position per Geräte-GPS (`navigator.geolocation`)
 - Aktueller Kurs (COG) als Linie auf der Karte
-- Ziel per Klick auf die Karte setzen, mit Distanz/Peilung/ETA
+- Ziel per Klick auf die Karte setzen, mit Distanz/Peilung/ETA; nach einer
+  Minute ohne Änderung fixiert es sich gegen versehentliches Verschieben
 - Marken bei 200 m und 500 m auf der Kurslinie, mit der jeweils benötigten Fahrzeit
 - Angesehene Kartenausschnitte bleiben ohne Empfang verfügbar
+- Als App installierbar (PWA) – startet dann ohne Browserleiste
 
 ## Setup
 
@@ -48,6 +50,26 @@ relativ und funktionieren daher auch unter dem Unterpfad `/seanav/`.
    Distanz, Peilung und ETA, „Ziel löschen" entfernt es wieder
 3. 📍 springt zur eigenen Position, 📐 blendet die Distanzmarken auf der Kurslinie ein/aus
 
+Das Ziel fixiert sich eine Minute nach der letzten Änderung: ab dann verschiebt
+ein Tap auf die Karte es nicht mehr, der Marker bekommt einen leuchtenden Rand
+und die Karte sagt es an. Aufgehoben wird die Fixierung nur über „Ziel
+löschen" – auf einem schwankenden Boot ist ein versehentlich verschobenes Ziel
+sonst leicht übersehen.
+
+### Installation
+
+Beim ersten Besuch bietet die App die Installation selbst an; der Hinweis lässt
+sich mit „Nicht jetzt" dauerhaft wegklicken.
+
+- **Android/Chrome, Edge, Desktop-Chrome:** „Installieren" im Hinweis oder im
+  Browsermenü
+- **iPhone/iPad (Safari):** Teilen-Symbol → „Zum Home-Bildschirm". Safari kennt
+  keine automatische Installation, deshalb beschreibt der Hinweis dort nur den
+  Weg
+
+Installiert startet SeeNavi im Vollbild ohne Browserleiste, mit eigenem Icon
+und – dank Service Worker – auch ohne Empfang.
+
 ### Kartenspeicher
 
 Kartenausschnitte, die du angesehen hast, werden automatisch gespeichert und
@@ -67,7 +89,7 @@ Nutzungsdaten übertragen.
 | Speicher | Inhalt | Zweck |
 | --- | --- | --- |
 | IndexedDB (`seenavi-tiles`) | Kartenkacheln als Blobs, Schlüssel `quelle/z/x/y` | angesehene Ausschnitte ohne Empfang |
-| `localStorage` | welche Kartenebenen eingeschaltet sind | Auswahl bleibt erhalten |
+| `localStorage` | welche Kartenebenen eingeschaltet sind, ob die Zielkarte eingeklappt ist, ob der Installationshinweis weggeklickt wurde | Einstellungen bleiben erhalten |
 | Cache API (`seenavi-shell-v<version>`) | App-Shell: HTML/CSS/JS/Leaflet | App startet ohne Netz |
 
 Die GPS-Position wird ausschließlich im Arbeitsspeicher gehalten und nicht

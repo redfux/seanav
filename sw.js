@@ -28,11 +28,19 @@ const SHELL_FILES = [
   './js/sources.js',
   './js/app.js',
   './js/tilecache.js',
+  './js/install.js',
   './vendor/leaflet.js',
   './vendor/leaflet.css',
   './vendor/images/marker-icon.png',
   './vendor/images/marker-icon-2x.png',
   './vendor/images/marker-shadow.png',
+  // Installed on the home screen the icons are read from the cache too, so an
+  // app started without a signal is not a blank square.
+  './icons/icon.svg',
+  './icons/icon-192.png',
+  './icons/icon-512.png',
+  './icons/icon-maskable-512.png',
+  './icons/apple-touch-icon.png',
 ];
 
 self.addEventListener('install', (event) => {

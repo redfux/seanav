@@ -12,13 +12,16 @@ js/version.js       APP_VERSION – einzige Pflegestelle der Versionsnummer
 js/sources.js       Kartenquellen: je eine url(z,x,y)-Funktion pro Quelle
 js/tilecache.js     IndexedDB-Kachelspeicher + generischer Leaflet-Layer
 js/app.js           Geodäsie, GPS-Handling, UI-Verdrahtung, Boot
+js/install.js       Installationshinweis (PWA), getrennt von der Karten-Logik
 sw.js               Service Worker für den App-Shell (muss im Root liegen)
+manifest.json       PWA-Manifest
+icons/              App-Icons: zwei SVG-Vorlagen und die daraus gerenderten PNGs
 vendor/             Leaflet 1.9.4 lokal
 docs/               Dokumentation
 ```
 
 Ladereihenfolge in `index.html`: Leaflet → `version.js` → `sources.js` →
-`tilecache.js` → `app.js`. Klassische Skripte ohne Module, damit die App auch ohne Server-
+`tilecache.js` → `app.js` → `install.js`. Klassische Skripte ohne Module, damit die App auch ohne Server-
 Konfiguration (MIME-Typen, CORS) läuft.
 
 ## Kein Framework, kein Build
@@ -271,6 +274,64 @@ Der Versatz der Zeitangabe muss größer sein als ihre halbe Breite, da sie auf
 dem Versatzpunkt zentriert wird – bei 15 px lag sie noch auf der Linie, bei
 34 px bleiben 8–17 px Abstand. Die Distanzbeschriftung sitzt mit 13 px enger,
 weil sie an der Linie entlangläuft statt quer dazu.
+
+## Installation als PWA
+
+Installiert ist die App das, was sie sein soll: Vollbild ohne Browserleiste,
+eigenes Icon, eigener Speicher, Start ohne Empfang. Dafür nötig sind
+`manifest.json`, ein Service Worker mit `fetch`-Handler und Icons in 192 und
+512 px – alles vorhanden.
+
+### Icons
+
+Zwei SVG-Vorlagen im Ordner `icons/`, aus denen die PNGs gerendert sind:
+
+| Datei | Zweck |
+| --- | --- |
+| `icon.svg` | Vorlage `purpose: any`, abgerundetes Quadrat, transparente Ecken |
+| `icon-maskable.svg` | Vorlage `purpose: maskable`, randlos, Zeichnung im 80-%-Sicherheitskreis |
+| `icon-192.png`, `icon-512.png` | aus `icon.svg` |
+| `icon-maskable-512.png` | aus `icon-maskable.svg` |
+| `apple-touch-icon.png` (180 px) | aus `icon-maskable.svg`; iOS maskiert selbst und mag keine Transparenz |
+
+Die Zeichnung ist bewusst grob – eine Kompassnadel im Ring, zwei Farben. Auf
+dem Homescreen ist das Icon 48 px groß, alles Feinere zerfällt dort.
+
+### Der Hinweis
+
+Browser bieten die Installation selbst an, verstecken sie aber in einem Menü,
+das beim Ablegen niemand öffnet. `js/install.js` fängt deshalb
+`beforeinstallprompt` ab – sonst legt der Browser seine eigene Leiste über die
+Karte – und zeigt stattdessen eine Karte in der Ablesespalte, wo sie nichts
+verdecken kann. Der Knopf spielt das gespeicherte Ereignis ab.
+
+iOS kennt `beforeinstallprompt` nicht und lässt keine programmatische
+Installation zu. Dort beschreibt der Hinweis nur den Weg über das Teilen-Menü,
+und der Knopf entfällt – ein Knopf, der nichts kann, ist schlimmer als keiner.
+Angezeigt wird der Hinweis nur in Safari, dem einzigen Browser dort, der
+installieren kann.
+
+Nicht gezeigt wird er, wenn die App bereits installiert läuft
+(`display-mode`-Query, auf iOS `navigator.standalone`) oder der Hinweis einmal
+weggeklickt wurde – ein Hinweis, der wiederkommt, ist Werbung.
+
+## Fixiertes Ziel
+
+Ein Ziel, das eine Minute unverändert stand, reagiert nicht mehr auf Taps auf
+die Karte. Der Grund ist die Umgebung: unterwegs wird das Telefon mit nassen
+Händen auf einem schwankenden Boot bedient, und ein Fehltipper, der das Ziel
+still woanders hinsetzt, fällt spät auf – im schlechtesten Fall erst, wenn
+Peilung und ETA schon eine Weile auf den falschen Punkt zeigen.
+
+Jede Änderung startet die Minute neu, solange also noch gesucht wird, ist
+nichts fixiert. Danach führt der Weg über „Ziel löschen", einen Knopf, den
+niemand versehentlich trifft.
+
+Der Zustand muss sichtbar sein, sonst wirkt die App kaputt: Der Marker bekommt
+einen leuchtenden Rand, die Zielkarte eine Zeile, und ein ignorierter Tap
+beantwortet sich selbst über die Snackbar – eine stille Nichtreaktion wäre
+nicht von einem Fehler zu unterscheiden. Der Marker ist ein `<img>`, an das
+sich kein Pseudoelement hängen lässt; deshalb der Filter statt eines Symbols.
 
 ## Genauigkeit und Glättung
 

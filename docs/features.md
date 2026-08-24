@@ -31,6 +31,8 @@ Mobilfunkempfang. Kein Ersatz für vorschriftsmäßige Seekarten und Ausrüstung
 | F20 | Zielkarte einklappbar, eingeklappt nur die Distanz; Zustand bleibt erhalten | 0.7.1 |
 | F21 | Marken passen sich dynamisch an: nicht darstellbare Marken entfallen | 0.8.0 |
 | F22 | Tiefenzonen farblich unterscheidbar – gemessene Sättigungsanhebung statt blasser Stufen | 0.9.2 |
+| F23 | Als App installierbar: Manifest, eigene Icons, Installationshinweis im Browser (inkl. iOS-Weg über das Teilen-Menü) | 0.10.0 |
+| F24 | Ziel fixiert sich eine Minute nach der letzten Änderung; lösbar nur über „Ziel löschen" | 0.10.0 |
 
 ## Nichtfunktionale Anforderungen
 
@@ -46,7 +48,7 @@ Mobilfunkempfang. Kein Ersatz für vorschriftsmäßige Seekarten und Ausrüstung
 
 | # | Anforderung | Status |
 | --- | --- | --- |
-| O1 | PWA-Icons (`manifest.json` → `icons` ist derzeit leer), damit die Installation auf dem Homescreen ein eigenes Symbol bekommt | offen |
+| ~~O1~~ | ~~PWA-Icons und Installierbarkeit~~ – umgesetzt in 0.10.0 (F23) | – |
 | O2 | Gezieltes Löschen einzelner Offline-Bereiche bzw. des gesamten Kachelcaches aus der App heraus | offen |
 | O5 | Abfragbare Tiefenwerte (Antippen → Tiefe) – blockiert durch einen Serverfehler des Dienstes, siehe B4 in `bugs.md` | extern blockiert |
 | O8 | Vorab-Download ganzer Gebiete. Untersagt durch die Nutzungsbedingungen von `tile.openstreetmap.org`; möglich nur mit einem Anbieter, der Prefetching gestattet – die meisten verlangen dafür einen API-Schlüssel | zu entscheiden |

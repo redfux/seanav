@@ -6,6 +6,38 @@ Versionierung nach [SemVer](https://semver.org/lang/de/).
 Die Versionsnummer wird ausschließlich in `js/version.js` gepflegt; Footer und
 Service-Worker-Cachename leiten sich automatisch daraus ab.
 
+## [0.10.0] – 2026-08-24
+
+### Added
+
+- **Die App ist installierbar.** `manifest.json` vervollständigt (Icons, `id`,
+  `scope`, Beschreibung, `display_override`), dazu die Meta-Angaben, die iOS
+  statt des Manifests liest. Installiert startet SeeNavi im Vollbild ohne
+  Browserleiste, mit eigenem Icon und ohne Empfang.
+- **Eigenes App-Icon:** Kompassnadel im Ring, in den Farben der Oberfläche.
+  Zwei SVG-Vorlagen – abgerundet für `purpose: any`, randlos mit Zeichnung im
+  80-%-Sicherheitskreis für `maskable` – daraus 192/512 px, ein
+  Apple-Touch-Icon und das SVG selbst. Die Icons liegen im App-Shell-Cache,
+  eine ohne Empfang gestartete App ist also kein leeres Quadrat.
+- **Installationshinweis in der App.** Der Browser bietet die Installation nur
+  in einem Menü an, das beim Ablegen niemand öffnet. Der Hinweis erscheint als
+  Karte in der Ablesespalte, sobald der Browser die Installation tatsächlich
+  anbietet – auf iOS, wo es keine programmatische Installation gibt, mit dem
+  Weg über das Teilen-Menü statt eines wirkungslosen Knopfes. Einmal
+  weggeklickt, kommt er nicht wieder; installiert erscheint er gar nicht erst.
+- **Das Ziel fixiert sich nach einer Minute ohne Änderung.** Danach verschiebt
+  ein Tap auf die Karte es nicht mehr; gelöst wird es nur über „Ziel löschen".
+  Jede Änderung startet die Minute neu. Auf einem schwankenden Boot ist ein
+  Fehltipper sonst schnell passiert und fällt spät auf. Der Zustand ist
+  sichtbar: leuchtender Rand am Marker, Zeile in der Zielkarte, und ein
+  ignorierter Tap meldet sich über eine Snackbar zurück, statt stumm nichts zu
+  tun.
+
+### Changed
+
+- Die Zielkarte füllt Distanz, Peilung und ETA sofort beim Setzen des Ziels,
+  statt bis zur nächsten GPS-Position mit Strichen dazustehen
+
 ## [0.9.2] – 2026-08-24
 
 ### Fixed

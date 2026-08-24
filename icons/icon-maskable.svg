@@ -1,0 +1,25 @@
+<!-- thought up by human, coded by ai -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512"
+     role="img" aria-label="SeeNavi">
+  <!--
+    App icon: a compass needle over the horizon ring, in the app's own colours
+    (surface #101418, primary #2ec4b6). Deliberately one shape and two colours -
+    at 48 px on a home screen anything finer turns to mush.
+    Full-bleed variant for the "maskable" purpose: the drawing sits inside the
+    80 % safe circle, so a platform mask of any shape cannot clip it.
+  -->
+  <defs>
+    <linearGradient id="ground" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#16202a"/>
+      <stop offset="1" stop-color="#0d1116"/>
+    </linearGradient>
+  </defs>
+  <rect width="512" height="512" fill="url(#ground)"/>
+  <g transform="translate(256 256) scale(0.72) translate(-256 -256)">
+  <circle cx="256" cy="256" r="150" fill="none" stroke="#2ec4b6" stroke-width="16" opacity="0.55"/>
+  <path d="M256 92 l14 14 -14 14 -14 -14 Z" fill="#2ec4b6"/>
+  <path d="M256 138 L292 264 L220 264 Z" fill="#2ec4b6"/>
+  <path d="M256 378 L292 250 L220 250 Z" fill="#e6eaef" opacity="0.88"/>
+  <circle cx="256" cy="256" r="17" fill="#0d1116" stroke="#e6eaef" stroke-width="9"/>
+  </g>
+</svg>

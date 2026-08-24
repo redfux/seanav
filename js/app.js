@@ -47,6 +47,16 @@ const MARK_DISTANCE_OFFSET_PX = 13;
 const SPEED_SMOOTHING_SAMPLES = 6;   // moving average window for speed/heading
 const STALE_FIX_MS = 8000;           // GPS fix older than this counts as lost
 
+/*
+ * A destination that has stood untouched for this long is taken to be the one
+ * that was meant and stops reacting to taps on the map. Underway the phone is
+ * handled with wet hands on a moving boat, and a stray tap that silently moved
+ * the destination somewhere else would be noticed late, if at all. Getting rid
+ * of it then takes the "Ziel löschen" button, which nobody presses by accident.
+ */
+const TARGET_LOCK_MS = 60000;
+const SNACK_MS = 3500;
+
 // --- State -------------------------------------------------------------
 let map;
 const chartLayers = new Map(); // source id -> Leaflet layer, for those switched on
@@ -57,6 +67,9 @@ let projectionEnabled = true;
 let targetMarker;
 let targetLatLng = null;
 let targetLine;
+let targetLocked = false;     // set after TARGET_LOCK_MS without a change
+let targetLockTimer = null;
+let snackTimer = null;
 
 let lastFixes = [];      // recent {lat, lng, t} samples for smoothing
 let currentSpeedMs = 0;  // smoothed speed in m/s
@@ -125,7 +138,7 @@ function initMap() {
 
   CHART_SOURCES.forEach((source) => setLayerEnabled(source, layerPreference(source)));
 
-  map.on('click', (e) => setTarget(e.latlng));
+  map.on('click', (e) => requestTarget(e.latlng));
 
   // Which marks fit depends on the view, not only on the fix: zooming out can
   // crowd them together, panning can move one off screen.
@@ -421,6 +434,16 @@ function addMarkLabel(latlng, bearing, offsetM, className, text, angle) {
   }).addTo(projectionLayer);
 }
 
+// Every tap on the map goes through here, so the lock has exactly one place
+// to take effect - and says so instead of quietly doing nothing.
+function requestTarget(latlng) {
+  if (targetLocked) {
+    showSnack('Ziel ist fixiert – zum Ändern erst „Ziel löschen“');
+    return;
+  }
+  setTarget(latlng);
+}
+
 function setTarget(latlng) {
   targetLatLng = { lat: latlng.lat, lng: latlng.lng };
   if (!targetMarker) {
@@ -430,6 +453,35 @@ function setTarget(latlng) {
   }
   document.getElementById('navpanel').classList.remove('hidden');
   redrawTargetLine();
+  armTargetLock();
+  // Fill the card straight away instead of waiting for the next GPS fix: a
+  // freshly set destination showing nothing but dashes looks broken.
+  const last = lastFixes[lastFixes.length - 1];
+  if (last) updateNavPanel(last);
+}
+
+// Restarts the countdown: while the destination is still being adjusted, every
+// change pushes the lock a minute further out.
+function armTargetLock() {
+  clearTimeout(targetLockTimer);
+  targetLocked = false;
+  updateTargetLockUi();
+  targetLockTimer = setTimeout(lockTarget, TARGET_LOCK_MS);
+}
+
+function lockTarget() {
+  if (!targetLatLng) return;
+  targetLocked = true;
+  updateTargetLockUi();
+  showSnack('Ziel fixiert');
+}
+
+// The state has to be visible on the map itself, not only in the card: the
+// card may be collapsed, and the marker is what the tap was aimed at.
+function updateTargetLockUi() {
+  document.getElementById('target-lock-hint').classList.toggle('hidden', !targetLocked);
+  const el = targetMarker && targetMarker.getElement();
+  if (el) el.classList.toggle('target-locked', targetLocked);
 }
 
 function redrawTargetLine() {
@@ -444,10 +496,23 @@ function redrawTargetLine() {
 }
 
 function clearTarget() {
+  clearTimeout(targetLockTimer);
+  targetLocked = false;
   targetLatLng = null;
   if (targetMarker) { map.removeLayer(targetMarker); targetMarker = null; }
   if (targetLine) { map.removeLayer(targetLine); targetLine = null; }
   document.getElementById('navpanel').classList.add('hidden');
+  document.getElementById('target-lock-hint').classList.add('hidden');
+}
+
+// One short message at a time; a second one replaces the first rather than
+// queueing up behind it.
+function showSnack(text) {
+  const el = document.getElementById('snackbar');
+  el.textContent = text;
+  el.classList.add('is-visible');
+  clearTimeout(snackTimer);
+  snackTimer = setTimeout(() => el.classList.remove('is-visible'), SNACK_MS);
 }
 
 // --- UI updates --------------------------------------------------------

@@ -283,6 +283,32 @@ html, body {
 
 .btn-text:active { background: var(--md-outline); }
 
+/* Second, quieter action in a pair - Material's text button next to a filled
+   one. Same tap target, less pull. */
+.btn-quiet {
+  background: transparent;
+  color: var(--md-on-surface-variant);
+}
+
+.btn-quiet:active { background: var(--md-surface-container-high); }
+
+/* Two actions side by side; they wrap rather than shrink below a tap target. */
+.card-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+
+/* Status line inside a card, e.g. that the destination is fixed. */
+.card-note {
+  margin: 10px 0 0;
+  font-size: 13px;
+  line-height: 1.4;
+  color: var(--md-primary);
+}
+
+.card-note.hidden { display: none; }
+
+/* Generic, for controls that are not always applicable - e.g. the install
+   button on iOS, where the browser offers no programmatic installation. */
+.btn-text.hidden { display: none; }
+
 /* Layer switches. Material list item with a leading checkbox, sized as a
    comfortable tap target for wet hands. */
 .layer-row {
@@ -477,6 +503,51 @@ html, body {
  * tile stay transparent. The filter runs before the blend above.
  */
 .filter-depth { filter: saturate(3); }
+
+/*
+ * A fixed destination has to be recognisable on the map, not only in the card:
+ * the card can be collapsed, and the marker is what the tap was aimed at. The
+ * marker is an <img>, so no pseudo-element can be hung on it - a ring of light
+ * in the primary colour is what is left, and it reads at a glance.
+ */
+.target-locked {
+  filter: drop-shadow(0 0 6px var(--md-primary)) drop-shadow(0 0 2px var(--md-primary));
+}
+
+/*
+ * Snackbar. Sits above the footer and takes no taps, so it can never swallow
+ * one meant for the map underneath.
+ */
+#snackbar {
+  position: absolute;
+  z-index: 1200;
+  left: 50%;
+  bottom: calc(var(--inset-bottom) + 56px);
+  transform: translate(-50%, 8px);
+  max-width: min(88vw, 420px);
+  padding: 12px 18px;
+  border-radius: var(--md-radius-s);
+  background: var(--md-surface-container-high);
+  color: var(--md-on-surface);
+  box-shadow: var(--md-elev-3);
+  font-size: 14px;
+  line-height: 1.35;
+  text-align: center;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition: opacity 160ms ease, transform 160ms ease, visibility 160ms;
+}
+
+#snackbar.is-visible {
+  opacity: 1;
+  visibility: visible;
+  transform: translate(-50%, 0);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #snackbar { transition: none; }
+}
 
 /* Tiles missing from the cache while offline: visible as a gap, not alarming. */
 .tile-missing { opacity: 0.85; }
