@@ -5,7 +5,29 @@ stehen, damit sie bei einem Rückfall wiederauffindbar sind.
 
 ## Offen
 
-_(derzeit keine)_
+### B7 – Keine Tiefenlinien, weder im Flachen noch im Tiefen
+
+**Symptom:** Der Tiefendaten-Layer zeichnet Lotungen, Grunde und Schären, aber
+keine Tiefenkonturlinien. Anfangs sah es nach einem reinen Flachwasserproblem
+aus; bei genauerem Hinsehen waren die vermeintlichen Konturen im Tiefwasser die
+Umrisse von Grunden mit ihren Tiefenwerten.
+
+**Vermutung:** Der Sublayer für Konturen ist im Gruppen-Request `Dybdedata2`
+nicht enthalten. Die Layer-Liste des Dienstes führt neben der Gruppe unter
+anderem `Dybdelag`, `Dybdekontur`, `Grunne`, `Skjær`, `Dybdepunkt` und
+`Kystkontur`.
+
+**Aktueller Versuch (0.7.0):** `Dybdekontur` wird als **eigene Ebene**
+angefordert, nicht in denselben Request gemischt. Grund: ein WMS weist die
+gesamte GetMap-Anfrage zurück, sobald ein Layer-Name unbekannt ist. Getrennt
+kostet ein falscher Name nur diese eine Ebene, statt die Tiefendaten
+komplett auszublenden.
+
+**Falls die Ebene leer bleibt:** Der Name stimmt nicht oder der Layer ist an
+dieser Stelle leer. Die tatsächlichen Namen listet `compare.html` live aus den
+Capabilities – dort lassen sich die Sublayer auch einzeln durchschalten.
+
+**Status:** offen, Prüfung durch den Nutzer ausstehend.
 
 ## Behoben
 
@@ -29,6 +51,11 @@ aus. Grobe Tiefwasser-Objekte überlebten das, feines Flachwasser-Detail nicht.
 Größere Symbole sind aus diesem Dienst damit nicht zu haben, ohne Detail zu
 verlieren – und Detail hat Vorrang, gerade im Flachwasser. Nachgerechnet und
 im Browser geprüft: Kompensationsfaktor exakt 1.
+
+**Nachtrag – die Diagnose war unvollständig.** Die Kompensation ist für sich
+richtig und bleibt. Sie war aber nicht die Ursache der fehlenden Konturen:
+auch danach erschienen keine. Was im Tiefwasser wie Tiefenlinien aussah, waren
+Umrisse von Grunden (`Grunne`) mit ihren Tiefenwerten. Fortgeführt als B7.
 
 ### B6 – Tiefendaten verdeckten die Grundkarte an Brücken
 

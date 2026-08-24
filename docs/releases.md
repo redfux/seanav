@@ -6,6 +6,41 @@ Versionierung nach [SemVer](https://semver.org/lang/de/).
 Die Versionsnummer wird ausschließlich in `js/version.js` gepflegt; Footer und
 Service-Worker-Cachename leiten sich automatisch daraus ab.
 
+## [0.7.0] – 2026-08-22
+
+Oberfläche auf Material 3 umgebaut.
+
+### Changed
+
+- **Komplett neue Oberfläche nach Material 3.** Zwei Abweichungen vom Standard
+  sind beabsichtigt: die Kontraste liegen über der Material-Vorgabe, weil das
+  Display gegen offenen Himmel ankommt, und die Messwerte stehen in
+  Display-Größen statt der Body-/Title-Größen eines normalen Layouts.
+- **Messwerte deutlich größer:** Kurs und Speed von 20 px auf 36 px, die Werte
+  in den Karten von 15 px auf 26 px, jeweils tabellarische Ziffern, damit
+  nichts springt.
+- Vollbreite App-Bar statt schwebender Leiste; Ablesekarten stapeln sich in
+  einer Spalte, Bedienflächen als Sheets in der Mitte
+- Icons als eigene Inline-SVGs statt Emoji – Material-nah, ohne Icon-Font oder
+  externes Sprite
+- Zoom-Control nach unten links; oben links gehören jetzt die Ablesekarten hin
+- Tap-Ziele auf mindestens 44–56 px, aktive Schaltflächen zeigen ihren Zustand
+
+### Added
+
+- **Tiefenlinien** als eigene Ebene (`Dybdekontur`). Sie wird bewusst nicht in
+  denselben WMS-Request wie die übrigen Tiefendaten gemischt: ein WMS weist die
+  gesamte Anfrage zurück, sobald ein Layer-Name unbekannt ist. Getrennt kostet
+  ein falscher Name nur diese eine Ebene. Siehe B7 in `bugs.md`.
+
+### Fixed
+
+- Zoom-Control lag hinter der Statusleiste
+- Navigations- und Projektionskarte überlappten auf schmalen Displays
+- Attribution und Footer stießen am unteren Rand zusammen
+- Attribution behielt Leaflets hellen Hintergrund: dessen Regel ist
+  spezifischer als die eigene und musste entsprechend adressiert werden
+
 ## [0.6.1] – 2026-08-22
 
 ### Fixed

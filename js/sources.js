@@ -68,14 +68,29 @@ const DEPTH_WMS = 'https://wms.geonorge.no/skwms1/wms.dybdedata2';
 const DEPTH_OVERSAMPLE = 2;
 const DEPTH_BASE_DPI = 72;
 
-function depthUrl(z, x, y) {
+/*
+ * The service groups its sub-layers under "Dybdedata2". Requesting that group
+ * draws soundings, shoals and skerries but no depth contours, so the contour
+ * sub-layer is requested separately rather than as part of the group.
+ *
+ * Separately, and not merged into one request, on purpose: a WMS rejects the
+ * whole GetMap when any one layer name is unknown. Kept apart, a wrong guess
+ * costs only its own layer instead of blanking the depth data entirely.
+ */
+function depthLayerUrl(layerName) {
+  return function (z, x, y) {
+    return buildDepthUrl(layerName, z, x, y);
+  };
+}
+
+function buildDepthUrl(layerName, z, x, y) {
   const bbox = tileBBox3857(z, x, y);
   const px = 256 * DEPTH_OVERSAMPLE;
   const params = new URLSearchParams({
     service: 'WMS',
     request: 'GetMap',
     version: '1.3.0',
-    layers: 'Dybdedata2',
+    layers: layerName,
     styles: '',
     format: 'image/png',
     transparent: 'true',
@@ -87,6 +102,9 @@ function depthUrl(z, x, y) {
   });
   return `${DEPTH_WMS}?${params}`;
 }
+
+const depthUrl = depthLayerUrl('Dybdedata2');
+const contourUrl = depthLayerUrl('Dybdekontur');
 
 // --- OpenSeaMap seamarks -------------------------------------------------
 
@@ -135,6 +153,17 @@ const CHART_SOURCES = [
      * light fills let the base map through untouched, while the dark ink of
      * contours, soundings and symbols stays exactly as dark as before.
      */
+    blend: 'multiply',
+    defaultOn: true,
+    attribution: '&copy; Kartverket',
+  },
+  {
+    id: 'contours',
+    label: 'Tiefenlinien (nur Norwegen)',
+    url: contourUrl,
+    minZoom: 8,
+    maxNativeZoom: MAP_MAX_ZOOM,
+    opaque: false,
     blend: 'multiply',
     defaultOn: true,
     attribution: '&copy; Kartverket',

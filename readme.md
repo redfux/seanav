@@ -13,7 +13,7 @@ kein Build-Schritt.
 ## Funktionsumfang
 
 - Weltweite Grundkarte (OpenStreetMap)
-- Tiefenlinien, Lotungen, Grunde und Schären aus den Kartverket-Tiefendaten (nur norwegische Gewässer)
+- Lotungen, Grunde, Schären und Tiefenlinien aus den Kartverket-Tiefendaten (nur norwegische Gewässer)
 - Seezeichen (Tonnen, Baken, Feuer) aus OpenSeaMap
 - Einzelne Kartenebenen über 🗺️ ein- und ausschaltbar
 - Eigene Position per Geräte-GPS (`navigator.geolocation`)

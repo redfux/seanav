@@ -77,13 +77,17 @@ function destinationPoint(start, bearingDeg, distanceM) {
 
 function initMap() {
   map = L.map('map', {
-    zoomControl: true,
+    // Placed manually below: the default top-left corner is where the
+    // readout cards sit.
+    zoomControl: false,
     attributionControl: true,
     center: BERGEN_CENTER,
     zoom: 12,
     minZoom: 4,
     maxZoom: MAP_MAX_ZOOM,
   });
+
+  L.control.zoom({ position: 'bottomleft' }).addTo(map);
 
   CHART_SOURCES.forEach((source) => setLayerEnabled(source, layerPreference(source)));
 
@@ -359,15 +363,26 @@ function formatDuration(sec) {
 // The layer and storage panels occupy the same spot, so showing one has to
 // hide the other - otherwise the top one silently swallows taps meant for the
 // panel underneath.
-const EXCLUSIVE_PANELS = ['layerpanel', 'storagepanel'];
+const EXCLUSIVE_PANELS = {
+  layerpanel: 'btn-toggle-layers',
+  storagepanel: 'btn-toggle-storage',
+};
 
 function togglePanel(id) {
   const panel = document.getElementById(id);
   const wasHidden = panel.classList.contains('hidden');
-  EXCLUSIVE_PANELS.forEach((other) => {
-    document.getElementById(other).classList.add('hidden');
+
+  Object.entries(EXCLUSIVE_PANELS).forEach(([panelId, buttonId]) => {
+    document.getElementById(panelId).classList.add('hidden');
+    document.getElementById(buttonId).classList.remove('is-active');
   });
-  if (wasHidden) panel.classList.remove('hidden');
+
+  if (wasHidden) {
+    panel.classList.remove('hidden');
+    // Material keeps a toggle's state visible on the control itself, which
+    // also makes it obvious which sheet a tap will close again.
+    document.getElementById(EXCLUSIVE_PANELS[id]).classList.add('is-active');
+  }
   return wasHidden;
 }
 
@@ -446,11 +461,15 @@ function wireToolbar() {
 
   document.getElementById('btn-toggle-proj').addEventListener('click', () => {
     const panel = document.getElementById('projectionpanel');
-    panel.classList.toggle('force-hidden');
+    const off = panel.classList.toggle('force-hidden');
+    document.getElementById('btn-toggle-proj').classList.toggle('is-active', !off);
     updateProjectionPanel();
   });
 
   document.getElementById('btn-clear-target').addEventListener('click', clearTarget);
+
+  // The projection panel starts enabled, so its control starts active.
+  document.getElementById('btn-toggle-proj').classList.add('is-active');
 }
 
 // --- Boot ----------------------------------------------------------------

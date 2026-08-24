@@ -3,20 +3,53 @@
 <html lang="de">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https://tile.openstreetmap.org https://wms.geonorge.no https://tiles.openseamap.org; connect-src 'self' https://tile.openstreetmap.org https://wms.geonorge.no https://tiles.openseamap.org;">
   <title>SeeNavi Bergen</title>
   <link rel="stylesheet" href="vendor/leaflet.css">
   <link rel="stylesheet" href="style.css">
   <link rel="manifest" href="manifest.json">
-  <meta name="theme-color" content="#0d1b2a">
+  <meta name="theme-color" content="#101418">
 </head>
 <body>
 
   <div id="map"></div>
 
-  <!-- Top status bar: GPS fix, speed, heading -->
-  <div id="statusbar" class="panel" role="status" aria-live="polite">
+  <!-- Icon set. Drawn here once and referenced with <use>, so the markup stays
+       readable and no icon font or external sprite has to be loaded. -->
+  <svg class="icon-defs" aria-hidden="true" focusable="false">
+    <defs>
+      <g id="ic-locate">
+        <circle cx="12" cy="12" r="3.2"></circle>
+        <circle cx="12" cy="12" r="7" fill="none" stroke="currentColor" stroke-width="1.8"></circle>
+        <path d="M12 1v3.4M12 19.6V23M1 12h3.4M19.6 12H23" stroke="currentColor"
+              stroke-width="2" stroke-linecap="round"></path>
+      </g>
+      <g id="ic-layers">
+        <path d="M12 3.2 2.6 8.1l9.4 4.9 9.4-4.9z"></path>
+        <path d="M2.6 12.4 12 17.3l9.4-4.9" fill="none" stroke="currentColor"
+              stroke-width="1.9" stroke-linejoin="round"></path>
+        <path d="M2.6 16.4 12 21.3l9.4-4.9" fill="none" stroke="currentColor"
+              stroke-width="1.9" stroke-linejoin="round"></path>
+      </g>
+      <g id="ic-storage">
+        <ellipse cx="12" cy="6" rx="7.6" ry="3"></ellipse>
+        <path d="M4.4 6v5c0 1.66 3.4 3 7.6 3s7.6-1.34 7.6-3V6" fill="none"
+              stroke="currentColor" stroke-width="1.9"></path>
+        <path d="M4.4 11v5c0 1.66 3.4 3 7.6 3s7.6-1.34 7.6-3v-5" fill="none"
+              stroke="currentColor" stroke-width="1.9"></path>
+      </g>
+      <g id="ic-projection">
+        <path d="M3 20.4h18L3 5.2z" fill="none" stroke="currentColor"
+              stroke-width="1.9" stroke-linejoin="round"></path>
+        <path d="M3 14.2h6.6M3 9.6h3.2" stroke="currentColor" stroke-width="1.7"
+              stroke-linecap="round"></path>
+      </g>
+    </defs>
+  </svg>
+
+  <!-- Top app bar: the three values read at a glance while steering -->
+  <header id="statusbar" role="status" aria-live="polite">
     <div class="stat">
       <span class="stat-label">Kurs</span>
       <span class="stat-value" id="val-heading">–</span>
@@ -25,62 +58,79 @@
       <span class="stat-label">Speed</span>
       <span class="stat-value" id="val-speed">–</span>
     </div>
-    <div class="stat">
+    <div class="stat stat-narrow">
       <span class="stat-label">GPS</span>
-      <span class="stat-value" id="val-gps-status">suche…</span>
+      <span class="stat-value stat-value-sm" id="val-gps-status">suche…</span>
     </div>
+  </header>
+
+  <!-- Readouts stack in one column so two open cards can never overlap;
+       hidden ones collapse out of the flow by themselves. -->
+  <div id="readouts">
+
+  <!-- Navigation card: shown once a destination is set -->
+  <section id="navpanel" class="card hidden" role="status" aria-live="polite">
+    <div class="card-rows">
+      <div class="row">
+        <span class="row-label">Distanz</span>
+        <span class="row-value" id="val-distance">–</span>
+      </div>
+      <div class="row">
+        <span class="row-label">Peilung</span>
+        <span class="row-value" id="val-bearing">–</span>
+      </div>
+      <div class="row">
+        <span class="row-label">ETA</span>
+        <span class="row-value" id="val-eta">–</span>
+      </div>
+    </div>
+    <button id="btn-clear-target" class="btn-text">Ziel löschen</button>
+  </section>
+
+  <!-- Distance-per-time projection -->
+  <section id="projectionpanel" class="card hidden">
+    <h2 class="card-title">Bei aktuellem Kurs</h2>
+    <div class="card-rows">
+      <div class="row"><span class="row-label">in 1 min</span><span class="row-value" id="val-proj-1min">–</span></div>
+      <div class="row"><span class="row-label">für 200 m</span><span class="row-value" id="val-proj-200m">–</span></div>
+      <div class="row"><span class="row-label">für 500 m</span><span class="row-value" id="val-proj-500m">–</span></div>
+    </div>
+  </section>
+
   </div>
 
-  <!-- Navigation panel: shown once a destination is set -->
-  <div id="navpanel" class="panel hidden" role="status" aria-live="polite">
-    <div class="stat">
-      <span class="stat-label">Distanz zum Ziel</span>
-      <span class="stat-value" id="val-distance">–</span>
-    </div>
-    <div class="stat">
-      <span class="stat-label">Peilung zum Ziel</span>
-      <span class="stat-value" id="val-bearing">–</span>
-    </div>
-    <div class="stat">
-      <span class="stat-label">ETA</span>
-      <span class="stat-value" id="val-eta">–</span>
-    </div>
-    <button id="btn-clear-target" class="btn-small">Ziel löschen</button>
-  </div>
-
-  <!-- Distance-per-time projection panel, always visible once GPS+heading available -->
-  <div id="projectionpanel" class="panel hidden">
-    <div class="proj-title">Bei aktuellem Kurs/Speed</div>
-    <div class="proj-row"><span>in 1 min</span><span id="val-proj-1min">–</span></div>
-    <div class="proj-row"><span>für 200 m</span><span id="val-proj-200m">–</span></div>
-    <div class="proj-row"><span>für 500 m</span><span id="val-proj-500m">–</span></div>
-  </div>
-
-  <!-- Chart layer switches -->
-  <div id="layerpanel" class="panel hidden">
-    <div class="proj-title">Kartenebenen</div>
+  <!-- Chart layers -->
+  <section id="layerpanel" class="card sheet hidden">
+    <h2 class="card-title">Kartenebenen</h2>
     <div id="layer-list"></div>
-  </div>
+  </section>
 
   <!-- Tile storage -->
-  <div id="storagepanel" class="panel hidden">
-    <div class="proj-title">Kachelspeicher</div>
-    <p class="hint">Angesehene Kartenausschnitte werden automatisch gespeichert und
-      stehen ohne Empfang weiter zur Verfügung. Ein Vorab-Download ganzer Gebiete
-      ist nicht möglich – die Nutzungsbedingungen von OpenStreetMap untersagen das.</p>
-    <p class="hint" id="cache-size-hint"></p>
-    <div class="offline-buttons">
-      <button id="btn-clear-cache" class="btn-small">Speicher leeren</button>
-    </div>
-  </div>
+  <section id="storagepanel" class="card sheet hidden">
+    <h2 class="card-title">Kachelspeicher</h2>
+    <p class="card-text">Angesehene Kartenausschnitte werden automatisch gespeichert
+      und stehen ohne Empfang weiter zur Verfügung. Ein Vorab-Download ganzer
+      Gebiete ist nicht möglich – die Nutzungsbedingungen von OpenStreetMap
+      untersagen das.</p>
+    <p class="card-text" id="cache-size-hint"></p>
+    <button id="btn-clear-cache" class="btn-text">Speicher leeren</button>
+  </section>
 
-  <!-- Bottom toolbar -->
-  <div id="toolbar">
-    <button id="btn-locate" class="fab" title="Zur eigenen Position" aria-label="Zur eigenen Position"><span aria-hidden="true">📍</span></button>
-    <button id="btn-toggle-layers" class="fab" title="Kartenebenen" aria-label="Kartenebenen"><span aria-hidden="true">🗺️</span></button>
-    <button id="btn-toggle-storage" class="fab" title="Kachelspeicher" aria-label="Kachelspeicher"><span aria-hidden="true">💾</span></button>
-    <button id="btn-toggle-proj" class="fab" title="Kurs-Projektion ein/aus" aria-label="Kurs-Projektion ein/aus"><span aria-hidden="true">📐</span></button>
-  </div>
+  <!-- Floating action buttons -->
+  <nav id="fabs" aria-label="Kartenwerkzeuge">
+    <button id="btn-locate" class="fab" title="Zur eigenen Position" aria-label="Zur eigenen Position">
+      <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><use href="#ic-locate"></use></svg>
+    </button>
+    <button id="btn-toggle-layers" class="fab" title="Kartenebenen" aria-label="Kartenebenen">
+      <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><use href="#ic-layers"></use></svg>
+    </button>
+    <button id="btn-toggle-storage" class="fab" title="Kachelspeicher" aria-label="Kachelspeicher">
+      <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><use href="#ic-storage"></use></svg>
+    </button>
+    <button id="btn-toggle-proj" class="fab" title="Kurs-Projektion ein/aus" aria-label="Kurs-Projektion ein/aus">
+      <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><use href="#ic-projection"></use></svg>
+    </button>
+  </nav>
 
   <div id="footer">thought up by human, coded by ai · v<span id="app-version"></span></div>
 

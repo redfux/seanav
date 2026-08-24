@@ -251,13 +251,43 @@ Rasterquelle war der falsche Weg.
 `compare.html` legt Kandidatenquellen übereinander, damit sich am realen
 Revier beurteilen lässt, ob eine Kombination reicht.
 
-## Bewusste Abweichung: kein Material Design
+## Oberfläche: Material 3
 
-Der Masterprompt nennt Google Material Design als gestalterische Grundlage für
-Web-UIs. Die App nutzt stattdessen ein dunkles, maritimes Theme mit großen
-Kontrasten und wenigen, großflächigen Bedienelementen, zugeschnitten auf
-Ablesbarkeit bei Sonnenlicht und Bedienung mit nassen Händen an Bord.
+Grundlage ist Material 3 in dunkler Ausprägung, mit zwei bewussten
+Abweichungen vom Standard:
 
-Der Punkt ist als O4 in `features.md` offen vermerkt und beim Nutzer zur
-Entscheidung – eine Umstellung wäre ein reiner CSS-/Markup-Wechsel und würde
-die Logik in `js/` nicht berühren.
+- **Kontrast über der Material-Vorgabe.** Die Flächen sind dunkler, die
+  Vordergrundfarben heller als in der Referenz-Dark-Palette. Das Display
+  konkurriert an Bord mit offenem Himmel.
+- **Messwerte in Display-Größen** statt der Body-/Title-Größen, die ein
+  Material-Layout dafür vorsähe. Kurs und Speed stehen in 36 px, die
+  Kartenwerte in 26 px, jeweils mit tabellarischen Ziffern, damit die Zahlen
+  beim Zählen nicht springen. Sie müssen in einem Blick weg vom Wasser lesbar
+  sein – das ist der Zweck der App.
+
+Die Tokens stehen als CSS-Variablen in `style.css` (`--md-surface`,
+`--md-primary`, `--md-radius-*` …); ein Umfärben berührt nur diesen Block.
+
+**Keine Webfont.** Es darf nichts von einem CDN geladen werden, und Roboto
+lokal einzubetten würde Gewicht für wenig Gewinn kosten. Verwendet wird ein
+System-Stack, für Zahlen ein monospacer Stack, damit Ziffern gleich breit
+laufen.
+
+**Icons als Inline-SVG.** Einmal in `index.html` als `<defs>` definiert und per
+`<use>` referenziert – kein Icon-Font, kein externes Sprite, keine
+CSP-Ausnahme. Die vorherigen Emoji sahen auf jedem System anders aus.
+
+### Flächenaufteilung
+
+Der Bildschirm ist in Zonen aufgeteilt, die sich nicht überschneiden – auf
+390 px Breite ist das kein Selbstläufer, frühere Fassungen hatten dort echte
+Überlappungen:
+
+| Zone | Inhalt |
+| --- | --- |
+| oben, volle Breite | App-Bar mit Kurs, Speed, GPS |
+| oben links | Ablesekarten (Navigation, Projektion), gestapelt in einer Spalte |
+| Mitte oben | Sheets für Ebenen und Speicher, gegenseitig ausschließend |
+| unten rechts | Schaltflächen |
+| unten links | Zoom-Control |
+| unten, volle Breite | Attribution über dem Footer |

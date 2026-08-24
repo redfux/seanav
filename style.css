@@ -1,18 +1,53 @@
 /* thought up by human, coded by ai */
 
-/* Color tokens: dark nautical theme, tuned for outdoor/sunlight readability */
+/*
+ * Material 3, dark scheme, tuned for a phone held at arm's length in daylight
+ * on a moving boat. Two deviations from stock Material are deliberate:
+ *
+ *  - Contrast is pushed past the Material baseline. Surfaces are darker and
+ *    on-surface colours lighter than the reference dark palette, because the
+ *    screen competes with open sky.
+ *  - The readings are set at display sizes rather than the body/title sizes a
+ *    Material layout would use. They have to be readable in a glance away from
+ *    the water, which is the whole point of the app.
+ *
+ * Type is a system stack: no webfont is loaded, since nothing may be fetched
+ * from a CDN and vendoring Roboto would add weight for little gain.
+ */
+
 :root {
-  --color-bg-deep: #0d1b2a;
-  --color-panel: rgba(13, 27, 42, 0.92);
-  --color-panel-border: #1b3a4b;
-  --color-accent: #2ec4b6;
-  --color-accent-strong: #06d6a0;
-  --color-warn: #ffb703;
-  --color-text: #e8f1f2;
-  --color-text-dim: #8fa6ad;
-  --radius: 10px;
-  --font-ui: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-  --font-mono: "SF Mono", "Roboto Mono", Consolas, monospace;
+  color-scheme: dark;
+
+  /* Surfaces */
+  --md-surface: #101418;
+  --md-surface-container: #1b2127;
+  --md-surface-container-high: #252c33;
+
+  /* Content */
+  --md-on-surface: #e6eaef;
+  --md-on-surface-variant: #a8b4bf;
+  --md-outline: #3a444e;
+
+  /* Accent: the readings and active controls */
+  --md-primary: #4fe3b0;
+  --md-on-primary: #00382a;
+
+  /* Elevation. Material 3 leans on tinted surfaces; the shadow only lifts the
+     panel off a busy map so its edge stays findable. */
+  --md-elev-1: 0 1px 3px rgba(0, 0, 0, 0.45);
+  --md-elev-3: 0 4px 12px rgba(0, 0, 0, 0.55);
+
+  /* Shape */
+  --md-radius-s: 12px;
+  --md-radius-m: 16px;
+  --md-radius-l: 28px;
+
+  --font: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+  --font-numeric: ui-monospace, "SF Mono", "Roboto Mono", Menlo, monospace;
+
+  /* Safe areas on notched phones */
+  --inset-top: env(safe-area-inset-top, 0px);
+  --inset-bottom: env(safe-area-inset-bottom, 0px);
 }
 
 * { box-sizing: border-box; }
@@ -20,107 +55,315 @@
 html, body {
   margin: 0;
   height: 100%;
-  background: var(--color-bg-deep);
-  color: var(--color-text);
-  font-family: var(--font-ui);
   overflow: hidden;
-  -webkit-user-select: none;
-  user-select: none;
+  background: var(--md-surface);
+  color: var(--md-on-surface);
+  font-family: var(--font);
+  -webkit-text-size-adjust: 100%;
 }
 
 #map {
   position: absolute;
   inset: 0;
-  background: #0a141d;
+  background: var(--md-surface);
 }
 
-/* Panels share a common card style */
-.panel {
-  position: absolute;
-  z-index: 500;
-  background: var(--color-panel);
-  border: 1px solid var(--color-panel-border);
-  border-radius: var(--radius);
-  padding: 10px 14px;
-  backdrop-filter: blur(6px);
-  box-shadow: 0 4px 16px rgba(0,0,0,0.4);
+.icon-defs { position: absolute; width: 0; height: 0; overflow: hidden; }
+
+.icon {
+  width: 26px;
+  height: 26px;
+  fill: currentColor;
+  display: block;
 }
 
-.panel.hidden { display: none; }
+/* --- Top app bar ---------------------------------------------------------
+ * Full width rather than a floating pill: it never has to compete with the
+ * zoom control for the same corner, and the three readings get the whole
+ * width instead of sharing it with the map. */
 
-/* Status bar: top, spans width, shows heading/speed/gps */
 #statusbar {
-  top: 12px;
-  left: 12px;
-  right: 12px;
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 1000;
   display: flex;
-  justify-content: space-around;
-  padding: 8px 10px;
+  align-items: stretch;
+  gap: 2px;
+  padding: calc(var(--inset-top) + 6px) 8px 8px;
+  background: color-mix(in srgb, var(--md-surface) 92%, transparent);
+  backdrop-filter: blur(12px);
+  box-shadow: var(--md-elev-1);
 }
 
 .stat {
+  flex: 1 1 0;
+  min-width: 0;
   display: flex;
   flex-direction: column;
   align-items: center;
-  min-width: 70px;
+  justify-content: center;
+  padding: 4px 2px;
 }
+
+.stat-narrow { flex: 0 1 26%; }
 
 .stat-label {
   font-size: 11px;
-  color: var(--color-text-dim);
+  font-weight: 500;
+  letter-spacing: 0.09em;
   text-transform: uppercase;
-  letter-spacing: 0.04em;
+  color: var(--md-on-surface-variant);
+  line-height: 1.2;
 }
 
+/* Display size. This is the number read while looking away from the water. */
 .stat-value {
-  font-family: var(--font-mono);
-  font-size: 18px;
+  font-family: var(--font-numeric);
+  font-size: 36px;
   font-weight: 600;
-  color: var(--color-accent-strong);
+  line-height: 1.1;
+  letter-spacing: -0.01em;
+  color: var(--md-primary);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
 }
 
-/* Navigation panel: below status bar, left side */
-#navpanel {
-  top: 68px;
-  left: 12px;
-  min-width: 190px;
+/* The GPS state is a word, not a reading - it must not crowd out the numbers. */
+.stat-value-sm { font-size: 19px; font-weight: 500; }
+
+@media (max-width: 380px) {
+  .stat-value { font-size: 30px; }
+  .stat-value-sm { font-size: 16px; }
 }
 
-#navpanel .stat {
-  flex-direction: row;
-  justify-content: space-between;
-  min-width: 0;
-  width: 100%;
-  margin-bottom: 4px;
+/* --- Cards --------------------------------------------------------------- */
+
+.card {
+  position: absolute;
+  z-index: 1000;
+  background: var(--md-surface-container);
+  color: var(--md-on-surface);
+  border-radius: var(--md-radius-l);
+  box-shadow: var(--md-elev-3);
+  padding: 16px 20px;
 }
 
-#navpanel .stat-label { text-align: left; }
-#navpanel .stat-value { font-size: 15px; }
+.card.hidden { display: none; }
 
-/* Projection panel: below status bar, right side */
-#projectionpanel {
-  top: 68px;
-  right: 12px;
-  min-width: 160px;
-}
-
-.proj-title {
-  font-size: 11px;
-  color: var(--color-text-dim);
+.card-title {
+  margin: 0 0 10px;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
-  letter-spacing: 0.04em;
-  margin-bottom: 6px;
+  color: var(--md-on-surface-variant);
 }
 
-.proj-row {
+.card-text {
+  margin: 0 0 10px;
+  font-size: 13px;
+  line-height: 1.45;
+  color: var(--md-on-surface-variant);
+}
+
+.card-rows { display: flex; flex-direction: column; gap: 6px; }
+
+.row {
   display: flex;
+  align-items: baseline;
   justify-content: space-between;
-  font-family: var(--font-mono);
-  font-size: 14px;
-  padding: 2px 0;
+  gap: 16px;
 }
 
-.proj-row span:last-child { color: var(--color-accent); font-weight: 600; }
+.row-label {
+  font-size: 14px;
+  color: var(--md-on-surface-variant);
+}
+
+.row-value {
+  font-family: var(--font-numeric);
+  font-size: 26px;
+  font-weight: 600;
+  line-height: 1.15;
+  color: var(--md-primary);
+  font-variant-numeric: tabular-nums;
+}
+
+/*
+ * Readouts share one column. Placing them in opposite corners looked fine in
+ * the abstract but collided on a 390 px phone as soon as both were open.
+ */
+#readouts {
+  position: absolute;
+  z-index: 1000;
+  top: calc(var(--inset-top) + 84px);
+  left: 12px;
+  width: min(230px, 60vw);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  pointer-events: none;
+}
+
+#readouts .card {
+  position: static;
+  pointer-events: auto;
+}
+
+/* Sheets are wider and centred: they carry controls, not readings. */
+.sheet {
+  top: calc(var(--inset-top) + 84px);
+  left: 50%;
+  transform: translateX(-50%);
+  width: min(340px, calc(100vw - 24px));
+  max-height: calc(100vh - var(--inset-top) - 190px);
+  overflow-y: auto;
+}
+
+/* --- Controls ------------------------------------------------------------ */
+
+.btn-text {
+  appearance: none;
+  margin-top: 12px;
+  padding: 10px 18px;
+  min-height: 44px;
+  border: none;
+  border-radius: var(--md-radius-l);
+  background: var(--md-surface-container-high);
+  color: var(--md-primary);
+  font: inherit;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.btn-text:active { background: var(--md-outline); }
+
+/* Layer switches. Material list item with a leading checkbox, sized as a
+   comfortable tap target for wet hands. */
+.layer-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  min-height: 52px;
+  font-size: 16px;
+  cursor: pointer;
+  border-radius: var(--md-radius-s);
+  padding: 0 4px;
+}
+
+.layer-row:active { background: var(--md-surface-container-high); }
+
+.layer-row input[type="checkbox"] {
+  width: 24px;
+  height: 24px;
+  flex: 0 0 auto;
+  accent-color: var(--md-primary);
+  margin: 0;
+}
+
+/* --- Floating action buttons --------------------------------------------- */
+
+#fabs {
+  position: absolute;
+  right: 12px;
+  /* Clear of both the attribution strip and the footer line below it. */
+  bottom: calc(var(--inset-bottom) + 66px);
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.fab {
+  appearance: none;
+  width: 56px;
+  height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  border-radius: var(--md-radius-m);
+  background: var(--md-surface-container-high);
+  color: var(--md-primary);
+  box-shadow: var(--md-elev-3);
+  cursor: pointer;
+}
+
+.fab:active {
+  background: var(--md-primary);
+  color: var(--md-on-primary);
+}
+
+.fab.is-active {
+  background: var(--md-primary);
+  color: var(--md-on-primary);
+}
+
+/* --- Footer -------------------------------------------------------------- */
+
+#footer {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 1000;
+  padding: 5px 10px calc(var(--inset-bottom) + 5px);
+  font-size: 11px;
+  text-align: center;
+  color: var(--md-on-surface-variant);
+  background: color-mix(in srgb, var(--md-surface) 82%, transparent);
+  pointer-events: none;
+}
+
+/* --- Leaflet integration -------------------------------------------------- */
+
+/* The zoom control lives bottom-left (set in app.js): the top-left corner
+   belongs to the readout column, and the bottom-right to the buttons. */
+.leaflet-bottom.leaflet-left { margin-bottom: calc(var(--inset-bottom) + 30px); }
+.leaflet-bottom.leaflet-left .leaflet-control { margin-left: 12px; }
+
+.leaflet-control-zoom a {
+  width: 44px;
+  height: 44px;
+  line-height: 44px;
+  background: var(--md-surface-container-high);
+  color: var(--md-primary);
+  border: none;
+  border-bottom: 1px solid var(--md-outline);
+  font-size: 22px;
+  font-weight: 600;
+}
+
+.leaflet-control-zoom a:hover,
+.leaflet-control-zoom a:active { background: var(--md-outline); color: var(--md-primary); }
+
+.leaflet-bar {
+  border: none;
+  border-radius: var(--md-radius-m);
+  overflow: hidden;
+  box-shadow: var(--md-elev-3);
+}
+
+/* Leaflet styles this with .leaflet-container .leaflet-control-attribution,
+   so the selector has to match that specificity to win. */
+.leaflet-container .leaflet-control-attribution {
+  background: color-mix(in srgb, var(--md-surface) 86%, transparent);
+  color: var(--md-on-surface-variant);
+  font-size: 10px;
+  padding: 2px 6px;
+  border-radius: var(--md-radius-s) 0 0 0;
+}
+
+.leaflet-container .leaflet-control-attribution a { color: var(--md-primary); }
+
+/* Attribution and footer share the bottom edge; lift the attribution clear. */
+.leaflet-bottom.leaflet-right { margin-bottom: calc(var(--inset-bottom) + 26px); }
 
 /*
  * Overlay blending. A chart overlay that renders its own water and coastline
@@ -130,153 +373,5 @@ html, body {
  */
 .blend-multiply { mix-blend-mode: multiply; }
 
-/* Chart layer switches: centered, above the offline panel */
-#layerpanel {
-  top: 68px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: min(320px, 86vw);
-}
-
-.layer-row {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  /* Comfortable tap target for wet hands on a moving boat. */
-  min-height: 40px;
-  font-size: 15px;
-  cursor: pointer;
-}
-
-.layer-row input[type="checkbox"] {
-  width: 20px;
-  height: 20px;
-  accent-color: var(--color-accent);
-  flex: 0 0 auto;
-}
-
-/* Tile storage panel: centered */
-#storagepanel {
-  top: 68px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: min(320px, 86vw);
-}
-
-.hint {
-  font-size: 12px;
-  color: var(--color-text-dim);
-  margin: 4px 0 8px;
-}
-
-.zoomlabel {
-  font-size: 13px;
-  display: block;
-  margin-bottom: 4px;
-}
-
-#zoom-range { width: 100%; }
-
-.progress-bar {
-  height: 8px;
-  border-radius: 4px;
-  background: #1b3a4b;
-  overflow: hidden;
-  margin: 8px 0 4px;
-}
-
-#progress-fill {
-  height: 100%;
-  width: 0%;
-  background: var(--color-accent-strong);
-  transition: width 0.15s linear;
-}
-
-#progress-text {
-  font-size: 12px;
-  color: var(--color-text-dim);
-}
-
-.offline-buttons {
-  display: flex;
-  gap: 8px;
-  margin-top: 8px;
-}
-
-/* Buttons */
-.btn-primary, .btn-small {
-  font-family: var(--font-ui);
-  border: none;
-  border-radius: 8px;
-  padding: 9px 14px;
-  font-size: 13px;
-  font-weight: 600;
-  cursor: pointer;
-}
-
-.btn-primary {
-  background: var(--color-accent-strong);
-  color: #052e26;
-  flex: 1;
-}
-
-.btn-small {
-  background: transparent;
-  color: var(--color-text-dim);
-  border: 1px solid var(--color-panel-border);
-}
-
-/* Bottom-right floating toolbar */
-#toolbar {
-  position: absolute;
-  right: 12px;
-  bottom: 46px;
-  z-index: 500;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-.fab {
-  width: 48px;
-  height: 48px;
-  border-radius: 50%;
-  border: 1px solid var(--color-panel-border);
-  background: var(--color-panel);
-  color: var(--color-text);
-  font-size: 20px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.4);
-}
-
-.fab:active { background: var(--color-panel-border); }
-
-#footer {
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  z-index: 500;
-  text-align: center;
-  font-size: 10px;
-  color: var(--color-text-dim);
-  padding: 4px;
-  background: rgba(0,0,0,0.35);
-}
-
-/* Course line and target marker accents drawn by Leaflet get their color from app.js,
-   but tune default Leaflet control contrast for the dark map here */
-.leaflet-control-zoom a {
-  background: var(--color-panel) !important;
-  color: var(--color-text) !important;
-  border-color: var(--color-panel-border) !important;
-}
-
-.leaflet-control-attribution {
-  background: rgba(13,27,42,0.7) !important;
-  color: var(--color-text-dim) !important;
-}
-.leaflet-control-attribution a { color: var(--color-accent) !important; }
+/* Tiles missing from the cache while offline: visible as a gap, not alarming. */
+.tile-missing { opacity: 0.85; }
