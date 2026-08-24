@@ -11,4 +11,10 @@ _(derzeit keine offenen Punkte)_
 
 ## Erledigt
 
-_(noch nichts)_
+- **„die Tiefenlinien im flacheren Wasser sind nicht zu sehen … es gibt immer
+  noch keine Tiefenlinien"** (mehrfach, zuletzt 2026-08-24)
+  Gemessen statt weiter vermutet: der Dienst antwortet an der fraglichen
+  Stelle mit einer leeren Konturkachel, die Tiefeninformation liegt dort in
+  den Tiefenzonen. Umgesetzt in 0.9.2 – Konturebene entfernt, Tiefenzonen
+  durch gemessene Sättigungsanhebung unterscheidbar gemacht. Siehe B8 in
+  `bugs.md`.

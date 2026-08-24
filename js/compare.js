@@ -1,11 +1,16 @@
 /*
- * Contour probe.
+ * Depth sub-layer probe.
  *
- * The depth contours are missing inshore and three explanations have already
- * turned out wrong, so this page stops guessing and measures instead. For the
- * current view it fetches the tiles the app would fetch and reports what the
- * service actually returned: status, content type, byte size, and whether the
- * image contains any drawing at all.
+ * The depth contours were missing inshore and three explanations had already
+ * turned out wrong, so this page stopped guessing and measured instead. For
+ * the current view it fetches the tiles the app would fetch and reports what
+ * the service actually returned: status, content type, byte size, and whether
+ * the image contains any drawing at all.
+ *
+ * That settled it: at 60.31821, 4.97209 the contour sub-layer answers HTTP 200
+ * with an empty tile while the depth-band sub-layer covers 75 % of the same
+ * tile - the lines are missing from the data, not from the request. The page
+ * stays, because the same question comes up again in every new sea area.
  *
  * That separates the three possibilities that look identical on the map:
  *   - the service returns an empty, fully transparent tile: no data here;
@@ -24,7 +29,7 @@ const NET_TIMEOUT_MS = 15000;
 const OSM = 'https://tile.openstreetmap.org/{z}/{x}/{y}.png';
 const DEPTH_WMS = 'https://wms.geonorge.no/skwms1/wms.dybdedata2';
 
-// Probed side by side: the group the app uses, and the contour sub-layer.
+// Probed side by side: the group the app uses, and its sub-layers.
 const PROBE_LAYERS = ['Dybdedata2', 'Dybdekontur', 'Dybdelag', 'Dybdepunkt'];
 
 const logEl = document.getElementById('log');
@@ -218,8 +223,8 @@ map.on('zoomend', () => {
     opt.textContent = name;
     select.appendChild(opt);
   });
-  select.value = 'Dybdekontur';
-  showLayer('Dybdekontur');
+  select.value = 'Dybdelag';
+  showLayer('Dybdelag');
   document.getElementById('zoominfo').textContent = `z${map.getZoom()}`;
   say('Zur fraglichen Stelle fahren, dann „Kacheln analysieren".');
 })();

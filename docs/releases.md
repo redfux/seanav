@@ -6,6 +6,34 @@ Versionierung nach [SemVer](https://semver.org/lang/de/).
 Die Versionsnummer wird ausschließlich in `js/version.js` gepflegt; Footer und
 Service-Worker-Cachename leiten sich automatisch daraus ab.
 
+## [0.9.2] – 2026-08-24
+
+### Fixed
+
+- **Die Tiefenzonen sind jetzt unterscheidbar.** Der Dienst zeichnet sie in
+  sehr blassem Blau – dunkelstes Pixel 127 von 255 –, multipliziert mit dem
+  ebenfalls blassen Blau des OSM-Wassers fielen die Stufen fast zusammen. Die
+  Ebene bekommt zusätzlich zum Multiply eine Sättigungsanhebung `saturate(3)`;
+  der RGB-Abstand benachbarter Zonen nach dem Blenden steigt damit von
+  30/41/57 auf 47/60/64. Grau bleibt von Sättigung unberührt, Tiefenlinien,
+  Lotungen und Symbole kommen also unverändert durch.
+- Der Filter aus 0.9.1 (`saturate(1.8) contrast(1.3)`) war nachgemessen
+  schlechter als gar kein Filter: `contrast()` dreht um Mittelgrau und schiebt
+  blasse Zonen Richtung Weiß, wodurch die Stufe zwischen Tiefwasser und erster
+  Zone von 30 auf 19 fiel. Die Messreihe steht in `architecture.md`.
+
+### Removed
+
+- **Die separate Tiefenlinien-Ebene entfällt.** Pixelmessung derselben Kachel,
+  die die App holt (z15/16836/9457 bei 60.31821, 4.97209): `Dybdekontur`
+  antwortet mit HTTP 200 und einer leeren Kachel, `Dybdelag` zeichnet auf
+  derselben Kachel 75,02 %. Die Linien fehlen nicht in der Anfrage, sondern in
+  den Daten. Die eigene Ebene forderte damit dieselben Daten ein zweites Mal
+  an und bot einen Schalter für etwas, was der Dienst küstennah nicht liefert;
+  die Konturen der Gruppenebene bleiben unverändert vorhanden, wo es sie gibt.
+- Kacheln der entfallenen Ebene räumt der Kachelspeicher beim nächsten Start
+  selbst weg (F18)
+
 ## [0.9.1] – 2026-08-22
 
 ### Fixed

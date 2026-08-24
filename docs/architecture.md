@@ -51,8 +51,8 @@ Detail, das zu dieser Zoomstufe gehört, nur mit mehr Pixeln.
 
 Ein höherer Wert, um die Symbole zusätzlich zu vergrößern, zerstört diese
 Kompensation: der Server hält die Karte für weiter herausgezoomt und lässt
-Detailebenen weg. Bei `288` blieben die groben Tiefwasser-Objekte, die feinen
-Flachwasser-Tiefenlinien verschwanden – siehe B5 in `bugs.md`.
+Detailebenen weg. Bei `288` blieben die groben Tiefwasser-Objekte, das feine
+küstennahe Detail dünnte aus – siehe B5 in `bugs.md`.
 
 **Größere Symbole sind aus diesem Dienst deshalb nicht zu haben, ohne Detail
 zu verlieren.** Im Flachwasser ist Detail das Sicherheitsrelevante, also hat es
@@ -71,6 +71,37 @@ die Grundkarte unverändert durch, dunkle Farbe bleibt dunkel. Der Blend-Modus
 steht als Eigenschaft `blend` an der Quelle und wird über `className` auf den
 Container gelegt.
 
+### Tiefenzonen lesbar machen
+
+Multiply allein genügt für die Tiefenzonen nicht. Der Dienst zeichnet sie in
+sehr blassem Blau – an der gemessenen Stelle liegt das dunkelste Pixel der
+Flächenebene bei Helligkeit 127 von 255 – und multipliziert mit dem ebenfalls
+blassen Blau des OSM-Wassers fallen die Stufen fast zusammen.
+
+Gemessen wurde der RGB-Abstand benachbarter Zonen nach dem Blenden, über den
+Bereich, den der Dienst tatsächlich liefert (Weiß bis Helligkeit 127). Größer
+ist besser unterscheidbar:
+
+| Filter | Stufen | Bemerkung |
+| --- | --- | --- |
+| ohne Filter | 30 / 41 / 57 | Ausgangslage |
+| `saturate(3)` | 47 / 60 / 64 | gewählt |
+| `saturate(4)` | 58 / 72 / 52 | Kanäle laufen an, die letzte Stufe schließt sich wieder |
+| `saturate(1.8) contrast(1.3)` | 19 / 57 / 73 | schlechter als ohne Filter |
+
+`contrast()` war die naheliegende Wahl und ist die falsche: sein Drehpunkt
+liegt bei Mittelgrau, es schiebt blasse Zonen also Richtung Weiß und macht
+ausgerechnet die Stufe schlechter, auf die es im Flachwasser ankommt.
+Sättigung wirkt am anderen Ende: sie entfernt eine Farbe proportional zu dem
+Farbanteil, den sie schon hat, verschiebt eine kaum blaue Zone also deutlich,
+während weißes Tiefwasser ohne Farbanteil weiß bleibt. Grau bleibt unberührt,
+Tiefenlinien, Lotungen und Symbole kommen unverändert durch; Alpha bleibt
+ebenfalls unberührt.
+
+Der Filter steht als Eigenschaft `filter` an der Quelle, getrennt vom
+Blend-Modus, und wird über dieselbe `className` gelegt – erst filtern, dann
+blenden.
+
 ## Kartenebenen
 
 Drei Quellen, in Zeichenreihenfolge:
@@ -78,7 +109,7 @@ Drei Quellen, in Zeichenreihenfolge:
 | Ebene | Quelle | Rolle | Abdeckung | Auflösungsgrenze |
 | --- | --- | --- | --- | --- |
 | Grundkarte | `tile.openstreetmap.org` | Land, Küstenlinie, Häfen | weltweit | z19 |
-| Tiefendaten | `wms.geonorge.no/skwms1/wms.dybdedata2`, Layer `Dybdedata2` | Tiefenlinien, Lotungen, Grunde, Schären | Norwegen | keine (WMS) |
+| Tiefendaten | `wms.geonorge.no/skwms1/wms.dybdedata2`, Layer `Dybdedata2` | Tiefenzonen, Lotungen, Grunde, Schären, Tiefenlinien soweit vermessen | Norwegen | keine (WMS) |
 | Seezeichen | `tiles.openseamap.org` | Tonnen, Baken, Feuer | weltweit | z18 |
 
 Die Wahl fiel auf weltweit verfügbare Quellen, weil das Boot dieses Jahr in

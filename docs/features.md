@@ -21,7 +21,7 @@ Mobilfunkempfang. Kein Ersatz für vorschriftsmäßige Seekarten und Ausrüstung
 | F10 | Fehlende Kacheln als erkennbarer Platzhalter statt kaputtem Bild | 0.1.0 |
 | F11 | Anzeige des belegten Kachelspeichers | 0.1.0 |
 | F12 | Scharfe Kartendarstellung auf hochauflösenden Displays (High-DPI) | 0.3.0 |
-| F13 | Tiefenlinien, Lotungen, Grunde und Schären aus dem Kartverket-Tiefendaten-WMS | 0.4.0 |
+| F13 | Tiefenzonen, Lotungen, Grunde, Schären und Tiefenlinien aus dem Kartverket-Tiefendaten-WMS | 0.4.0 |
 | F14 | Seezeichen (Tonnen, Baken, Feuer) aus OpenSeaMap | 0.4.0 |
 | F15 | Kartenebenen einzeln ein-/ausschaltbar, Auswahl bleibt erhalten | 0.4.0 |
 | F16 | Kachelspeicher nach Ebene aufgeschlüsselt, manuell leerbar | 0.4.0 |
@@ -30,6 +30,7 @@ Mobilfunkempfang. Kein Ersatz für vorschriftsmäßige Seekarten und Ausrüstung
 | F19 | Oberfläche nach Material 3, kontraststark und mit großen Messwerten | 0.7.0 |
 | F20 | Zielkarte einklappbar, eingeklappt nur die Distanz; Zustand bleibt erhalten | 0.7.1 |
 | F21 | Marken passen sich dynamisch an: nicht darstellbare Marken entfallen | 0.8.0 |
+| F22 | Tiefenzonen farblich unterscheidbar – gemessene Sättigungsanhebung statt blasser Stufen | 0.9.2 |
 
 ## Nichtfunktionale Anforderungen
 
@@ -50,7 +51,7 @@ Mobilfunkempfang. Kein Ersatz für vorschriftsmäßige Seekarten und Ausrüstung
 | O5 | Abfragbare Tiefenwerte (Antippen → Tiefe) – blockiert durch einen Serverfehler des Dienstes, siehe B4 in `bugs.md` | extern blockiert |
 | O8 | Vorab-Download ganzer Gebiete. Untersagt durch die Nutzungsbedingungen von `tile.openstreetmap.org`; möglich nur mit einem Anbieter, der Prefetching gestattet – die meisten verlangen dafür einen API-Schlüssel | zu entscheiden |
 | O9 | Tiefendaten außerhalb Norwegens. Eine freie globale Entsprechung ist nicht bekannt | offen |
-| O10 | Tiefenlinien im küstennahen Flachwasser. Nicht durch Code lösbar – Kartverket hat diese Bereiche nur begrenzt vermessen, siehe B7 in `bugs.md` | extern begrenzt |
+| O10 | Tiefenlinien im küstennahen Flachwasser. Nicht durch Code lösbar – der Dienst liefert dort nachweislich eine leere Konturkachel, siehe B8 in `bugs.md`. Die Tiefeninformation steckt küstennah in den Tiefenzonen | extern begrenzt |
 | O7 | Offizielle ENC-Vektorkarten (S-57) über einen PRIMAR-Distributor – der einzige vollwertige Ersatz für Rasterkarten, aber lizenzpflichtig | Beschaffungsentscheidung |
 | O3 | Routen mit mehreren Wegpunkten statt nur einem Einzelziel | offen |
 | ~~O4~~ | ~~Google Material Design als gestalterische Grundlage~~ – umgesetzt in 0.7.0 (F19) | – |

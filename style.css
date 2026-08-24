@@ -452,12 +452,31 @@ html, body {
 .blend-multiply { mix-blend-mode: multiply; }
 
 /*
- * Depth contours come off the service as pale hairlines, which vanish against
- * the pale blue of the base map's water. Darkening and saturating brings them
- * out. Both operate on the colour channels only, so fully transparent parts of
- * the tile stay fully transparent.
+ * The depth bands come off the service in very pale blue, and multiplied over
+ * the equally pale blue of the base map's water the steps between them nearly
+ * collapse. Saturating pulls them apart: it pushes a colour away from grey in
+ * proportion to how much colour it already has, so a barely blue band moves a
+ * lot while white deep water, having no colour at all, stays white.
+ *
+ * Measured over the range the service delivers (white down to luminance 127),
+ * as RGB distance between neighbouring bands after blending - larger is
+ * easier to tell apart:
+ *
+ *   ohne Filter                 30 / 41 / 57
+ *   saturate(3)                 47 / 60 / 64
+ *   saturate(4)                 58 / 72 / 52   (Kanäle laufen an)
+ *   saturate(1.8) contrast(1.3) 19 / 57 / 73
+ *
+ * contrast() was the obvious choice and is the wrong one: its pivot sits at
+ * mid grey, so it pushes pale bands towards white and makes exactly the step
+ * that matters in shallow water worse than no filter at all. saturate(3) is
+ * as far as it goes before channels start clipping and the steps close again.
+ *
+ * Grey is unaffected by saturation, so contour lines, soundings and symbols
+ * come through unchanged, and alpha is untouched, so transparent parts of the
+ * tile stay transparent. The filter runs before the blend above.
  */
-.filter-contours { filter: brightness(0.5) saturate(2.2); }
+.filter-depth { filter: saturate(3); }
 
 /* Tiles missing from the cache while offline: visible as a gap, not alarming. */
 .tile-missing { opacity: 0.85; }

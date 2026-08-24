@@ -58,9 +58,8 @@ const DEPTH_WMS = 'https://wms.geonorge.no/skwms1/wms.dybdedata2';
  *
  * Pushing MAP_RESOLUTION beyond that to enlarge the symbols breaks the
  * cancellation: the server believes the map is zoomed further out than it is
- * and drops scale-dependent layers. Concretely, at 72 * 2 * 2 = 288 the coarse
- * deep-water objects still drew but the fine shallow-water contours - the ones
- * that actually matter close inshore - silently disappeared.
+ * and drops scale-dependent layers. At 72 * 2 * 2 = 288 the coarse deep-water
+ * objects still drew while the fine inshore detail silently thinned out.
  *
  * Larger symbols are therefore not available from this service without losing
  * detail, and detail wins. Zooming in one more step is the way to read them.
@@ -69,28 +68,30 @@ const DEPTH_OVERSAMPLE = 2;
 const DEPTH_BASE_DPI = 72;
 
 /*
- * The service groups its sub-layers under "Dybdedata2". Requesting that group
- * draws soundings, shoals and skerries but no depth contours, so the contour
- * sub-layer is requested separately rather than as part of the group.
+ * The service groups its sub-layers under "Dybdedata2": depth-band areas
+ * (Dybdelag), soundings (Dybdepunkt), depth contours (Dybdekontur) plus shoal
+ * and skerry symbols. The group is requested as a whole - that name is the
+ * only one certain to cover everything the service holds here, and a WMS
+ * rejects the entire GetMap as soon as one layer name in it is unknown.
  *
- * Separately, and not merged into one request, on purpose: a WMS rejects the
- * whole GetMap when any one layer name is unknown. Kept apart, a wrong guess
- * costs only its own layer instead of blanking the depth data entirely.
+ * The contour sub-layer was requested separately for a while, on the
+ * assumption that the group omits it. Measured per pixel at 60.31821,
+ * 4.97209: Dybdekontur answers HTTP 200 with an empty tile, while Dybdelag
+ * covers 75 % of the very same tile. The contours are not missing from the
+ * request, they are missing from the data - so the extra request only doubled
+ * the traffic and its layer switch promised something the service cannot
+ * deliver inshore.
  */
-function depthLayerUrl(layerName) {
-  return function (z, x, y) {
-    return buildDepthUrl(layerName, z, x, y);
-  };
-}
+const DEPTH_LAYER = 'Dybdedata2';
 
-function buildDepthUrl(layerName, z, x, y) {
+function depthUrl(z, x, y) {
   const bbox = tileBBox3857(z, x, y);
   const px = 256 * DEPTH_OVERSAMPLE;
   const params = new URLSearchParams({
     service: 'WMS',
     request: 'GetMap',
     version: '1.3.0',
-    layers: layerName,
+    layers: DEPTH_LAYER,
     styles: '',
     format: 'image/png',
     transparent: 'true',
@@ -102,9 +103,6 @@ function buildDepthUrl(layerName, z, x, y) {
   });
   return `${DEPTH_WMS}?${params}`;
 }
-
-const depthUrl = depthLayerUrl('Dybdedata2');
-const contourUrl = depthLayerUrl('Dybdekontur');
 
 // --- OpenSeaMap seamarks -------------------------------------------------
 
@@ -154,29 +152,21 @@ const CHART_SOURCES = [
      * contours, soundings and symbols stays exactly as dark as before.
      */
     blend: 'multiply',
-    defaultOn: true,
-    attribution: '&copy; Kartverket',
-  },
-  {
-    id: 'contours',
-    label: 'Tiefenlinien (nur Norwegen)',
-    url: contourUrl,
-    minZoom: 8,
-    maxNativeZoom: MAP_MAX_ZOOM,
-    opaque: false,
     /*
-     * No multiply here, unlike the group layer. Multiply exists to let opaque
-     * area fills through, and a contour layer draws only lines on a
-     * transparent ground - it has nothing to blend away. Worse, chart contours
-     * are drawn in a pale blue, and pale blue multiplied with the pale blue of
-     * OSM's water is very nearly no change at all. The soundings are almost
-     * black and survived it; the lines did not.
+     * Multiply alone is not enough for the depth bands. The service draws them
+     * in very pale blue - measured at the position above, the darkest pixel of
+     * the band sub-layer is 127 of 255 - and multiplied over the pale blue of
+     * OSM's water the steps between the bands very nearly collapse into one
+     * another.
      *
-     * The filter darkens and saturates what the service draws, so a hairline
-     * contour reads against the water instead of disappearing into it. Alpha
-     * is untouched by both, so the transparent ground stays transparent.
+     * The filter pulls them apart before they are blended: saturation moves a
+     * colour away from grey in proportion to the colour it already carries, so
+     * a barely blue band shifts a lot while white deep water stays white and
+     * the grey ink of contours, soundings and symbols is left alone. Alpha is
+     * untouched, so the transparent ground stays transparent. The strength is
+     * measured rather than guessed - see the table in style.css.
      */
-    filter: 'contours',
+    filter: 'depth',
     defaultOn: true,
     attribution: '&copy; Kartverket',
   },

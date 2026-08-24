@@ -5,52 +5,67 @@ stehen, damit sie bei einem Rückfall wiederauffindbar sind.
 
 ## Offen
 
-### B8 – Tiefenlinien weiterhin nicht sichtbar
-
-**Symptom:** Die Konturebene zeigt küstennah nichts, obwohl Lotungen und
-Seezeichen erscheinen.
-
-**Bisher dreimal falsch diagnostiziert** – erst der `tilematrix`-Parameter,
-dann die Maßstabs-Kompensation über `MAP_RESOLUTION`, dann die Datenlage. Die
-ersten beiden waren echte Fehler und sind behoben, erklären das Symptom aber
-nicht. Die dritte Erklärung stützt sich auf eine Aussage von Kartverket zur
-begrenzten Vermessung küstennaher Bereiche; sie kann stimmen, ist aber nicht
-belegt.
-
-**Jetzt behoben, unabhängig davon:** Die Konturebene lief im
-Multiply-Blend-Modus. Der war für die Gruppenebene richtig, die undurchsichtige
-Flächenfüllungen hat. Eine reine Linienebene hat nichts zu überdecken – und
-Tiefenlinien sind auf Seekarten blass blau. Blass blau multipliziert mit dem
-blassen Blau des OSM-Wassers ergibt fast keinen Unterschied. Die Lotungen sind
-nahezu schwarz und überlebten das, die Linien nicht.
-
-Die Ebene rendert jetzt ohne Blend und mit `brightness(0.5) saturate(2.2)`,
-was blasse Haarlinien gegen das Wasser lesbar macht. Beides lässt Alpha
-unangetastet, der transparente Grund bleibt transparent.
-
-**Offene Messung:** Ob der Dienst an der fraglichen Stelle überhaupt etwas
-zeichnet, ist damit noch nicht belegt. `compare.html` misst es jetzt: es holt
-dieselbe Kachel, die die App holt, und wertet sie pixelweise aus – Anteil
-gezeichneter Pixel, dunkelste Helligkeit, Anzahl Farben, dazu die Kachel
-vergrößert über Schachbrett. Das trennt die drei Fälle, die auf der Karte
-gleich aussehen: leere Kachel, gezeichnete aber unsichtbar gerenderte Kachel,
-oder gar keine Antwort.
-
-**Status:** Rendering-Fehler behoben, Datenfrage offen bis zur Messung.
+_(derzeit keine offenen Fehler – die verbleibende Lücke im Flachwasser ist
+kein Fehler, sondern die Datenlage des Dienstes – siehe B8 unten und O10
+in `features.md`.)_
 
 ## Behoben
+
+### B8 – Tiefenlinien im Flachwasser: gemessen, nicht mehr vermutet
+
+**Symptom:** Küstennah zeigte die Konturebene nichts, obwohl Lotungen und
+Seezeichen erschienen.
+
+**Dreimal falsch diagnostiziert** – erst der `tilematrix`-Parameter, dann die
+Maßstabs-Kompensation über `MAP_RESOLUTION`, dann die Datenlage als bloße
+Vermutung. Die ersten beiden waren echte Fehler und sind behoben, erklären das
+Symptom aber nicht.
+
+**Messung.** `compare.html` holt inzwischen dieselbe Kachel, die die App holt,
+und wertet sie pixelweise aus. Kachel z15/16836/9457 bei 60.31821, 4.97209:
+
+| Sublayer | Antwort | Ergebnis |
+| --- | --- | --- |
+| `Dybdekontur` | HTTP 200, 1 kB | leer – der Dienst zeichnet hier nichts |
+| `Dybdelag` | HTTP 200, 11 kB | 75,02 % gezeichnet, dunkelstes Pixel 127/255 |
+| `Dybdedata2` | HTTP 200 | 76,97 % gezeichnet, dunkelstes Pixel 50/255 |
+| `Dybdepunkt` | HTTP 200 | 0,13 % gezeichnet (Lotungen) |
+
+Damit ist die Frage entschieden: Die Anfrage stimmt, der Layer-Name stimmt,
+der Dienst antwortet – und liefert an dieser Stelle eine leere Konturkachel.
+Keine Darstellungsänderung kann Linien herbeiführen, die nicht geliefert
+werden.
+
+**Was stattdessen da ist.** Die Tiefeninformation steckt küstennah in den
+Flächen von `Dybdelag`, den Tiefenzonen. Die kamen bisher kaum zur Geltung:
+blasses Blau, multipliziert mit dem blassen Blau des OSM-Wassers.
+
+**Behoben in 0.9.2:**
+
+- Die separate Konturebene entfällt. Sie fordert dieselben Daten ein zweites
+  Mal an und hat genau dort nichts anzubieten, wo sie gebraucht wird – ein
+  Schalter, der etwas verspricht, was der Dienst nicht halten kann.
+- Die Tiefendatenebene bekommt zusätzlich zum Multiply eine gemessene
+  Sättigungsanhebung, `saturate(3)`. Der RGB-Abstand benachbarter Tiefenzonen
+  nach dem Blenden steigt damit von 30/41/57 auf 47/60/64. Die Tabelle mit den
+  verworfenen Alternativen steht in `architecture.md`; `contrast()` war die
+  naheliegende und die falsche Wahl.
+
+**Verbleibend:** Tiefenlinien im küstennahen Flachwasser gibt es dort nicht, wo
+Kartverket nicht vermessen hat. Das ist keine offene Aufgabe im Code, sondern
+O10 in `features.md`.
 
 ### B7 – Keine Tiefenlinien: kein Fehler, sondern Datenlage
 
 **Symptom:** Der Tiefendaten-Layer zeichnete Lotungen, Grunde und Schären, aber
 keine Tiefenkonturlinien.
 
-**Erste Ursache (behoben in 0.7.0):** Der Sublayer `Dybdekontur` ist im
-Gruppen-Request `Dybdedata2` nicht enthalten. Er wird jetzt als eigene Ebene
-angefordert – bewusst in einem getrennten Request, weil ein WMS die gesamte
-GetMap-Anfrage zurückweist, sobald ein Layer-Name unbekannt ist. Seitdem
-erscheinen die Konturen im offenen und tiefen Wasser, der Layer-Name war also
-richtig.
+**Erste Annahme (0.7.0, in 0.9.2 zurückgenommen):** Der Sublayer
+`Dybdekontur` sei im Gruppen-Request `Dybdedata2` nicht enthalten, deshalb
+wurde er als eigene Ebene angefordert. Belegt war das nie. Die Messung in B8
+zeigt, dass die Konturebene an der fraglichen Stelle leer antwortet – der
+getrennte Request holte also dieselben Daten ein zweites Mal und ist wieder
+entfernt.
 
 **Verbleibende Lücke im Flachwasser: keine, die sich beheben ließe.** Kartverket
 weist ausdrücklich darauf hin, dass die flachsten küstennahen Bereiche nur
