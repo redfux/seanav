@@ -6,6 +6,30 @@ Versionierung nach [SemVer](https://semver.org/lang/de/).
 Die Versionsnummer wird ausschließlich in `js/version.js` gepflegt; Footer und
 Service-Worker-Cachename leiten sich automatisch daraus ab.
 
+## [0.8.0] – 2026-08-22
+
+### Changed
+
+- **Die Kurs-Projektion steht jetzt auf der Kurslinie statt in einer Kachel.**
+  Kleine Punkte markieren, wo das Boot in 1, 2 und 5 Minuten sein wird, die
+  Zeitangabe steht daneben. Die Kachel „Bei aktuellem Kurs" entfällt damit
+  ersatzlos.
+- Eine Marke wird nur gezeichnet, wo sie etwas aussagt. Sie entfällt, wenn
+  sie außerhalb des sichtbaren Kartenausschnitts liegt, wenn ihr Label das
+  der vorigen Marke überdecken würde, oder wenn die Fahrt zu langsam für eine
+  sinnvolle Projektion ist. Bei 6 kn und z16 stehen dadurch 1 und 2 min – die
+  5-min-Marke liegt außerhalb des Ausschnitts.
+- Die Kurslinie endet nicht mehr nach festen 800 m, sondern reicht knapp über
+  die letzte gezeichnete Marke hinaus
+- Der 📐-Schalter blendet jetzt die Marken ein und aus statt der Kachel
+
+### Notes
+
+- Marken und Labels sind nicht anklickbar (`interactive: false`), sonst würde
+  ein Tipp darauf kein Ziel setzen.
+- Die Marken werden auch bei `moveend`/`zoomend` neu bewertet, nicht nur beim
+  GPS-Fix: welche hineinpassen, hängt vom Kartenausschnitt ab.
+
 ## [0.7.1] – 2026-08-22
 
 ### Added

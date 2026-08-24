@@ -11,7 +11,30 @@
 // --- Constants -------------------------------------------------------
 const BERGEN_CENTER = [60.39, 5.32];
 const EARTH_RADIUS_M = 6371000;
-const COURSE_LINE_LOOKAHEAD_M = 800; // how far ahead the course line is drawn
+const COURSE_LINE_LOOKAHEAD_M = 800; // fallback length when no marker is shown
+
+// Time marks placed along the course line. Each is where the boat will be
+// after that many minutes at the current speed and heading.
+const PROJECTION_MINUTES = [1, 2, 5];
+
+/*
+ * A mark is only drawn where it actually tells the helmsman something:
+ *
+ *  - below MIN_PROJECTION_SPEED_MS there is no meaningful course to project;
+ *  - a mark outside the current view cannot be read, so it is dropped. At
+ *    cruising speed that is usually the 5 min mark;
+ *  - marks closer together on screen than MIN_MARK_SPACING_PX would have
+ *    overlapping labels. Manoeuvring slowly, all three land nearly on top of
+ *    the boat, and the ones that cannot be told apart are dropped.
+ */
+const MIN_PROJECTION_SPEED_MS = 0.15;
+const MIN_MARK_SPACING_PX = 34;
+/*
+ * Perpendicular gap between line and label. The label is centred on the offset
+ * point, so it reaches back toward the line by half its own width - the gap
+ * has to exceed that or the text sits on the line.
+ */
+const MARK_LABEL_OFFSET_PX = 34;
 const SPEED_SMOOTHING_SAMPLES = 6;   // moving average window for speed/heading
 const STALE_FIX_MS = 8000;           // GPS fix older than this counts as lost
 
@@ -20,6 +43,8 @@ let map;
 const chartLayers = new Map(); // source id -> Leaflet layer, for those switched on
 let positionMarker;
 let courseLine;
+let projectionLayer;          // holds the time marks, rebuilt on every fix
+let projectionEnabled = true;
 let targetMarker;
 let targetLatLng = null;
 let targetLine;
@@ -92,6 +117,13 @@ function initMap() {
   CHART_SOURCES.forEach((source) => setLayerEnabled(source, layerPreference(source)));
 
   map.on('click', (e) => setTarget(e.latlng));
+
+  // Which marks fit depends on the view, not only on the fix: zooming out can
+  // crowd them together, panning can move one off screen.
+  map.on('moveend zoomend', () => {
+    const last = lastFixes[lastFixes.length - 1];
+    if (last) updateCourseLine(last);
+  });
 }
 
 // --- Chart layers ---------------------------------------------------------
@@ -215,7 +247,6 @@ function onPosition(pos) {
   updateStatusBar();
   updateCourseLine(fix);
   updateNavPanel(fix);
-  updateProjectionPanel();
 }
 
 function smooth(prev, value) {
@@ -262,13 +293,100 @@ function updatePositionMarker(fix) {
 
 function updateCourseLine(fix) {
   if (currentHeadingDeg === null) return;
-  const ahead = destinationPoint(fix, currentHeadingDeg, COURSE_LINE_LOOKAHEAD_M);
+
+  const marks = projectionMarks(fix);
+  // The line runs a little past the last mark, so the furthest label does not
+  // sit on the very end of it.
+  const lookahead = marks.length
+    ? marks[marks.length - 1].distanceM * 1.15
+    : COURSE_LINE_LOOKAHEAD_M;
+
+  const ahead = destinationPoint(fix, currentHeadingDeg, lookahead);
   const points = [[fix.lat, fix.lng], [ahead.lat, ahead.lng]];
   if (!courseLine) {
-    courseLine = L.polyline(points, { color: '#ffb703', weight: 3, dashArray: '2 8' }).addTo(map);
+    courseLine = L.polyline(points, {
+      color: '#ffb703', weight: 3, dashArray: '2 8', interactive: false,
+    }).addTo(map);
   } else {
     courseLine.setLatLngs(points);
   }
+
+  drawProjectionMarks(marks);
+}
+
+// --- Course line time marks ------------------------------------------------
+
+// Ground distance covered per screen pixel, for translating a pixel gap into
+// the geographic offset a label needs.
+function metresPerPixel() {
+  const centre = map.getCenter();
+  const point = map.latLngToContainerPoint(centre);
+  const shifted = map.containerPointToLatLng([point.x + 64, point.y]);
+  return map.distance(centre, shifted) / 64;
+}
+
+// Which marks are worth drawing right now, nearest first.
+function projectionMarks(fix) {
+  if (!projectionEnabled) return [];
+  if (currentHeadingDeg === null || currentSpeedMs < MIN_PROJECTION_SPEED_MS) return [];
+
+  const bounds = map.getBounds();
+  const kept = [];
+  let lastPoint = map.latLngToContainerPoint([fix.lat, fix.lng]);
+
+  for (const minutes of PROJECTION_MINUTES) {
+    const distanceM = currentSpeedMs * minutes * 60;
+    const at = destinationPoint(fix, currentHeadingDeg, distanceM);
+    const latlng = L.latLng(at.lat, at.lng);
+    if (!bounds.contains(latlng)) continue;
+
+    const point = map.latLngToContainerPoint(latlng);
+    // Measured against the last mark actually kept, not the last one tried,
+    // so skipping one does not let the next crowd it either.
+    if (point.distanceTo(lastPoint) < MIN_MARK_SPACING_PX) continue;
+
+    kept.push({ minutes, latlng, distanceM });
+    lastPoint = point;
+  }
+  return kept;
+}
+
+function drawProjectionMarks(marks) {
+  if (!projectionLayer) projectionLayer = L.layerGroup().addTo(map);
+  projectionLayer.clearLayers();
+  if (marks.length === 0) return;
+
+  // Labels sit beside the line rather than on it, offset perpendicular to the
+  // heading so they stay clear whichever way the boat points.
+  const offsetM = MARK_LABEL_OFFSET_PX * metresPerPixel();
+  const labelBearing = (currentHeadingDeg + 90) % 360;
+
+  marks.forEach((mark) => {
+    L.circleMarker(mark.latlng, {
+      // Large enough that the dark outline does not swallow the fill.
+      radius: 5,
+      color: '#0d1b2a',
+      weight: 2,
+      fillColor: '#ffb703',
+      fillOpacity: 1,
+      interactive: false,
+    }).addTo(projectionLayer);
+
+    const labelAt = destinationPoint(
+      { lat: mark.latlng.lat, lng: mark.latlng.lng }, labelBearing, offsetM
+    );
+    L.marker([labelAt.lat, labelAt.lng], {
+      // Not interactive: a tap here has to reach the map and set a target.
+      interactive: false,
+      keyboard: false,
+      icon: L.divIcon({
+        className: 'course-mark-label',
+        // Content is a number from PROJECTION_MINUTES, never user input.
+        html: `<span>${mark.minutes} min</span>`,
+        iconSize: [0, 0],
+      }),
+    }).addTo(projectionLayer);
+  });
 }
 
 function setTarget(latlng) {
@@ -322,24 +440,6 @@ function updateNavPanel(fix) {
     document.getElementById('val-eta').textContent = formatDuration(etaSec);
   } else {
     document.getElementById('val-eta').textContent = '–';
-  }
-}
-
-function updateProjectionPanel() {
-  const panel = document.getElementById('projectionpanel');
-  if (panel.classList.contains('force-hidden')) {
-    panel.classList.add('hidden');
-    return;
-  }
-
-  if (currentSpeedMs > 0.05) {
-    panel.classList.remove('hidden');
-    const distIn1Min = currentSpeedMs * 60;
-    document.getElementById('val-proj-1min').textContent = formatDistance(distIn1Min);
-    document.getElementById('val-proj-200m').textContent = formatDuration(200 / currentSpeedMs);
-    document.getElementById('val-proj-500m').textContent = formatDuration(500 / currentSpeedMs);
-  } else {
-    panel.classList.add('hidden');
   }
 }
 
@@ -490,17 +590,20 @@ function wireToolbar() {
   });
 
   document.getElementById('btn-toggle-proj').addEventListener('click', () => {
-    const panel = document.getElementById('projectionpanel');
-    const off = panel.classList.toggle('force-hidden');
-    document.getElementById('btn-toggle-proj').classList.toggle('is-active', !off);
-    updateProjectionPanel();
+    projectionEnabled = !projectionEnabled;
+    document.getElementById('btn-toggle-proj').classList.toggle('is-active', projectionEnabled);
+    // Redraw straight away instead of waiting for the next GPS fix, which may
+    // be seconds off - the button has to feel like it did something.
+    const last = lastFixes[lastFixes.length - 1];
+    if (last) updateCourseLine(last);
+    else if (projectionLayer) projectionLayer.clearLayers();
   });
 
   document.getElementById('btn-clear-target').addEventListener('click', clearTarget);
 
   wireNavCollapse();
 
-  // The projection panel starts enabled, so its control starts active.
+  // The marks start enabled, so their control starts active.
   document.getElementById('btn-toggle-proj').classList.add('is-active');
 }
 

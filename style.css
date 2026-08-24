@@ -306,6 +306,28 @@ html, body {
   margin: 0;
 }
 
+/* --- Time marks on the course line ---------------------------------------
+ * The divIcon anchors a zero-sized box on the point; the span inside is what
+ * is centred on it. Doing the centring in CSS keeps Leaflet's own positioning
+ * transform on the outer element untouched. */
+
+.course-mark-label { width: 0; height: 0; }
+
+.course-mark-label span {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  white-space: nowrap;
+  font-family: var(--font-numeric);
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1;
+  padding: 3px 6px;
+  border-radius: var(--md-radius-s);
+  color: var(--md-on-surface);
+  /* Legible over both the pale sea and the beige land of the base map. */
+  background: color-mix(in srgb, var(--md-surface) 82%, transparent);
+}
+
 /* --- Floating action buttons --------------------------------------------- */
 
 #fabs {

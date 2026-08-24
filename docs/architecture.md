@@ -191,6 +191,53 @@ Release erfordert damit genau eine Änderung im Code plus den Eintrag in
 - **Keine Secrets:** der Kartverket-Dienst braucht keinen API-Key, es gibt
   daher weder `.env` noch Zugangsdaten im Repo.
 
+## Zeitmarken auf der Kurslinie
+
+Statt einer Kachel mit Projektionswerten trägt die Kurslinie kleine Punkte für
+1, 2 und 5 Minuten Fahrt, mit der Zeitangabe daneben. Der Wert steht damit
+dort, wo er hingehört: an der Stelle, die er beschreibt.
+
+Eine Marke wird nur gezeichnet, wenn sie etwas aussagt. Drei Regeln, in dieser
+Reihenfolge:
+
+1. Unterhalb von `MIN_PROJECTION_SPEED_MS` gibt es keinen sinnvoll
+   projizierbaren Kurs – dann keine Marken.
+2. Liegt eine Marke außerhalb des sichtbaren Ausschnitts, ist sie nicht
+   ablesbar und entfällt. Bei Reisegeschwindigkeit trifft das meist die
+   5-min-Marke.
+3. Liegen zwei Marken auf dem Bildschirm näher beieinander als
+   `MIN_MARK_SPACING_PX`, würden ihre Labels sich überdecken. Gemessen wird
+   gegen die zuletzt **behaltene** Marke, nicht gegen die zuletzt geprüfte –
+   sonst könnte eine übersprungene Marke die nächste doch wieder zu nah
+   heranlassen. Beim langsamen Manövrieren fallen so die Marken weg, die sich
+   ohnehin nicht auseinanderhalten ließen.
+
+Beispielhaft gemessen bei Kurs 20°:
+
+| Fahrt | Zoom | sichtbare Breite | gezeichnete Marken |
+| --- | --- | --- | --- |
+| 6 kn | z15 | 920 m | 1, 2, 5 min |
+| 6 kn | z16 | 460 m | 1, 2 min |
+| 6 kn | z17 | 230 m | 1 min |
+| 1,5 kn | z16 | 460 m | 1, 2, 5 min |
+| 0,6 kn | z16 | 460 m | 5 min |
+| 0,2 kn | z16 | 460 m | keine |
+
+Die Linie endet knapp hinter der letzten gezeichneten Marke statt nach einer
+festen Strecke, damit das äußerste Label nicht auf dem Linienende sitzt.
+
+Zwei Details, die sonst still Ärger machen:
+
+- Marken und Labels sind `interactive: false`. Sonst würde ein Tipp darauf vom
+  Marker geschluckt und kein Ziel gesetzt.
+- Neu bewertet wird auch bei `moveend`/`zoomend`, nicht nur beim GPS-Fix:
+  welche Marken hineinpassen, hängt am Kartenausschnitt.
+
+Die Labels sitzen senkrecht zum Kurs neben der Linie, damit sie unabhängig von
+der Fahrtrichtung frei stehen. Der Versatz muss größer sein als die halbe
+Labelbreite, da das Label auf dem Versatzpunkt zentriert wird – bei 15 px lag
+es noch auf der Linie, bei 34 px bleiben 8–17 px Abstand.
+
 ## Genauigkeit und Glättung
 
 `onPosition()` bevorzugt `speed`/`heading` des Geräts, weil diese bei
