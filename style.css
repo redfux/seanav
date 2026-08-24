@@ -258,12 +258,22 @@ html, body {
 
 .card-rows { display: flex; flex-direction: column; gap: 6px; }
 
-.row {
-  display: flex;
+/*
+ * Distance, ETA and bearing are one table, not three lines that happen to sit
+ * above each other: same label column, same right edge for the figures. The
+ * figures are right-aligned because that is how numbers of differing length
+ * line up - and they carry their unit with them, so the unit ends the line.
+ */
+.row,
+.nav-figure-line {
+  display: grid;
+  grid-template-columns: var(--label-col, 60px) 1fr;
   align-items: baseline;
-  justify-content: space-between;
-  gap: 16px;
+  gap: 10px;
 }
+
+.row .row-value,
+.nav-figure-line .row-value { text-align: right; }
 
 .row-label {
   font-size: 14px;
@@ -313,16 +323,19 @@ html, body {
 
 /* Collapsible destination card. Collapsed it keeps only the distance, which
    is what the card is worth permanent space for. */
-/* Tighter than the other cards: this one is on screen the whole time. */
-#navpanel { padding: 8px 12px; }
+/* Tighter than the other cards: this one is on screen the whole time. The
+   room on the right belongs to the chevron, which is lifted out of the text
+   flow below - in the flow it shortened the header lines only, and the figures
+   then stopped lining up with the bearing underneath. */
+#navpanel {
+  position: relative;
+  padding: 8px 40px 8px 12px;
+}
 
 .nav-head {
   appearance: none;
   width: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 10px;
+  display: block;
   padding: 0;
   min-height: 44px;
   border: none;
@@ -333,10 +346,15 @@ html, body {
   cursor: pointer;
 }
 
+/* Positioned against the card, not the header, so it sits in the reserved
+   strip on the right. It stays a child of the button, so a tap on it still
+   folds the card. */
 .nav-head .chevron {
+  position: absolute;
+  right: 11px;
+  top: 19px;
   width: 22px;
   height: 22px;
-  align-self: center;
   color: var(--md-on-surface-variant);
   transition: transform 0.18s ease;
 }
@@ -348,7 +366,9 @@ html, body {
    number needs no label, and dropping it keeps the card narrow. */
 #navpanel.is-collapsed .nav-head .row-label { display: none; }
 
-#nav-details { margin-top: 6px; }
+/* Same step as between the two header lines, so all three readings keep one
+   rhythm instead of showing where the fold is. */
+#nav-details { margin-top: 2px; }
 
 /* Distance over ETA: the distance is the figure being read, the ETA the
    footnote to it. Both stay in the header, so a collapsed card still carries
@@ -386,6 +406,12 @@ html, body {
  * it exactly where it was.
  */
 #navpanel.is-collapsed .nav-figures { min-width: 110px; }
+
+/* Collapsed the labels are gone, so the table becomes two stacked figures -
+   left-aligned, because with nothing to line up against, a right edge would
+   only make the card look ragged. */
+#navpanel.is-collapsed .nav-figure-line { display: block; }
+#navpanel.is-collapsed .nav-figure-line .row-value { text-align: left; }
 
 /* Sheets are wider and centred: they carry controls, not readings. */
 .sheet {

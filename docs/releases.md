@@ -6,6 +6,17 @@ Versionierung nach [SemVer](https://semver.org/lang/de/).
 Die Versionsnummer wird ausschließlich in `js/version.js` gepflegt; Footer und
 Service-Worker-Cachename leiten sich automatisch daraus ab.
 
+## [0.14.1] – 2026-08-24
+
+### Fixed
+
+- **Die drei Werte der Zielkarte stehen jetzt sauber untereinander.** Distanz,
+  ETA und Peilung teilen sich eine Labelspalte und eine gemeinsame rechte
+  Kante, und der Zeilenabstand ist überall derselbe. Vorher verkürzte der
+  Aufklapppfeil nur die beiden Kopfzeilen, sodass deren Werte weiter links
+  endeten als die Peilung darunter; der Pfeil sitzt jetzt in einem eigenen
+  Streifen am Rand, außerhalb des Textflusses.
+
 ## [0.14.0] – 2026-08-24
 
 ### Changed
