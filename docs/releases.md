@@ -6,6 +6,22 @@ Versionierung nach [SemVer](https://semver.org/lang/de/).
 Die Versionsnummer wird ausschließlich in `js/version.js` gepflegt; Footer und
 Service-Worker-Cachename leiten sich automatisch daraus ab.
 
+## [0.14.0] – 2026-08-24
+
+### Changed
+
+- **Position und Kartenausrichtung liegen auf einem Knopf**, wie auf dem
+  Telefon üblich: Der erste Tipp holt das Boot zurück in die Mitte, jeder
+  weitere wechselt zwischen Nordung und Fahrtrichtung. Der eigene
+  Ausrichtungsknopf entfällt damit, die Knopfleiste ist einen Platz kürzer und
+  gibt der Karte den frei.
+- Das Symbol zeigt, was der nächste Tipp tut: ein **Fadenkreuz**, solange das
+  Boot zurückzuholen ist, ein **Kompass**, sobald die Karte folgt – mit N über
+  der stehenden Nadel in der Nordung, ohne N und mitdrehend im
+  Fahrtrichtungsmodus.
+- Eine von Hand gedrehte Karte zählt als „weg": derselbe Tipp stellt sie
+  gerade und zentriert, statt sie in einem Winkel stehen zu lassen.
+
 ## [0.13.0] – 2026-08-24
 
 ### Added

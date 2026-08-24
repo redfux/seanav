@@ -34,11 +34,12 @@ Mobilfunkempfang. Kein Ersatz für vorschriftsmäßige Seekarten und Ausrüstung
 | F23 | Als App installierbar: Manifest, eigene Icons, Installationshinweis im Browser (inkl. iOS-Weg über das Teilen-Menü) | 0.10.0 |
 | F24 | Ziel fixiert sich eine Minute nach der letzten Änderung; lösbar nur über „Ziel löschen" | 0.10.0 |
 | F25 | Bildschirm bleibt an, solange die App im Vordergrund ist | 0.11.0 |
-| F26 | Karte folgt der Position, bis sie verschoben wird; der Positionsknopf schaltet das Folgen wieder ein, ohne die Zoomstufe zu ändern | 0.11.0 |
+| F26 | Karte folgt der Position, bis sie verschoben wird; der Kartenknopf schaltet das Folgen wieder ein, ohne die Zoomstufe zu ändern | 0.11.0 |
 | F27 | Eigene Position als Bootssymbol mit spitzem Bug und flachem Heck, gedreht in den Kurs | 0.11.0 |
 | F28 | Karte wahlweise nach Norden oder dynamisch in Fahrtrichtung ausgerichtet; die Kompassnadel im Schalter zeigt dabei immer nach Norden | 0.11.0 |
 | F29 | Geschwindigkeit auf Tippen zwischen Knoten und km/h umschaltbar, Wahl bleibt erhalten | 0.12.0 |
 | F30 | Karte mit zwei Fingern frei drehbar; nahe Norden rastet sie ein | 0.13.0 |
+| F31 | Position und Kartenausrichtung auf einem Knopf: erstes Tippen zentriert, jedes weitere wechselt Nordung/Fahrtrichtung | 0.14.0 |
 
 ## Nichtfunktionale Anforderungen
 

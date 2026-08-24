@@ -399,10 +399,10 @@ function updateBoatHeading() {
 }
 
 // Following is on until the map is dragged, and back on at the touch of the
-// position button. The button shows which of the two it is.
+// map button. The button shows which of the two it is.
 function setFollow(on) {
   followMode = on;
-  document.getElementById('btn-locate').classList.toggle('is-active', on);
+  refreshMapModeUi();
 }
 
 function updateCourseLine(fix) {
@@ -812,12 +812,7 @@ async function maintainCache() {
 // --- Toolbar wiring ------------------------------------------------------
 
 function wireToolbar() {
-  document.getElementById('btn-locate').addEventListener('click', () => {
-    setFollow(true);
-    // Keeping the zoom is the point: the button means "back to me", not
-    // "start over at some zoom level I did not choose".
-    if (positionMarker) map.setView(positionMarker.getLatLng(), map.getZoom());
-  });
+  document.getElementById('btn-map-mode').addEventListener('click', onMapModeTap);
 
   document.getElementById('btn-speed-unit').addEventListener('click', () => {
     setSpeedUnit(speedUnit === 'kn' ? 'kmh' : 'kn');
@@ -826,15 +821,9 @@ function wireToolbar() {
   document.getElementById('btn-zoom-in').addEventListener('click', () => map.zoomIn());
   document.getElementById('btn-zoom-out').addEventListener('click', () => map.zoomOut());
 
-  // From north the button goes to course-up, from anywhere else back to north:
-  // after turning the map by hand, one tap is expected to straighten it.
-  document.getElementById('btn-toggle-orientation').addEventListener('click', () => {
-    setOrientation(MapOrientation.mode === 'north' ? 'course' : 'north');
-  });
-
   // Turning the map with two fingers changes the mode from under us.
   document.addEventListener('seenavi:orientation', () => {
-    refreshOrientationUi();
+    refreshMapModeUi();
     const last = lastFixes[lastFixes.length - 1];
     if (last) updateCourseLine(last);
   });
@@ -881,7 +870,7 @@ function storedOrientation() {
 
 function setOrientation(mode) {
   MapOrientation.setMode(mode);
-  refreshOrientationUi();
+  refreshMapModeUi();
   try {
     // A map turned by hand is a passing thing, not a setting: it leaves the
     // stored choice alone, so the next start comes up as chosen.
@@ -895,18 +884,50 @@ function setOrientation(mode) {
   if (last) updateCourseLine(last);
 }
 
-function refreshOrientationUi() {
+/*
+ * One button for position and orientation, the way a phone map does it: the
+ * first tap fetches the boat back, every further tap switches between north-up
+ * and course-up. Two buttons for two halves of the same question - "where am I
+ * and which way round" - were one button too many on a screen that is mostly
+ * chart.
+ *
+ * A map turned by hand counts as "away": the tap that brings the boat back
+ * straightens it too, rather than leaving the chart at an angle nobody asked
+ * for any more.
+ */
+function onMapModeTap() {
+  if (!followMode || MapOrientation.mode === 'manual') {
+    setFollow(true);
+    if (MapOrientation.mode === 'manual') setOrientation('north');
+    // Keeping the zoom is the point: the tap means "back to me", not "start
+    // over at some zoom level I did not choose".
+    if (positionMarker) map.setView(positionMarker.getLatLng(), map.getZoom());
+    return;
+  }
+  setOrientation(MapOrientation.mode === 'course' ? 'north' : 'course');
+}
+
+function refreshMapModeUi() {
   const mode = MapOrientation.mode;
   const courseUp = mode === 'course';
-  const button = document.getElementById('btn-toggle-orientation');
-  button.classList.toggle('is-active', courseUp);
-  button.setAttribute('aria-pressed', courseUp ? 'true' : 'false');
-  if (courseUp) {
-    button.title = 'Karte dreht sich in Fahrtrichtung';
+  const button = document.getElementById('btn-map-mode');
+  // Following is what the filled state means, and it decides the symbol: a
+  // crosshair while the boat has to be fetched back, a compass once it is
+  // centred and the tap changes the orientation instead.
+  button.classList.toggle('is-active', followMode);
+  button.classList.toggle('is-following', followMode);
+  // The N belongs to a needle that stands upright; turned it would only lie on
+  // its side.
+  button.classList.toggle('is-turned', mode !== 'north');
+  button.setAttribute('aria-pressed', followMode ? 'true' : 'false');
+  if (!followMode) {
+    button.title = 'Zur eigenen Position';
+  } else if (courseUp) {
+    button.title = 'Karte dreht sich in Fahrtrichtung – tippen für Nordung';
   } else if (mode === 'manual') {
     button.title = 'Karte von Hand gedreht – tippen richtet sie nach Norden aus';
   } else {
-    button.title = 'Karte nach Norden ausgerichtet';
+    button.title = 'Karte nach Norden – tippen für Fahrtrichtung';
   }
 }
 

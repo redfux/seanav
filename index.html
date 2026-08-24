@@ -164,23 +164,30 @@
 
   <!-- Floating action buttons -->
   <nav id="fabs" aria-label="Kartenwerkzeuge">
-    <button id="btn-locate" class="fab" title="Zur eigenen Position" aria-label="Zur eigenen Position">
-      <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><use href="#ic-locate"></use></svg>
-    </button>
-    <!-- Drawn inline rather than pulled from the icon set: the needle has to be
-         reachable for CSS, and a <use> reference hides its contents. It turns
-         with --map-rot, the same angle the map turns by - so it points at
-         north whatever the map is doing, and stands upright by itself while
-         the map is north-up. -->
-    <button id="btn-toggle-orientation" class="fab" aria-pressed="false"
-            title="Karte nach Norden ausgerichtet" aria-label="Kartenausrichtung">
+    <!--
+      Position and orientation on one button. Not following, it is a crosshair
+      and the tap brings the boat back to the middle; following, it becomes a
+      compass and every further tap switches between north-up and course-up.
+      The symbol always shows what the next tap does.
+
+      The compass is drawn here rather than pulled from the icon set: the
+      needle has to be reachable for CSS, and a <use> reference hides its
+      contents. It turns with --map-rot, the same angle the map turns by - so
+      it points at north whatever the map is doing, and stands upright by
+      itself while the map is north-up.
+    -->
+    <button id="btn-map-mode" class="fab" aria-pressed="false"
+            title="Zur eigenen Position" aria-label="Position und Kartenausrichtung">
       <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
-        <circle cx="12" cy="12" r="8.6" fill="none" stroke="currentColor"
-                stroke-width="1.5" opacity="0.45"></circle>
-        <g class="fab-needle">
-          <path d="M12 6.4 15.3 15.4 12 13.6 8.7 15.4z"></path>
-          <text class="fab-north" x="12" y="4.9" text-anchor="middle"
-                font-size="6.4" font-weight="700" fill="currentColor">N</text>
+        <g class="glyph-locate"><use href="#ic-locate"></use></g>
+        <g class="glyph-compass">
+          <circle cx="12" cy="12" r="8.6" fill="none" stroke="currentColor"
+                  stroke-width="1.5" opacity="0.45"></circle>
+          <g class="fab-needle">
+            <path d="M12 6.4 15.3 15.4 12 13.6 8.7 15.4z"></path>
+            <text class="fab-north" x="12" y="4.9" text-anchor="middle"
+                  font-size="6.4" font-weight="700" fill="currentColor">N</text>
+          </g>
         </g>
       </svg>
     </button>

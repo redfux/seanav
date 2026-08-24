@@ -405,12 +405,33 @@ der Linie liegen, und die Linie dreht mit. Das Boot bekommt immer den
 geografischen Kurs: in der Nordung dreht sich das Boot, im Fahrtrichtungsmodus
 dreht sich die Karte darunter, und das Boot zeigt nach oben.
 
-Die Kompassnadel im Umschaltknopf hängt an derselben Variablen `--map-rot` wie
+### Ein Knopf für Position und Ausrichtung
+
+Position und Ausrichtung sind zwei Hälften derselben Frage – „wo bin ich und
+wie herum" –, und zwei Knöpfe dafür waren einer zu viel auf einem Bildschirm,
+der überwiegend Karte sein soll. Sie liegen deshalb auf einem Knopf, wie auf
+dem Telefon üblich:
+
+| Zustand | Symbol | Was das Tippen tut |
+| --- | --- | --- |
+| folgt nicht | Fadenkreuz | Boot zurück in die Mitte, Folgen an |
+| folgt, Nordung | Kompass mit N | auf Fahrtrichtung umschalten |
+| folgt, Fahrtrichtung | drehende Nadel | zurück auf Nordung |
+| von Hand gedreht | drehende Nadel | geradestellen und zentrieren |
+
+Das Symbol zeigt immer, was der nächste Tipp tut, nicht, was gerade der Fall
+ist – ein Fadenkreuz heißt „ich hole das Boot zurück", nicht „hier ist das
+Boot". Eine von Hand gedrehte Karte zählt dabei als „weg": der Tipp, der das
+Boot zurückholt, stellt sie mit gerade, statt sie in einem Winkel stehen zu
+lassen, den niemand mehr will.
+
+Die Kompassnadel im Knopf hängt an derselben Variablen `--map-rot` wie
 die Karte selbst. Damit zeigt sie immer dorthin, wo Norden auf dem Bildschirm
 liegt – und in der Nordung ist der Winkel null, die Nadel steht also von selbst
 aufrecht, mit dem N obenauf. Deshalb ist dieses eine Symbol inline gezeichnet
 statt aus dem Symbolsatz geholt: hinter einem `<use>` wäre die Nadel für CSS
-nicht erreichbar.
+nicht erreichbar. Das N gehört zur stehenden Nadel und entfällt, sobald die
+Karte gedreht ist – mitgedreht läge es nur auf der Seite.
 
 Zoomknöpfe und Kartennachweis waren Leaflet-Controls **innerhalb** der Karte.
 Das geht nicht mehr: sie säßen an den Ecken des übergroßen Containers, also

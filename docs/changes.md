@@ -15,6 +15,12 @@ wird hier nichts.
 
 ## Erledigt
 
+- **„kannst du die Funktion der ersten beiden Buttons in einen Button
+  zusammenführen, so wie es z.B. bei Google Maps ist … das erste Mal drauf
+  tippen zu Position springen, jedes weitere Tippen wechselt zw. norweisender
+  und fahrtweisender Ansicht"** (2026-08-24) Umgesetzt in 0.14.0; der
+  Ausrichtungsknopf entfällt.
+
 - **„die Karte ist nicht drehbar, wenn man sie mit den Fingern bewegt. kannst
   du das noch implementieren"** (2026-08-24) Umgesetzt in 0.13.0 als
   Zwei-Finger-Drehung mit Schwelle und Einrasten bei Norden.

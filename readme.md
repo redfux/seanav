@@ -53,14 +53,14 @@ relativ und funktionieren daher auch unter dem Unterpfad `/seanav/`.
    Kurs, Geschwindigkeit (in Knoten) und GPS-Status
 2. Ziel per Klick/Tap auf die Karte setzen – das Navigationspanel zeigt
    Distanz, Peilung und ETA, „Ziel löschen" entfernt es wieder
-3. 📍 schaltet das Folgen wieder ein und springt zur eigenen Position – die
-   Zoomstufe bleibt dabei, wie sie ist. Die Karte folgt dem Boot von selbst,
-   bis man sie einmal verschiebt
-4. Der Kompassknopf schaltet zwischen **Nordung** (Karte steht, Boot dreht) und
-   **Fahrtrichtung** (Karte dreht, Boot zeigt nach oben). Die Nadel im Knopf
-   zeigt dabei immer nach Norden. Mit **zwei Fingern** lässt sich die Karte
-   auch frei drehen; nahe Norden rastet sie ein, ein Tipp auf den Knopf
-   richtet sie wieder aus
+3. Der oberste Knopf trägt Position und Ausrichtung zugleich. Zeigt er ein
+   **Fadenkreuz**, holt ein Tipp das Boot zurück in die Mitte – die Zoomstufe
+   bleibt dabei, wie sie ist. Zeigt er einen **Kompass**, folgt die Karte
+   bereits, und jeder weitere Tipp wechselt zwischen **Nordung** (Karte steht,
+   Boot dreht) und **Fahrtrichtung** (Karte dreht, Boot zeigt nach oben). Die
+   Nadel im Knopf zeigt immer nach Norden
+4. Mit **zwei Fingern** lässt sich die Karte frei drehen; nahe Norden rastet
+   sie ein, ein Tipp auf den Knopf stellt sie gerade und zentriert wieder
 5. Ein Tipp auf die Geschwindigkeit schaltet zwischen Knoten und km/h
 6. 📐 blendet die Distanzmarken auf der Kurslinie ein/aus
 

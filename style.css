@@ -557,8 +557,17 @@ html, body {
 }
 
 /* The letter belongs to the standing needle. Turned along with the map it
-   would only lie on its side, so the turning mode shows the needle alone. */
-#btn-toggle-orientation.is-active .fab-north { display: none; }
+   would only lie on its side, so a turned map shows the needle alone. */
+#btn-map-mode.is-turned .fab-north { display: none; }
+
+/*
+ * The map button carries two symbols and shows the one that says what the next
+ * tap does: a crosshair while the boat has to be fetched back, a compass once
+ * it is centred and the tap switches the orientation.
+ */
+.glyph-compass { display: none; }
+#btn-map-mode.is-following .glyph-locate { display: none; }
+#btn-map-mode.is-following .glyph-compass { display: block; }
 
 @media (prefers-reduced-motion: reduce) {
   .fab-needle { transition: none; }
