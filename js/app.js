@@ -826,8 +826,17 @@ function wireToolbar() {
   document.getElementById('btn-zoom-in').addEventListener('click', () => map.zoomIn());
   document.getElementById('btn-zoom-out').addEventListener('click', () => map.zoomOut());
 
+  // From north the button goes to course-up, from anywhere else back to north:
+  // after turning the map by hand, one tap is expected to straighten it.
   document.getElementById('btn-toggle-orientation').addEventListener('click', () => {
-    setOrientation(MapOrientation.isCourseUp() ? 'north' : 'course');
+    setOrientation(MapOrientation.mode === 'north' ? 'course' : 'north');
+  });
+
+  // Turning the map with two fingers changes the mode from under us.
+  document.addEventListener('seenavi:orientation', () => {
+    refreshOrientationUi();
+    const last = lastFixes[lastFixes.length - 1];
+    if (last) updateCourseLine(last);
   });
 
   document.getElementById('btn-toggle-storage').addEventListener('click', () => {
@@ -872,13 +881,11 @@ function storedOrientation() {
 
 function setOrientation(mode) {
   MapOrientation.setMode(mode);
-  const courseUp = mode === 'course';
-  const button = document.getElementById('btn-toggle-orientation');
-  button.classList.toggle('is-active', courseUp);
-  button.setAttribute('aria-pressed', courseUp ? 'true' : 'false');
-  button.title = courseUp ? 'Karte dreht sich in Fahrtrichtung' : 'Karte nach Norden ausgerichtet';
+  refreshOrientationUi();
   try {
-    localStorage.setItem(ORIENTATION_KEY, mode);
+    // A map turned by hand is a passing thing, not a setting: it leaves the
+    // stored choice alone, so the next start comes up as chosen.
+    if (mode !== 'manual') localStorage.setItem(ORIENTATION_KEY, mode);
   } catch (e) { /* the choice then just will not survive a reload */ }
 
   // Take up the current heading straight away instead of waiting for the next
@@ -886,6 +893,21 @@ function setOrientation(mode) {
   MapOrientation.setHeading(currentHeadingDeg);
   const last = lastFixes[lastFixes.length - 1];
   if (last) updateCourseLine(last);
+}
+
+function refreshOrientationUi() {
+  const mode = MapOrientation.mode;
+  const courseUp = mode === 'course';
+  const button = document.getElementById('btn-toggle-orientation');
+  button.classList.toggle('is-active', courseUp);
+  button.setAttribute('aria-pressed', courseUp ? 'true' : 'false');
+  if (courseUp) {
+    button.title = 'Karte dreht sich in Fahrtrichtung';
+  } else if (mode === 'manual') {
+    button.title = 'Karte von Hand gedreht – tippen richtet sie nach Norden aus';
+  } else {
+    button.title = 'Karte nach Norden ausgerichtet';
+  }
 }
 
 // --- Boot ----------------------------------------------------------------

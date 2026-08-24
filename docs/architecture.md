@@ -347,10 +347,20 @@ sich kein Pseudoelement hängen lässt; deshalb der Filter statt eines Symbols.
 
 ## Kartenausrichtung: Nord oder Fahrtrichtung
 
-Zwei Modi, weil zwei Aufgaben: **Nordung** ist der Lesemodus – er passt zur
-Papierkarte, und die Umgebung behält ihre Plätze. **Fahrtrichtung** ist der
-Steuermodus – was oben gezeichnet ist, liegt voraus. Die Wahl bleibt
-gespeichert.
+Drei Zustände: **Nordung** ist der Lesemodus – er passt zur Papierkarte, und die
+Umgebung behält ihre Plätze. **Fahrtrichtung** ist der Steuermodus – was oben
+gezeichnet ist, liegt voraus. **Von Hand gedreht** entsteht, sobald zwei Finger
+die Karte drehen: sie bleibt dann stehen, wo sie hingelegt wurde, wie eine
+Papierkarte auf dem Tisch. Die ersten beiden bleiben gespeichert, das
+Handgedrehte nicht – es ist ein Zustand, keine Einstellung.
+
+Zwei Finger drehen dieselbe Geste, die auch zoomt: Leaflet liest ihren Abstand,
+`js/rotate.js` ihren Winkel. Damit eine Kneifbewegung, die sich zufällig etwas
+mitdreht, nicht die Karte verstellt, zählt der Winkel erst ab 12 Grad. Wird
+nahe Norden losgelassen, rastet die Karte auf genau Norden ein – eine Karte,
+die drei Grad schief steht, will niemand. Ein Griff in die Karte beendet den
+Fahrtrichtungsmodus, so wie ein Ziehen das Folgen beendet; der Knopf richtet
+sie mit einem Tipp wieder nach Norden aus.
 
 Leaflet kann keine Karte drehen, also dreht CSS sie: `#map` wird um seine Mitte
 rotiert, `#mapviewport` schneidet ab. Daraus folgen drei Dinge, und die sind der
@@ -379,8 +389,18 @@ spät. Leaflets `_startPos` ist nicht die Startposition, sondern diese minus dem
 Versatz, der das Ziehen über die Schwelle gebracht hat; die echte Startposition
 wird deshalb beim ersten Update des Ziehens am Element abgelesen.
 
-Was aufrecht bleiben muss, dreht zurück: die Zeitmarken an der Kurslinie und die
-Zielnadel über `--map-counter-rot`. Die Distanzbeschriftung nicht – sie soll an
+**Was die Drehung nicht kann:** Die Beschriftungen der Kartendienste – Tiefenzahlen,
+Ortsnamen, Seezeichensymbole – stehen bei gedrehter Karte schief. Sie sind in
+die Kacheln eingebrannt; OSM, Kartverket und OpenSeaMap liefern fertige Bilder,
+keine Objekte. Was in ein Bild gezeichnet ist, dreht sich mit dem Bild, und kein
+Eingriff auf der Client-Seite kann einzelne Pixel wieder aufrichten. Aufrecht
+zu halten wären sie nur, wenn die Karte aus Vektordaten gezeichnet würde
+(Vektorkacheln mit MapLibre GL, oder die Tiefendaten als GeoJSON über WFS und
+selbst beschriftet) – das wäre ein Austausch der Renderschicht, siehe O11 in
+`features.md`.
+
+Was aufrecht bleiben muss und aufrecht bleiben *kann*, dreht zurück: die
+Zeitmarken an der Kurslinie und die Zielnadel über `--map-counter-rot`. Die Distanzbeschriftung nicht – sie soll an
 der Linie liegen, und die Linie dreht mit. Das Boot bekommt immer den
 geografischen Kurs: in der Nordung dreht sich das Boot, im Fahrtrichtungsmodus
 dreht sich die Karte darunter, und das Boot zeigt nach oben.

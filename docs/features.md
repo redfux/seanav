@@ -38,6 +38,7 @@ Mobilfunkempfang. Kein Ersatz für vorschriftsmäßige Seekarten und Ausrüstung
 | F27 | Eigene Position als Bootssymbol mit spitzem Bug und flachem Heck, gedreht in den Kurs | 0.11.0 |
 | F28 | Karte wahlweise nach Norden oder dynamisch in Fahrtrichtung ausgerichtet; die Kompassnadel im Schalter zeigt dabei immer nach Norden | 0.11.0 |
 | F29 | Geschwindigkeit auf Tippen zwischen Knoten und km/h umschaltbar, Wahl bleibt erhalten | 0.12.0 |
+| F30 | Karte mit zwei Fingern frei drehbar; nahe Norden rastet sie ein | 0.13.0 |
 
 ## Nichtfunktionale Anforderungen
 
@@ -60,5 +61,6 @@ Mobilfunkempfang. Kein Ersatz für vorschriftsmäßige Seekarten und Ausrüstung
 | O9 | Tiefendaten außerhalb Norwegens. Eine freie globale Entsprechung ist nicht bekannt | offen |
 | O10 | Tiefenlinien im küstennahen Flachwasser. Nicht durch Code lösbar – der Dienst liefert dort nachweislich eine leere Konturkachel, siehe B8 in `bugs.md`. Die Tiefeninformation steckt küstennah in den Tiefenzonen | extern begrenzt |
 | O7 | Offizielle ENC-Vektorkarten (S-57) über einen PRIMAR-Distributor – der einzige vollwertige Ersatz für Rasterkarten, aber lizenzpflichtig | Beschaffungsentscheidung |
+| O11 | Beschriftungen der Kartendienste (Tiefenzahlen, Ortsnamen, Seezeichen) stehen bei gedrehter Karte schief. Nicht behebbar, solange die Ebenen Rasterkacheln sind – die Beschriftung ist ins Bild gezeichnet. Aufrecht nur mit einer vektorbasierten Renderschicht | technisch begrenzt |
 | O3 | Routen mit mehreren Wegpunkten statt nur einem Einzelziel | offen |
 | ~~O4~~ | ~~Google Material Design als gestalterische Grundlage~~ – umgesetzt in 0.7.0 (F19) | – |

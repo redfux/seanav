@@ -97,6 +97,13 @@ html, body {
   #map { transition: none; }
 }
 
+/* While two fingers are turning the map, everything that follows the rotation
+   has to follow it immediately: an eased transition would lag a finger that is
+   still moving. */
+:root.is-turning #map,
+:root.is-turning .boat-icon svg,
+:root.is-turning .fab-needle { transition: none; }
+
 /*
  * Own position. A hull with a pointed bow and a flat stern, turned into the
  * course - which way the boat is pointing is the thing to read at a glance.

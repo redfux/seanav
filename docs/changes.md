@@ -7,9 +7,18 @@ wird hier nichts.
 
 ## Offen
 
-_(derzeit keine offenen Punkte)_
+- **„wenn sich die Karte dreht, drehen sich nicht die Seezeichen und
+  Tiefenangaben, die stehen dann schief/auf dem Kopf. ist das anpassbar?"**
+  (2026-08-24) Nicht mit Rasterkacheln – die Beschriftung ist ins Bild
+  gezeichnet. Bliebe nur eine vektorbasierte Renderschicht; als O11 in
+  `features.md` festgehalten.
 
 ## Erledigt
+
+- **„die Karte ist nicht drehbar, wenn man sie mit den Fingern bewegt. kannst
+  du das noch implementieren"** (2026-08-24) Umgesetzt in 0.13.0 als
+  Zwei-Finger-Drehung mit Schwelle und Einrasten bei Norden.
+
 
 - **„die ETA soll nur klein dargestellt werden, wenn die Zielkachel eingeklappt
   ist, ansonsten … in der selben Größe/Schriftart wie die Entfernung"**,

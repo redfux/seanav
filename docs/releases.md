@@ -6,6 +6,27 @@ Versionierung nach [SemVer](https://semver.org/lang/de/).
 Die Versionsnummer wird ausschließlich in `js/version.js` gepflegt; Footer und
 Service-Worker-Cachename leiten sich automatisch daraus ab.
 
+## [0.13.0] – 2026-08-24
+
+### Added
+
+- **Die Karte lässt sich mit zwei Fingern drehen.** Es ist dieselbe Geste, die
+  auch zoomt: Leaflet liest den Abstand der Finger, SeeNavi ihren Winkel. Ab
+  12 Grad zählt die Drehung, damit eine Kneifbewegung mit leichtem Drall die
+  Karte nicht verstellt; nahe Norden losgelassen, rastet sie auf genau Norden
+  ein. Ein Griff in die Karte beendet den Fahrtrichtungsmodus – sie bleibt
+  dann stehen, wo sie hingelegt wurde, und ein Tipp auf den Kompassknopf
+  richtet sie wieder nach Norden aus. Von Hand gedreht wird nicht gespeichert:
+  das ist ein Zustand, keine Einstellung.
+
+### Notes
+
+- **Die Beschriftungen der Kartendienste drehen bei gedrehter Karte mit** und
+  stehen dann schief – Tiefenzahlen, Ortsnamen, Seezeichen. Das lässt sich
+  nicht beheben: OSM, Kartverket und OpenSeaMap liefern fertige Bilder, und was
+  in ein Bild gezeichnet ist, dreht sich mit ihm. Aufrecht wären sie nur mit
+  einer vektorbasierten Renderschicht. Aufgenommen als O11 in `features.md`.
+
 ## [0.12.0] – 2026-08-24
 
 ### Added

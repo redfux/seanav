@@ -58,7 +58,9 @@ relativ und funktionieren daher auch unter dem Unterpfad `/seanav/`.
    bis man sie einmal verschiebt
 4. Der Kompassknopf schaltet zwischen **Nordung** (Karte steht, Boot dreht) und
    **Fahrtrichtung** (Karte dreht, Boot zeigt nach oben). Die Nadel im Knopf
-   zeigt dabei immer nach Norden
+   zeigt dabei immer nach Norden. Mit **zwei Fingern** lässt sich die Karte
+   auch frei drehen; nahe Norden rastet sie ein, ein Tipp auf den Knopf
+   richtet sie wieder aus
 5. Ein Tipp auf die Geschwindigkeit schaltet zwischen Knoten und km/h
 6. 📐 blendet die Distanzmarken auf der Kurslinie ein/aus
 
