@@ -497,7 +497,19 @@ function projectionMarks(fix) {
 function formatMarkMinutes(seconds) {
   if (!Number.isFinite(seconds) || seconds <= 0) return '–';
   if (seconds < 30) return '<1 min';
-  return `${Math.round(seconds / 60)} min`;
+  const minutes = Math.round(seconds / 60);
+  return minutes < 60 ? `${minutes} min` : formatQuarterHours(minutes);
+}
+
+/*
+ * Beyond an hour, minutes stop being the unit anyone thinks in - "95 min" has
+ * to be converted in the head, "1,5 h" does not. Rounded to the quarter hour,
+ * because that is the accuracy such an estimate has: it comes from the current
+ * speed, and that will not hold for the next hour and a half.
+ */
+function formatQuarterHours(minutes) {
+  const hours = Math.round(minutes / 15) / 4;
+  return `${String(hours).replace('.', ',')} h`;
 }
 
 /*
@@ -725,15 +737,15 @@ function formatDistance(m) {
 /*
  * Whole minutes, never seconds. An ETA computed from a smoothed GPS speed is
  * not accurate to the second, and a seconds digit that races is only noise on
- * a figure meant to be glanced at.
+ * a figure meant to be glanced at. Past an hour it goes over to quarter hours,
+ * see formatQuarterHours().
  */
 function formatEta(sec) {
   if (!Number.isFinite(sec) || sec < 0) return '–';
   const min = Math.round(sec / 60);
   if (min < 1) return '< 1 min';
   if (min < 60) return `${min} min`;
-  const h = Math.floor(min / 60);
-  return `${h} h ${String(min % 60).padStart(2, '0')} min`;
+  return formatQuarterHours(min);
 }
 
 // --- Destination card -----------------------------------------------------

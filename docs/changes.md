@@ -15,6 +15,11 @@ wird hier nichts.
 
 ## Erledigt
 
+- **„sobald es über 1h geht, bitte im Format ‚1,x h' die Zeiten angeben, wobei
+  immer auf eine Viertelstunde gerundet werden soll. also z.B. 1,25h oder
+  1,5h, aber nie 1,17h"** (2026-08-24) Umgesetzt in 0.16.1 für ETA und
+  Markenbeschriftung.
+
 - **„bei großen Zoomstufen soll die Kurslinie auch 5- und 10km-Marken zeigen.
   und die grüne Linie zur Zielmarkierung muss vom Kontrast her ebenfalls
   optimiert werden, da das Türkisgrün auf dem Meerblau kaum zu erkennen ist"**

@@ -254,7 +254,10 @@ An jeder Marke stehen zwei Angaben auf gegenüberliegenden Seiten der Linie:
 - die **Fahrzeit** bis dorthin bei aktueller Geschwindigkeit, waagerecht und in
   der kräftigeren Schrift – das ist die Zahl, die abgelesen wird. Gerundet auf
   volle Minuten; unter einer halben Minute stünde sonst „0 min", dort steht
-  `<1 min`.
+  `<1 min`. Jenseits einer Stunde wird auf Viertelstunden umgestellt – „1,5 h"
+  statt „95 min": Minuten sind dort nicht mehr die Einheit, in der jemand
+  denkt, und genauer als eine Viertelstunde ist die Schätzung ohnehin nicht,
+  denn sie rechnet die aktuelle Geschwindigkeit auf anderthalb Stunden hoch.
 - die **Distanz** klein und parallel zur Linie laufend, als Beschriftung der
   Marke selbst.
 

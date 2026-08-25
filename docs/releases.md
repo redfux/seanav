@@ -6,6 +6,16 @@ Versionierung nach [SemVer](https://semver.org/lang/de/).
 Die Versionsnummer wird ausschließlich in `js/version.js` gepflegt; Footer und
 Service-Worker-Cachename leiten sich automatisch daraus ab.
 
+## [0.16.1] – 2026-08-24
+
+### Changed
+
+- **Fahrzeiten über einer Stunde stehen als Viertelstunden**, in ETA und an den
+  Marken gleichermaßen: „1,5 h" statt „95 min", „1,25 h" statt „73 min". Nie
+  krumm – gerundet wird auf 15 Minuten, volle Stunden ohne Nachkommastelle.
+  Genauer wäre die Angabe auch nicht: sie rechnet die aktuelle Geschwindigkeit
+  auf Stunden hoch.
+
 ## [0.16.0] – 2026-08-24
 
 ### Added
