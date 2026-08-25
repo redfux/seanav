@@ -6,6 +6,23 @@ Versionierung nach [SemVer](https://semver.org/lang/de/).
 Die Versionsnummer wird ausschließlich in `js/version.js` gepflegt; Footer und
 Service-Worker-Cachename leiten sich automatisch daraus ab.
 
+## [0.16.2] – 2026-08-25
+
+### Changed
+
+- **`compare.html` ist vom Tiefendaten-Test zum Dienste-Prüfstand geworden.**
+  Geprüft werden jetzt mehrere Dienste nacheinander – Kartverket, IHM Zweck 4
+  und 5, GRAFCAN Topobathymetrie, EMODnet – und pro Dienst vier Dinge, die
+  sich aus keiner Dokumentation beantworten lassen: ob er diesem Browser
+  antwortet (mit CORS oder nur als Bild), wie seine Ebenen heißen (aus den
+  Capabilities gelesen), ob er die Stelle laut eigener Bounding Box abdeckt
+  und EPSG:3857 kann, und was er dort tatsächlich zeichnet (pixelweise wie
+  bisher).
+- Voreingestellte Orte – Bergen, Las Palmas, Teneriffa Süd – damit sich die
+  Reviere vergleichen lassen, ohne hinzufahren.
+- Fremde Antworten werden beim Protokollieren escaped: der Text kommt von
+  einem fremden Server.
+
 ## [0.16.1] – 2026-08-24
 
 ### Changed

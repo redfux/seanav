@@ -4,8 +4,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https://tile.openstreetmap.org https://wms.geonorge.no; connect-src 'self' https://wms.geonorge.no;">
-  <title>SeeNavi – Tiefendaten-Probe</title>
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https://tile.openstreetmap.org https://wms.geonorge.no https://ideihm.covam.es https://idecan1.grafcan.es https://ows.emodnet-bathymetry.eu; connect-src 'self' https://wms.geonorge.no https://ideihm.covam.es https://idecan1.grafcan.es https://ows.emodnet-bathymetry.eu;">
+  <title>SeeNavi – Dienste-Prüfstand</title>
   <link rel="stylesheet" href="vendor/leaflet.css">
   <style>
     :root { color-scheme: dark; }
@@ -34,7 +34,7 @@
       background-size: 16px 16px;
       background-position: 0 0, 8px 8px;
     }
-    #log { padding: .5rem; background: #0a141d; font-size: 11px; height: 12rem;
+    #log { padding: .5rem; background: #0a141d; font-size: 11px; height: 16rem;
            overflow: auto; flex: 0 0 auto; white-space: pre-wrap; margin: 0;
            font-family: ui-monospace, monospace; }
     .bad { color: #ff6b6b; } .ok { color: #4fe3b0; } .warn { color: #ffb703; }
@@ -45,19 +45,22 @@
 <body>
 
 <div id="bar">
-  <label for="layer-select">Vorschau:</label>
-  <select id="layer-select"></select>
+  <label for="place-select">Ort:</label>
+  <select id="place-select"></select>
   <button id="btn-locate">Eigene Position</button>
-  <button id="btn-probe">Kacheln analysieren</button>
+  <label for="layer-select">Vorschau:</label>
+  <select id="layer-select">
+    <option value="">– keine –</option>
+  </select>
+  <button id="btn-probe">Dienste prüfen</button>
   <span id="zoominfo"></span>
 </div>
 
-<div id="hint">Zu der fraglichen Stelle fahren, dann
-  <strong>Kacheln analysieren</strong>. Die Vorschau zeigt den Dienst
-  <em>ohne</em> Blend-Modus und Filter, also so, wie er tatsächlich liefert.
-  Gemessen bei 60.31821, 4.97209: <code>Dybdekontur</code> leer,
-  <code>Dybdelag</code> zu 75 % gezeichnet – siehe B8 in
-  <code>docs/bugs.md</code>.</div>
+<div id="hint">Zu der Stelle fahren, die geprüft werden soll, dann
+  <strong>Dienste prüfen</strong>. Getestet werden Erreichbarkeit, CORS,
+  Layernamen aus den Capabilities, die angegebene Abdeckung, EPSG:3857 – und
+  was jeder Dienst an dieser Stelle tatsächlich zeichnet. Die Vorschau zeigt
+  den Dienst <em>ohne</em> Blend-Modus und Filter.</div>
 
 <div id="map"></div>
 <div id="previews"></div>

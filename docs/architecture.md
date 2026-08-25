@@ -567,8 +567,45 @@ Rasterquelle war der falsche Weg.
   erfordert aber eine Vereinbarung mit einem PRIMAR-Distributor. Siehe O7 in
   `features.md`.
 
-`compare.html` legt Kandidatenquellen übereinander, damit sich am realen
-Revier beurteilen lässt, ob eine Kombination reicht.
+### Kandidaten außerhalb Norwegens
+
+Recherchiert für die Kanaren, geprüft wird mit `compare.html` vor Ort:
+
+| Dienst | Endpunkt | Inhalt | Lizenz |
+| --- | --- | --- | --- |
+| IHM (Spanien) | `ideihm.covam.es/wms/cartaENCp4`, `…p5` | Seekarte aus offizieller ENC, nach Maßstabszweck getrennt | frei einsehbar, Namensnennung „© Instituto Hidrográfico de la Marina", kommerziell vertragspflichtig; ausdrücklich **nicht zur Navigation** |
+| GRAFCAN (Kanaren) | `idecan1.grafcan.es/ServicioWMS/Topobatimetrico` | durchgehendes Land-See-Modell, 2,5 m, Tiefe je Insel −65 m bis −785 m | offener IDE-Dienst, Namensnennung |
+| EMODnet (Europa) | `ows.emodnet-bathymetry.eu/wms`, Ebenen `mean_multicolour`, `contours` | Tiefenmodell und Tiefenlinien, ~115 m Auflösung | CC-BY 4.0 |
+
+GRAFCAN liefert küstennah feineres Relief als Kartverket, ist aber ein
+Geländemodell: kein Lot, kein Hindernissymbol, kein Seezeichen. EMODnet deckt
+als einziger Kandidat mehrere Reviere mit einer Ebene ab, ist für den
+Nahbereich aber zu grob. Seezeichen brauchen keinen Ersatz – OpenSeaMap ist
+weltweit.
+
+### Der Prüfstand
+
+`compare.html` beantwortet die vier Fragen, die vor dem Einbau einer Quelle
+offen sind und sich aus keiner Dokumentation beantworten lassen:
+
+1. **Antwortet der Dienst diesem Browser?** Ein Dienst ohne CORS-Header lässt
+   sich anzeigen – die App fällt auf ein einfaches `<img>` zurück –, seine
+   Kacheln aber nie offline speichern. Der Prüfstand unterscheidet beides,
+   indem er nach einem gescheiterten `fetch` dieselbe URL als Bild lädt.
+2. **Wie heißen die Ebenen?** Ein WMS weist die ganze GetMap-Anfrage zurück,
+   sobald ein Layername unbekannt ist, und die Namen stehen nirgends außer in
+   den Capabilities. Die werden deshalb gelesen und ausgewertet – auch
+   namenlose Gruppenebenen, die sich nicht anfordern lassen, werden dabei
+   aussortiert.
+3. **Deckt er diese Stelle ab?** Die angegebene Bounding Box beantwortet das,
+   bevor eine einzige Kachel geholt wird. Ebenso, ob EPSG:3857 dabei ist –
+   GRAFCAN rechnet nativ in UTM 28N.
+4. **Zeichnet er hier etwas, und mit welchem Kontrast?** Pixelweise, wie in
+   B8: Anteil gezeichneter Pixel, dunkelste Helligkeit, Farbanzahl, dazu die
+   Kachel vergrößert über Schachbrett.
+
+Voreingestellte Orte (Bergen, Las Palmas, Teneriffa Süd) machen den Vergleich
+zwischen den Revieren möglich, ohne hinzufahren.
 
 ## Oberfläche: Material 3
 

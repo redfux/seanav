@@ -7,6 +7,13 @@ wird hier nichts.
 
 ## Offen
 
+- **„gibt es für die Kanaren auch irgendwo Tiefen- und Seekarten zur freien
+  Verfügung, wie hier in Norwegen?"** (2026-08-25)
+  Recherchiert: IHM (Spanien, offizielle ENC als WMS), GRAFCAN (Kanaren,
+  Topobathymetrie 2,5 m), EMODnet (Europa, CC-BY). Schritt 1 – Prüfstand –
+  ist mit 0.16.2 umgesetzt; die Messung am Revier und der Einbau der Quellen
+  stehen aus.
+
 - **„wenn sich die Karte dreht, drehen sich nicht die Seezeichen und
   Tiefenangaben, die stehen dann schief/auf dem Kopf. ist das anpassbar?"**
   (2026-08-24) Nicht mit Rasterkacheln – die Beschriftung ist ins Bild
@@ -14,6 +21,9 @@ wird hier nichts.
   `features.md` festgehalten.
 
 ## Erledigt
+
+- **„fang mit Schritt 1 an"** (2026-08-25) `compare.html` prüft die drei
+  Kandidatendienste, umgesetzt in 0.16.2.
 
 - **„sobald es über 1h geht, bitte im Format ‚1,x h' die Zeiten angeben, wobei
   immer auf eine Viertelstunde gerundet werden soll. also z.B. 1,25h oder

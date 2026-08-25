@@ -59,7 +59,7 @@ Mobilfunkempfang. Kein Ersatz für vorschriftsmäßige Seekarten und Ausrüstung
 | O2 | Gezieltes Löschen einzelner Offline-Bereiche bzw. des gesamten Kachelcaches aus der App heraus | offen |
 | O5 | Abfragbare Tiefenwerte (Antippen → Tiefe) – blockiert durch einen Serverfehler des Dienstes, siehe B4 in `bugs.md` | extern blockiert |
 | O8 | Vorab-Download ganzer Gebiete. Untersagt durch die Nutzungsbedingungen von `tile.openstreetmap.org`; möglich nur mit einem Anbieter, der Prefetching gestattet – die meisten verlangen dafür einen API-Schlüssel | zu entscheiden |
-| O9 | Tiefendaten außerhalb Norwegens. Eine freie globale Entsprechung ist nicht bekannt | offen |
+| O9 | Tiefendaten außerhalb Norwegens. Kandidaten recherchiert – IHM (Spanien), GRAFCAN (Kanaren), EMODnet (Europa), siehe `architecture.md`; Messung am Revier steht aus, `compare.html` kann sie | in Prüfung |
 | O10 | Tiefenlinien im küstennahen Flachwasser. Nicht durch Code lösbar – der Dienst liefert dort nachweislich eine leere Konturkachel, siehe B8 in `bugs.md`. Die Tiefeninformation steckt küstennah in den Tiefenzonen | extern begrenzt |
 | O7 | Offizielle ENC-Vektorkarten (S-57) über einen PRIMAR-Distributor – der einzige vollwertige Ersatz für Rasterkarten, aber lizenzpflichtig | Beschaffungsentscheidung |
 | O11 | Beschriftungen der Kartendienste (Tiefenzahlen, Ortsnamen, Seezeichen) stehen bei gedrehter Karte schief. Nicht behebbar, solange die Ebenen Rasterkacheln sind – die Beschriftung ist ins Bild gezeichnet. Aufrecht nur mit einer vektorbasierten Renderschicht | technisch begrenzt |
