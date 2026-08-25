@@ -6,6 +6,35 @@ Versionierung nach [SemVer](https://semver.org/lang/de/).
 Die Versionsnummer wird ausschließlich in `js/version.js` gepflegt; Footer und
 Service-Worker-Cachename leiten sich automatisch daraus ab.
 
+## [0.18.0] – 2026-08-25
+
+### Added
+
+- **Die offizielle spanische Seekarte als Ebene** (IHM, ENC-gerendert):
+  Lotungen, Felsen, Wracks, Hindernisse und Tiefenlinien für spanische
+  Gewässer, Kanaren eingeschlossen.
+- Angefordert wird gezielt der Sublayer `grupo_2`, nicht die ganze Karte. S-57
+  trennt „Haut der Erde" (Gruppe 1: Land- und Wasserflächen als deckende
+  Füllungen) von allem, was darauf liegt (Gruppe 2). Nur die zweite ist
+  gewollt – die erste würde OpenStreetMap zudecken, wie es die norwegische
+  Gruppenebene getan hat. Gemessen: 8,22 % gezeichnet, dunkelstes Pixel 0/255,
+  gegen 100 % bei der vollständigen Karte. Die Ebene braucht dadurch weder
+  Blend-Modus noch Filter.
+- **Der Kartenzweck folgt dem Zoom.** Das IHM trennt nach Maßstabsbändern, und
+  außerhalb seines Bandes zeichnet ein Zweck nichts. Da die URL-Funktion den
+  Zoom kennt, wählt die Quelle selbst: ≤ z12 Zweck 3, z13–z14 Zweck 4, ab z15
+  Zweck 5. Eine Ebene statt drei, ohne Mehrverkehr.
+- Der Prüfstand fragt jetzt zusätzlich Zweck 3 ab – das einzige Band, das noch
+  nicht antwortend gesehen wurde –, und prüft bei allen IHM-Diensten dieselbe
+  Ebene, die die App anfordert.
+
+### Hinweis
+
+- Das IHM weist darauf hin, dass seine Dienste **nicht zur Navigation**
+  bestimmt sind, und verlangt die Nennung „© Instituto Hidrográfico de la
+  Marina". Beides ändert nichts am ohnehin geltenden Haftungshinweis der App;
+  der Nachweis steht in der Fußzeile.
+
 ## [0.17.0] – 2026-08-25
 
 ### Added

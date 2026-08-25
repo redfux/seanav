@@ -18,6 +18,9 @@ in `features.md`, zum GRAFCAN-Fehler O12.)_
 
 ## Erledigt
 
+- **„ja, bau die IHM-Seekarte als weitere Ebene ein"** (2026-08-25)
+  Umgesetzt in 0.18.0: Sublayer `grupo_2`, Kartenzweck folgt dem Zoom.
+
 - **„gibt es für die Kanaren auch irgendwo Tiefen- und Seekarten zur freien
   Verfügung, wie hier in Norwegen?"** + **„Die EMODNET contours reichen mir,
   die multicolor Version ist mir zu unübersichtlich und für meinen Fall

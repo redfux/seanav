@@ -15,6 +15,7 @@ kein Build-Schritt.
 - Weltweite Grundkarte (OpenStreetMap)
 - Tiefenzonen, Lotungen, Grunde und Schären aus den Kartverket-Tiefendaten (nur norwegische Gewässer); Tiefenlinien dort, wo der Dienst sie führt
 - Tiefenlinien für europäische Gewässer aus EMODnet Bathymetry – Kanaren und Mittelmeer eingeschlossen
+- Offizielle spanische Seekarte (IHM) mit Lotungen, Felsen, Wracks und Hindernissen – für spanische Gewässer inklusive der Kanaren
 - Seezeichen (Tonnen, Baken, Feuer) aus OpenSeaMap
 - Einzelne Kartenebenen über 🗺️ ein- und ausschaltbar
 - Eigene Position per Geräte-GPS (`navigator.geolocation`)

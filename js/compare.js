@@ -41,16 +41,24 @@ const PROBE_SERVICES = [
     extraParams: { map_resolution: '144' },
   },
   {
+    // The coarse band the app now uses below z13 - the one purpose that has
+    // not been seen answering yet.
+    id: 'ihm-p3',
+    label: 'IHM Seekarte Zweck 3 (1:90k–1:350k)',
+    url: 'https://ideihm.covam.es/wms/cartaENCp3',
+    layers: ['grupo_2'],
+  },
+  {
     id: 'ihm-p4',
     label: 'IHM Seekarte Zweck 4 (1:22k–1:90k)',
     url: 'https://ideihm.covam.es/wms/cartaENCp4',
-    layers: [],
+    layers: ['grupo_2'],
   },
   {
     id: 'ihm-p5',
     label: 'IHM Seekarte Zweck 5 (1:4k–1:22k)',
     url: 'https://ideihm.covam.es/wms/cartaENCp5',
-    layers: [],
+    layers: ['grupo_2'],
   },
   {
     id: 'grafcan',
@@ -62,7 +70,7 @@ const PROBE_SERVICES = [
     id: 'emodnet',
     label: 'EMODnet Bathymetry (Europa)',
     url: 'https://ows.emodnet-bathymetry.eu/wms',
-    layers: ['mean_multicolour', 'contours'],
+    layers: ['contours'],
   },
 ];
 

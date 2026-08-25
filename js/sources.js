@@ -142,6 +142,67 @@ function emodnetContourUrl(z, x, y) {
   return `${EMODNET_WMS}?${params}`;
 }
 
+// --- IHM electronic nautical chart, Spanish waters (WMS) -----------------
+
+/*
+ * The official Spanish nautical chart, rendered from ENC data - the closest
+ * thing to Kartverket's depth data outside Norway, and the reason to have it:
+ * soundings, rocks, wrecks, obstructions and depth contours, not a terrain
+ * model.
+ *
+ * Requested is the sub-layer "grupo_2", not the whole chart. S-57 splits its
+ * objects into two groups: group 1 is the "skin of the earth" - land and water
+ * areas, drawn as opaque fills - and group 2 is everything on top of it. Only
+ * the second is wanted here; the first would blank out OpenStreetMap the way
+ * the Norwegian group layer once did, and cost a blend mode to undo. Measured
+ * at 28.00902, -16.58136 (z13): grupo_2 draws 8,22 % of the tile with a
+ * darkest pixel of 0 of 255 - ink on transparent ground - while the whole
+ * chart draws 100 %.
+ *
+ * The service is split by chart purpose, each covering a band of scales, and a
+ * request outside a band's range renders nothing. The band therefore follows
+ * the zoom. Scale at latitude 28 for a 256 px tile, by the OGC pixel size:
+ *
+ *   z12 ≈ 1:120k   -> purpose 3 (1:90k  - 1:350k)
+ *   z13 ≈ 1:60k    -> purpose 4 (1:22k  - 1:90k)
+ *   z14 ≈ 1:30k    -> purpose 4
+ *   z15 ≈ 1:15k    -> purpose 5 (1:4k   - 1:22k)
+ *
+ * Purposes 4 and 5 are measured; 3 follows the same pattern but has not been
+ * seen answering yet. Where a purpose has no chart - purpose 5 exists only for
+ * harbours and approaches - the layer simply stays empty, which is the same
+ * behaviour every other source here has outside its coverage.
+ */
+const IHM_WMS_BASE = 'https://ideihm.covam.es/wms/';
+
+function ihmEndpointForZoom(z) {
+  if (z <= 12) return 'cartaENCp3';
+  if (z <= 14) return 'cartaENCp4';
+  return 'cartaENCp5';
+}
+
+function ihmChartUrl(z, x, y) {
+  const bbox = tileBBox3857(z, x, y);
+  const params = new URLSearchParams({
+    service: 'WMS',
+    request: 'GetMap',
+    version: '1.3.0',
+    layers: 'grupo_2',
+    styles: '',
+    format: 'image/png',
+    transparent: 'true',
+    crs: 'EPSG:3857',
+    bbox: `${bbox.minX},${bbox.minY},${bbox.maxX},${bbox.maxY}`,
+    // Tile size, not oversampled: a bigger image over the same box halves the
+    // scale denominator the server computes, and this service drops whole
+    // chart contents outside a purpose's scale band. Same trap as
+    // MAP_RESOLUTION above, from the other side.
+    width: '256',
+    height: '256',
+  });
+  return `${IHM_WMS_BASE}${ihmEndpointForZoom(z)}?${params}`;
+}
+
 // --- OpenSeaMap seamarks -------------------------------------------------
 
 function seamarkUrl(z, x, y) {
@@ -220,6 +281,20 @@ const CHART_SOURCES = [
     opaque: false,
     defaultOn: true,
     attribution: '&copy; <a href="https://emodnet.ec.europa.eu/en/bathymetry">EMODnet Bathymetry</a> (CC-BY 4.0)',
+  },
+  {
+    id: 'ihm-chart',
+    // Spanish waters, so mainland, Balearics and Canaries alike.
+    label: 'Seekarte (Spanien)',
+    url: ihmChartUrl,
+    // Below this the coarsest purpose is out of its scale band as well.
+    minZoom: 11,
+    // Purpose 5 goes down to 1:4k, roughly z17; beyond that there is no finer
+    // chart to ask for.
+    maxNativeZoom: 17,
+    opaque: false,
+    defaultOn: true,
+    attribution: '&copy; Instituto Hidrográfico de la Marina',
   },
   {
     id: 'seamarks',

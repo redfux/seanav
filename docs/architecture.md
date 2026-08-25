@@ -111,13 +111,14 @@ blenden.
 
 ## Kartenebenen
 
-Vier Quellen, in Zeichenreihenfolge:
+Fünf Quellen, in Zeichenreihenfolge:
 
 | Ebene | Quelle | Rolle | Abdeckung | Auflösungsgrenze |
 | --- | --- | --- | --- | --- |
 | Grundkarte | `tile.openstreetmap.org` | Land, Küstenlinie, Häfen | weltweit | z19 |
 | Tiefendaten | `wms.geonorge.no/skwms1/wms.dybdedata2`, Layer `Dybdedata2` | Tiefenzonen, Lotungen, Grunde, Schären, Tiefenlinien soweit vermessen | Norwegen | keine (WMS) |
 | Tiefenlinien | `ows.emodnet-bathymetry.eu/wms`, Layer `contours` | Tiefenlinien | Europa | ~115 m (z15) |
+| Seekarte | `ideihm.covam.es/wms/cartaENCp3…p5`, Layer `grupo_2` | Lotungen, Felsen, Wracks, Hindernisse, Tiefenlinien | spanische Gewässer | Maßstabsband je Zweck (z17) |
 | Seezeichen | `tiles.openseamap.org` | Tonnen, Baken, Feuer | weltweit | z18 |
 
 Die Wahl fiel auf weltweit verfügbare Quellen, weil das Boot dieses Jahr in
@@ -593,6 +594,42 @@ Eingebaut wurde daraus `contours`. GRAFCAN liefert küstennah feineres Relief
 als Kartverket, ist aber ein Geländemodell: kein Lot, kein Hindernissymbol,
 kein Seezeichen – und antwortet vorerst nicht. Seezeichen brauchen ohnehin
 keinen Ersatz, OpenSeaMap ist weltweit.
+
+### Die spanische Seekarte
+
+Zwei Entscheidungen unterscheiden diese Quelle von allen anderen.
+
+**Nur `grupo_2`, nicht die ganze Karte.** S-57 teilt seine Objekte in zwei
+Gruppen: Gruppe 1 ist die „Haut der Erde" – Land- und Wasserflächen, als
+deckende Füllungen gezeichnet –, Gruppe 2 alles, was darauf liegt. Gewollt ist
+hier nur die zweite; die erste würde OpenStreetMap zudecken, genau wie es die
+norwegische Gruppenebene getan hat, und einen Blend-Modus kosten, um es wieder
+rückgängig zu machen. Gemessen: `grupo_2` zeichnet 8,22 % der Kachel mit
+dunkelstem Pixel 0/255, die ganze Karte 100 %.
+
+Praktischer Nebeneffekt der S-57-Aufteilung: Tiefenlinien, Lotungen, Felsen,
+Wracks und Hindernisse liegen alle in Gruppe 2. Was wegfällt, sind genau die
+Flächen, die stören.
+
+**Der Dienst wechselt mit dem Zoom.** Das IHM trennt seine Karten nach
+Kartenzweck, jeder deckt ein Maßstabsband ab, und eine Anfrage außerhalb des
+Bandes zeichnet nichts. Da `url(z, x, y)` den Zoom kennt, wählt die Quelle den
+passenden Zweck selbst – eine Ebene, keine drei:
+
+| Zoom | Maßstab bei 28° N | Zweck | Band |
+| --- | --- | --- | --- |
+| ≤ z12 | 1:121k | `cartaENCp3` | 1:90k – 1:350k |
+| z13–z14 | 1:60k / 1:30k | `cartaENCp4` | 1:22k – 1:90k |
+| ≥ z15 | 1:15k | `cartaENCp5` | 1:4k – 1:22k |
+
+Die Maßstäbe sind für eine 256-Pixel-Kachel und die OGC-Pixelgröße gerechnet.
+Daraus folgt auch, warum hier **nicht** überabgetastet wird: ein größeres Bild
+über derselben Box halbiert den Maßstabsnenner, den der Server berechnet – und
+dieser Dienst lässt dann ganze Karteninhalte weg. Dieselbe Falle wie
+`MAP_RESOLUTION` bei Kartverket, nur von der anderen Seite.
+
+Zweck 4 und 5 sind gemessen, Zweck 3 folgt demselben Muster, ist aber noch
+nicht antwortend gesehen worden – der Prüfstand fragt ihn jetzt mit ab.
 
 ### Der Prüfstand
 
