@@ -6,6 +6,36 @@ Versionierung nach [SemVer](https://semver.org/lang/de/).
 Die Versionsnummer wird ausschließlich in `js/version.js` gepflegt; Footer und
 Service-Worker-Cachename leiten sich automatisch daraus ab.
 
+## [0.19.1] – 2026-08-25
+
+### Fixed
+
+Durchgang durch die gesamte Dokumentation. Was nicht mehr stimmte:
+
+- **`architecture.md` behauptete, die CSP lasse nur `cache.kartverket.no` zu.**
+  Diesen Host verwendet die App seit 0.6.0 nicht mehr; erlaubt sind die fünf
+  Kachel-Hosts der heutigen Ebenen. Eine falsche Sicherheitsaussage ist die
+  unangenehmste Sorte veralteter Doku.
+- **`architecture.md` behauptete „kein `innerHTML`".** Das stimmt seit dem
+  Kartennachweis nicht mehr, der die Attributionstexte aus `js/sources.js`
+  zusammensetzt. Jetzt steht dort, was tatsächlich gilt: `innerHTML` nur aus
+  eigenen Konstanten, alles von außen über `textContent`, und auf der
+  Wartungsseite escaped.
+- `readme.md`: Abschnitt hieß „Navigation", Geschwindigkeit stand als „in
+  Knoten" fest, die Liste der ausgehenden Verbindungen kannte EMODnet und IHM
+  nicht, die Tabelle der Speicherschlüssel weder Kartenausrichtung noch
+  Geschwindigkeitseinheit.
+- `features.md`: F1 beschrieb die 0.6.0 entfernte Rasterkarte als vorhanden;
+  F2 und F4 waren überholt; die Tabellen waren durch das Anhängen neuer Zeilen
+  aus der Ordnung geraten und sind jetzt wieder nach Nummer sortiert.
+
+### Removed
+
+- **`diagnose.html` und `js/diagnose.js`.** Die Seite prüfte den
+  Kartverket-WMTS, den die App seit 0.6.0 nicht mehr verwendet – ihre eigene
+  Beschreibung in der readme sagte, sie könne weg, sobald B1/B2 geklärt sind,
+  und das sind sie. `compare.html` ist die Nachfolgerin.
+
 ## [0.19.0] – 2026-08-25
 
 ### Changed

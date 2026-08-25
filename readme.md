@@ -55,12 +55,12 @@ relativ und funktionieren daher auch unter dem Unterpfad `/seanav/`.
 
 ## Nutzung
 
-### Navigation
+### Bedienung
 
 1. App öffnen und den Standortzugriff erlauben – die Statusleiste oben zeigt
-   Kurs, Geschwindigkeit (in Knoten) und GPS-Status
-2. Ziel per Klick/Tap auf die Karte setzen – das Navigationspanel zeigt
-   Distanz, Peilung und ETA, „Ziel löschen" entfernt es wieder
+   Kurs, Geschwindigkeit und GPS-Status
+2. Ziel per Klick/Tap auf die Karte setzen – die Zielkarte zeigt Distanz, ETA
+   und Peilung, „Ziel löschen" entfernt es wieder
 3. Der oberste Knopf trägt Position und Ausrichtung zugleich. Zeigt er ein
    **Fadenkreuz**, holt ein Tipp das Boot zurück in die Mitte – die Zoomstufe
    bleibt dabei, wie sie ist. Zeigt er einen **Kompass**, folgt die Karte
@@ -114,7 +114,7 @@ Nutzungsdaten übertragen.
 | Speicher | Inhalt | Zweck |
 | --- | --- | --- |
 | IndexedDB (`seenavi-tiles`) | Kartenkacheln als Blobs, Schlüssel `quelle/z/x/y` | angesehene Ausschnitte ohne Empfang |
-| `localStorage` | welche Kartenebenen eingeschaltet sind, ob die Zielkarte eingeklappt ist, ob der Installationshinweis weggeklickt wurde | Einstellungen bleiben erhalten |
+| `localStorage` | eingeschaltete Kartenebenen, Kartenausrichtung (Nord/Fahrtrichtung), Geschwindigkeitseinheit, ob die Zielkarte eingeklappt ist, ob der Installationshinweis weggeklickt wurde | Einstellungen bleiben erhalten |
 | Cache API (`seenavi-shell-v<version>`) | App-Shell: HTML/CSS/JS/Leaflet | App startet ohne Netz |
 
 Die GPS-Position wird ausschließlich im Arbeitsspeicher gehalten und nicht
@@ -122,9 +122,15 @@ persistiert. Zurücksetzen lässt sich beides über „Websitedaten löschen" in
 Browser-Einstellungen.
 
 Ausgehende Verbindungen bestehen ausschließlich zum Abruf von Kartenkacheln:
-`tile.openstreetmap.org` (Grundkarte), `wms.geonorge.no` (Tiefendaten) und
-`tiles.openseamap.org` (Seezeichen). Die Content-Security-Policy in
-`index.html` unterbindet alles darüber hinaus technisch.
+`tile.openstreetmap.org` (Grundkarte), `wms.geonorge.no` (Tiefendaten
+Norwegen), `ows.emodnet-bathymetry.eu` (Tiefenlinien Europa),
+`ideihm.covam.es` (Seekarte Spanien) und `tiles.openseamap.org` (Seezeichen).
+Die Content-Security-Policy in `index.html` unterbindet alles darüber hinaus
+technisch – eine neue Quelle muss dort ausdrücklich eingetragen werden.
+
+Die Speicherschlüssel tragen noch das Präfix `seenavi`, den alten Namen der
+App. Sie sind unsichtbar, und ein Umbenennen würde Kachelspeicher und
+Einstellungen wegwerfen.
 
 ## Weiterführende Dokumentation
 
@@ -137,10 +143,10 @@ Ausgehende Verbindungen bestehen ausschließlich zum Abruf von Kartenkacheln:
 | [`docs/changes.md`](docs/changes.md) | Eingangskorb für gewünschte Änderungen |
 | [`docs/THIRD_PARTY_LICENSES.md`](docs/THIRD_PARTY_LICENSES.md) | Lizenzen eingebetteter Fremdkomponenten |
 
-Zusätzlich gibt es `diagnose.html` – eine Wartungsseite, die prüft, was der
-Kartverket-WMTS tatsächlich liefert (Layer, Zoomstufen, Parametrisierung).
-Sie gehört nicht zur App und kann entfernt werden, sobald B1/B2 in
-`docs/bugs.md` geklärt sind.
+Zusätzlich gibt es `compare.html` – eine Wartungsseite, die Kartendienste
+prüft, bevor sie eingebaut werden: Erreichbarkeit und CORS, Layernamen aus den
+Capabilities, angegebene Abdeckung, EPSG:3857 und was ein Dienst an der
+gewählten Stelle tatsächlich zeichnet (pixelweise). Sie gehört nicht zur App.
 
 ## Lizenz
 

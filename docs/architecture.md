@@ -15,6 +15,7 @@ js/app.js           Geodäsie, GPS-Handling, UI-Verdrahtung, Boot
 js/install.js       Installationshinweis (PWA), getrennt von der Karten-Logik
 js/rotate.js        Kartenausrichtung Nord/Fahrtrichtung samt Leaflet-Korrekturen
 js/wakelock.js      hält den Bildschirm an, solange die App vorn ist
+compare.html        Wartungsseite: Prüfstand für Kartendienste, js/compare.js
 sw.js               Service Worker für den App-Shell (muss im Root liegen)
 manifest.json       PWA-Manifest
 icons/              App-Icons: zwei SVG-Vorlagen und die daraus gerenderten PNGs
@@ -221,14 +222,20 @@ Release erfordert damit genau eine Änderung im Code plus den Eintrag in
 ## Sicherheit
 
 - **CSP** als Meta-Tag in `index.html`: `default-src 'self'`, ausgehende
-  Verbindungen nur nach `cache.kartverket.no` (`img-src`, `connect-src`).
-  Das unterbindet versehentliches Nachladen technisch, nicht nur per Konvention.
+  Verbindungen nur zu den fünf Kachel-Hosts, die die Ebenen wirklich brauchen –
+  `tile.openstreetmap.org`, `wms.geonorge.no`, `ows.emodnet-bathymetry.eu`,
+  `ideihm.covam.es`, `tiles.openseamap.org` – jeweils in `img-src` und
+  `connect-src`. Das unterbindet versehentliches Nachladen technisch, nicht nur
+  per Konvention; eine neue Quelle muss hier ausdrücklich eingetragen werden.
   `style-src` erlaubt zusätzlich `'unsafe-inline'`, weil Leaflet Kachel- und
   Marker-Positionen zur Laufzeit als Inline-Styles setzt.
-- **Kein `innerHTML`:** alle dynamischen Werte werden über `textContent` bzw.
-  `style.width` gesetzt, es entsteht also kein XSS-Vektor aus Kartendaten oder
-  Positionswerten.
-- **Keine Secrets:** der Kartverket-Dienst braucht keinen API-Key, es gibt
+- **`innerHTML` nur aus eigenen Konstanten:** Messwerte, Positionen und alles,
+  was von außen kommt, gehen ausschließlich über `textContent`. Die einzige
+  Ausnahme ist der Kartennachweis, der die Attributionstexte aus
+  `js/sources.js` zusammensetzt – Links, die im eigenen Quelltext stehen, keine
+  Fremddaten. Auf der Wartungsseite `compare.html` wird alles, was von fremden
+  Servern ins Protokoll geht, vorher escaped.
+- **Keine Secrets:** keiner der Kartendienste braucht einen API-Key, es gibt
   daher weder `.env` noch Zugangsdaten im Repo.
 
 ## Distanzmarken auf der Kurslinie

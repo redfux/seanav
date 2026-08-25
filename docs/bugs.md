@@ -3,6 +3,11 @@
 Bekannte Fehler und deren Lösung. Behobene Fehler bleiben mit ihrer Lösung
 stehen, damit sie bei einem Rückfall wiederauffindbar sind.
 
+Ältere Einträge verweisen auf die Wartungsseite `diagnose.html`. Die ist mit
+0.19.1 entfallen: sie prüfte den Kartverket-WMTS, den die App seit 0.6.0 nicht
+mehr verwendet. Ihre Nachfolgerin ist `compare.html`, der Prüfstand für
+Kartendienste.
+
 ## Offen
 
 _(derzeit keine offenen Fehler – die verbleibende Lücke im Flachwasser ist

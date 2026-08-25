@@ -18,6 +18,10 @@ in `features.md`, zum GRAFCAN-Fehler O12.)_
 
 ## Erledigt
 
+- **„jetzt prüfe bitte nochmal alle Doku auf Aktualität und passe bei Bedarf
+  an"** (2026-08-25) Durchgang über readme und alle Dateien in `docs/`;
+  Korrekturen in 0.19.1, veraltete Wartungsseite entfernt.
+
 - **„brauchen wir langsam einen neuen Namen für die App … nimm ‚SeaGlimpse'
   als neuen Namen … es muss unbedingt im Footer noch der Hinweis dauerhaft
   erscheinen, dass die App nicht zum Navigieren genutzt werden darf"**
