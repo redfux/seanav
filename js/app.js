@@ -15,7 +15,17 @@ const EARTH_RADIUS_M = 6371000;
  * Fixed distances marked along the course line. The distance is the constant;
  * what changes with speed is how long it takes to get there.
  */
-const PROJECTION_DISTANCES_M = [200, 500];
+const PROJECTION_DISTANCES_M = [200, 500, 1000];
+
+/*
+ * Colours of the course line. Orange looked right on a desk and failed on the
+ * water: against the blue of the sea areas it has too little contrast in full
+ * sun. Black has the most contrast there is against a bright chart - and to
+ * keep it from disappearing over dark ground in return, it is drawn on a light
+ * casing, the way a chart draws a leading line.
+ */
+const COURSE_LINE_COLOUR = '#000000';
+const COURSE_LINE_CASING = '#ffffff';
 
 // The line runs just past the furthest mark, so the outermost label does not
 // sit on its end. Constant, so the line does not change length as marks come
@@ -76,6 +86,7 @@ let map;
 const chartLayers = new Map(); // source id -> Leaflet layer, for those switched on
 let positionMarker;
 let courseLine;
+let courseLineCasing;         // pale line underneath, so black reads anywhere
 let projectionLayer;          // holds the time marks, rebuilt on every fix
 let projectionEnabled = true;
 let targetMarker;
@@ -412,10 +423,16 @@ function updateCourseLine(fix) {
   const ahead = destinationPoint(fix, currentHeadingDeg, COURSE_LINE_LOOKAHEAD_M);
   const points = [[fix.lat, fix.lng], [ahead.lat, ahead.lng]];
   if (!courseLine) {
+    // Two lines, one under the other: the pale casing first, so the black line
+    // reads against dark ground too.
+    courseLineCasing = L.polyline(points, {
+      color: COURSE_LINE_CASING, weight: 7, opacity: 0.75, interactive: false,
+    }).addTo(map);
     courseLine = L.polyline(points, {
-      color: '#ffb703', weight: 3, dashArray: '2 8', interactive: false,
+      color: COURSE_LINE_COLOUR, weight: 3, dashArray: '2 8', interactive: false,
     }).addTo(map);
   } else {
+    courseLineCasing.setLatLngs(points);
     courseLine.setLatLngs(points);
   }
 
@@ -497,11 +514,11 @@ function drawProjectionMarks(marks) {
 
   marks.forEach((mark) => {
     L.circleMarker(mark.latlng, {
-      // Large enough that the dark outline does not swallow the fill.
+      // Black on a pale ring, for the same reason as the line itself.
       radius: 5,
-      color: '#0d1b2a',
+      color: COURSE_LINE_CASING,
       weight: 2,
-      fillColor: '#ffb703',
+      fillColor: COURSE_LINE_COLOUR,
       fillOpacity: 1,
       interactive: false,
     }).addTo(projectionLayer);
@@ -509,7 +526,7 @@ function drawProjectionMarks(marks) {
     addMarkLabel(mark.latlng, timeBearing, MARK_TIME_OFFSET_PX * metres,
       'course-mark-label', formatMarkMinutes(mark.seconds), 0);
     addMarkLabel(mark.latlng, distanceBearing, MARK_DISTANCE_OFFSET_PX * metres,
-      'course-mark-dist', `${mark.distanceM} m`, angle);
+      'course-mark-dist', formatMarkDistance(mark.distanceM), angle);
   });
 }
 
@@ -668,6 +685,12 @@ function updateNavPanel(fix) {
   } else {
     document.getElementById('val-eta').textContent = '–';
   }
+}
+
+// Caption on a mark: metres up to a kilometre, then kilometres - "1000 m" is
+// a number to decode, "1 km" is one to read.
+function formatMarkDistance(m) {
+  return m >= 1000 ? `${m / 1000} km` : `${m} m`;
 }
 
 function formatDistance(m) {

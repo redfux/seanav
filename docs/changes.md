@@ -15,6 +15,13 @@ wird hier nichts.
 
 ## Erledigt
 
+- **„bei der Peilungslinie eine andere Farbe nehmen, der Kontrast zw. dem
+  derzeitigen Orange und dem Blau der Wasserflächen ist zu gering bei starker
+  Sonneneinstrahlung … außerdem die Linie so verlängern, dass auch die
+  1km-Marke noch dran angezeigt werden kann"** (2026-08-24)
+  Umgesetzt in 0.15.0: schwarze Linie auf heller Unterlinie, dritte Marke bei
+  1 km, Linie auf 1150 m verlängert.
+
 - **„in der Zielkachel sollen die drei Werte sauber untereinander stehen"**
   (2026-08-24) Umgesetzt in 0.14.1: gemeinsame Labelspalte, gemeinsame rechte
   Kante, gleicher Zeilenabstand; der Aufklapppfeil ist aus dem Textfluss

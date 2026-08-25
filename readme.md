@@ -25,7 +25,7 @@ kein Build-Schritt.
 - Geschwindigkeit wahlweise in Knoten oder km/h – Antippen schaltet um
 - Ziel per Klick auf die Karte setzen, mit Distanz/Peilung/ETA; nach einer
   Minute ohne Änderung fixiert es sich gegen versehentliches Verschieben
-- Marken bei 200 m und 500 m auf der Kurslinie, mit der jeweils benötigten Fahrzeit
+- Marken bei 200 m, 500 m und 1 km auf der Kurslinie, mit der jeweils benötigten Fahrzeit
 - Angesehene Kartenausschnitte bleiben ohne Empfang verfügbar
 - Als App installierbar (PWA) – startet dann ohne Browserleiste
 

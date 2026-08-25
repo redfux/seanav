@@ -232,8 +232,16 @@ Release erfordert damit genau eine Änderung im Code plus den Eintrag in
 ## Distanzmarken auf der Kurslinie
 
 Statt einer Kachel mit Projektionswerten trägt die Kurslinie Punkte bei festen
-Distanzen – 200 m und 500 m. Der Wert steht damit dort, wo er hingehört: an der
-Stelle, die er beschreibt.
+Distanzen – 200 m, 500 m und 1 km. Der Wert steht damit dort, wo er hingehört:
+an der Stelle, die er beschreibt. Die Linie reicht knapp über die äußerste Marke
+hinaus, damit deren Beschriftung nicht auf dem Linienende sitzt.
+
+**Farbe.** Orange sah am Schreibtisch richtig aus und fiel auf dem Wasser durch:
+gegen das Blau der Seeflächen hat es bei praller Sonne zu wenig Kontrast. Die
+Linie ist deshalb schwarz – mehr Kontrast gegen eine helle Karte gibt es nicht –
+und liegt auf einer hellen Unterlinie, damit sie über dunklem Grund nicht
+ihrerseits verschwindet. Dieselbe Paarung tragen die Marken: schwarze Punkte mit
+hellem Ring.
 
 An jeder Marke stehen zwei Angaben auf gegenüberliegenden Seiten der Linie:
 
@@ -264,7 +272,7 @@ Reihenfolge:
    heranlassen. Herausgezoomt fallen so beide weg.
 
 Da die Distanzen fest sind, hängt die Sichtbarkeit nur noch am Zoom, nicht mehr
-an der Geschwindigkeit. Bei Kurs 20°: z14–z16 beide Marken, z17 nur 200 m,
+an der Geschwindigkeit. Bei Kurs 20°: z14–z16 alle Marken, z17 nur 200 m,
 z18 und z12 keine.
 
 Zwei Details, die sonst still Ärger machen:

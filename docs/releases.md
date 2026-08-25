@@ -6,6 +6,20 @@ Versionierung nach [SemVer](https://semver.org/lang/de/).
 Die Versionsnummer wird ausschließlich in `js/version.js` gepflegt; Footer und
 Service-Worker-Cachename leiten sich automatisch daraus ab.
 
+## [0.15.0] – 2026-08-24
+
+### Changed
+
+- **Die Kurslinie ist schwarz statt orange.** Gegen das Blau der Seeflächen
+  hatte Orange bei praller Sonne zu wenig Kontrast. Schwarz hat den größten
+  Kontrast gegen eine helle Karte, und damit es über dunklem Grund nicht
+  seinerseits verschwindet, liegt es auf einer hellen Unterlinie – wie eine
+  Richtfeuerlinie auf der Seekarte gezeichnet ist. Die Marken tragen dieselbe
+  Paarung: schwarze Punkte mit hellem Ring.
+- **Dritte Marke bei 1 km**, die Linie reicht entsprechend weiter (1150 m, wie
+  bisher knapp über die äußerste Marke hinaus). Die Beschriftung steht dort als
+  „1 km" statt „1000 m".
+
 ## [0.14.1] – 2026-08-24
 
 ### Fixed
