@@ -7,8 +7,13 @@ wird hier nichts.
 
 ## Offen
 
-_(derzeit keine offenen Punkte – zur Seekarte für spanische Gewässer siehe O9
-in `features.md`, zum GRAFCAN-Fehler O12.)_
+- **„in der PWA unter Android ist die unterste Systemleiste noch weiß. kannst
+  du es so anpassen, dass sie in derselben Farbe dargestellt wird wie der
+  Hintergrund der Fußleiste"** (2026-08-25)
+  Von der Seite aus nicht steuerbar: die untere Systemleiste färbt Chrome in
+  einer installierten App selbst. In 0.19.2 sind alle Angaben gesetzt, die
+  greifen können; bleibt sie hell, liegt es an Chromes Design-Einstellung.
+  Siehe O13 in `features.md`.
 
 - **„wenn sich die Karte dreht, drehen sich nicht die Seezeichen und
   Tiefenangaben, die stehen dann schief/auf dem Kopf. ist das anpassbar?"**

@@ -328,6 +328,8 @@ Icon, eigener Speicher, Start ohne Empfang. Dafür nötig sind `manifest.json`,
 ein Service Worker mit `fetch`-Handler und Icons in 192 und 512 px – alles
 vorhanden.
 
+### Systemleisten
+
 `display` ist `standalone`, nicht `fullscreen`. Vollbild blendet die
 Statusleiste des Telefons aus, und damit Uhrzeit und Akkustand – zwei Angaben,
 die auf dem Wasser dazugehören. Aus demselben Grund steht die
@@ -335,6 +337,24 @@ iOS-Statusleiste auf `black` statt `black-translucent`: sonst liefe die Karte
 unter Uhr und Akkuanzeige hindurch. Eine bereits installierte App übernimmt den
 geänderten Modus erst, wenn der Browser das Manifest neu einliest – auf Android
 nach ein paar Stunden von selbst, sofort bei einer Neuinstallation.
+
+Mit `standalone` kommt neben der oberen auch die **untere** Systemleiste zurück,
+Androids Gesten- bzw. Dreiknopfleiste. Deren Farbe bestimmt in einer
+installierten App **Chrome selbst**, nicht die Seite: `theme-color` färbt die
+obere Leiste, `background_color` den Startbildschirm, und für die untere gibt
+es keine Angabe im Manifest oder in CSS, die sie zuverlässig setzt. Im Browser
+sieht es richtig aus, weil Chrome dort dieselbe Leiste nach der Seite
+einfärbt – im WebAPK nach seinem eigenen Thema.
+
+Angelegt ist trotzdem alles, was greifen *kann*: `color-scheme: dark`, ein
+dunkler Hintergrund auf `html` (der auf das Canvas durchschlägt, also auch in
+den Bereich hinter den Systemleisten), `viewport-fit=cover` für den
+Edge-to-Edge-Fall neuerer Android-Versionen und `theme-color` zusätzlich mit
+`media`-Varianten für `prefers-color-scheme` und `display-mode: standalone`,
+die manche Chrome-Versionen für die Systemleisten heranziehen. Bleibt die
+Leiste hell, hilft nur das Thema von Chrome selbst (Einstellungen → Design →
+Dunkel) – oder `display: fullscreen`, das beide Leisten wieder ausblendet und
+damit auch Uhr und Akkustand.
 
 ### Icons
 

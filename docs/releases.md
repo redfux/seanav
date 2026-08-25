@@ -6,6 +6,29 @@ Versionierung nach [SemVer](https://semver.org/lang/de/).
 Die Versionsnummer wird ausschließlich in `js/version.js` gepflegt; Footer und
 Service-Worker-Cachename leiten sich automatisch daraus ab.
 
+## [0.19.2] – 2026-08-25
+
+### Changed
+
+- `theme-color` steht jetzt zusätzlich mit `media`-Varianten für
+  `prefers-color-scheme` (hell wie dunkel) und `display-mode: standalone` im
+  Kopf. Manche Chrome-Versionen ziehen diese Angaben für die Systemleisten der
+  installierten App heran; alle Varianten tragen dieselbe Farbe wie die
+  Fußleiste.
+
+### Hinweis
+
+- **Die untere Systemleiste von Android färbt Chrome in einer installierten
+  App selbst**, nicht die Seite. Es gibt weder im Manifest noch in CSS eine
+  Angabe, die sie zuverlässig setzt; im Browser sieht es richtig aus, weil
+  Chrome die Leiste dort nach der Seite einfärbt. Sie ist mit 0.19.0
+  überhaupt erst aufgetaucht: `display: fullscreen` blendete beide
+  Systemleisten aus, `standalone` bringt beide zurück. Bleibt sie hell, hilft
+  nur Chromes eigenes Design (Einstellungen → Design → Dunkel). Angelegt ist
+  seitens der App alles, was greifen kann – `color-scheme: dark`, dunkler
+  `html`-Hintergrund bis unter die Systemleisten, `viewport-fit=cover`,
+  `theme-color` in allen Varianten.
+
 ## [0.19.1] – 2026-08-25
 
 ### Fixed

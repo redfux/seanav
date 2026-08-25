@@ -9,7 +9,17 @@
   <link rel="stylesheet" href="vendor/leaflet.css">
   <link rel="stylesheet" href="style.css">
   <link rel="manifest" href="manifest.json">
+  <!--
+    Systemleisten. theme-color faerbt die obere Leiste; die untere - Androids
+    Gesten- bzw. Dreiknopfleiste - faerbt Chrome in einer installierten App
+    nach eigener Regel, nicht nach dieser Angabe. Die Varianten mit media
+    stehen hier, weil Chrome sie je nach Version fuer die Systemleisten im
+    Standalone-Modus heranzieht; sie kosten nichts und koennen nur helfen.
+  -->
   <meta name="theme-color" content="#101418">
+  <meta name="theme-color" content="#101418" media="(prefers-color-scheme: dark)">
+  <meta name="theme-color" content="#101418" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#101418" media="(display-mode: standalone)">
   <meta name="description" content="Orientierungshilfe für Bootsfahrten: Position, Kurs, Ziel und Tiefendaten, auch ohne Mobilfunkempfang. Kein Navigationssystem.">
   <!-- iOS reads none of the manifest: installed appearance, title and icon
        come from these instead. The status bar stays visible and opaque -
