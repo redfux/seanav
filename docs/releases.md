@@ -6,6 +6,33 @@ Versionierung nach [SemVer](https://semver.org/lang/de/).
 Die Versionsnummer wird ausschließlich in `js/version.js` gepflegt; Footer und
 Service-Worker-Cachename leiten sich automatisch daraus ab.
 
+## [0.17.0] – 2026-08-25
+
+### Added
+
+- **Tiefenlinien für europäische Gewässer** aus dem EMODnet-Bathymetry-WMS
+  (Ebene `contours`, CC-BY 4.0). Damit haben Kanaren und Mittelmeer
+  Tiefenlinien, ohne dass beim Revierwechsel etwas getauscht werden müsste –
+  außerhalb der Abdeckung zeichnet die Ebene wie alle anderen einfach nichts.
+  Gemessen bei 28.00902, −16.58136 (Teneriffa Süd, z13): 2,12 % der Kachel
+  gezeichnet, dunkelstes Pixel 0 von 255, also schwarze Linien auf
+  transparentem Grund – die Ebene braucht deshalb weder Blend-Modus noch
+  Filter. Angefragt wird in Kachelgröße statt überabgetastet, damit die Linien
+  die Stärke behalten, für die der Dienst sie zeichnet; ab z15 skaliert
+  Leaflet die letzte echte Kachel, denn die Quelle löst nur rund 115 m auf.
+  Die farbig flächige Variante desselben Dienstes ist bewusst nicht dabei: sie
+  malt das ganze Meer zu.
+
+### Changed
+
+- Der Prüfstand zeigt jetzt, was ein abgelehnter GetMap **begründet**: Der
+  `ServiceExceptionReport` wird ausgewertet und Code samt Meldung
+  ausgeschrieben, statt die ersten 220 Zeichen XML-Schema-Kopf zu zeigen. Beim
+  GRAFCAN-Dienst war genau das der blinde Fleck.
+- Ebenen, die ein Dienst mit Präfix führt (`emodnet:contours`), aber ohne
+  akzeptiert, werden nicht mehr als „in den Capabilities nicht gefunden"
+  gemeldet, sondern mit ihrem echten Namen.
+
 ## [0.16.2] – 2026-08-25
 
 ### Changed

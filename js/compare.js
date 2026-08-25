@@ -299,8 +299,8 @@ async function probeLayer(service, layerName, z, tile) {
     const res = await fetchWithTimeout(url);
     const type = res.headers.get('content-type') || '(unbekannt)';
     if (!res.ok || !type.startsWith('image/')) {
-      const body = (await res.text()).replace(/\s+/g, ' ').slice(0, 220);
-      say(`${label} HTTP ${res.status} ${type} — ${body}`, 'bad');
+      const body = await res.text();
+      say(`${label} HTTP ${res.status} ${type} — ${serviceException(body)}`, 'bad');
       return;
     }
     const blob = await res.blob();
@@ -328,6 +328,26 @@ async function probeLayer(service, layerName, z, tile) {
       say(`${label} nicht erreichbar: ${e.message || e}`, 'bad');
     }
   }
+}
+
+/*
+ * A WMS answers a rejected GetMap with HTTP 200 and a ServiceExceptionReport,
+ * and the reason is in there - which is precisely the sentence needed to fix
+ * the request. Printing the raw XML instead buries it behind a schema header,
+ * so the exception is pulled out and everything else thrown away.
+ */
+function serviceException(body) {
+  try {
+    const doc = new DOMParser().parseFromString(body, 'text/xml');
+    const nodes = Array.from(doc.getElementsByTagNameNS('*', 'ServiceException'));
+    if (nodes.length) {
+      return nodes.map((n) => {
+        const code = n.getAttribute('code') || n.getAttribute('locator') || '';
+        return `${code ? `[${code}] ` : ''}${n.textContent.trim().replace(/\s+/g, ' ')}`;
+      }).join(' | ').slice(0, 400);
+    }
+  } catch (e) { /* not XML after all - fall through to the raw text */ }
+  return body.replace(/\s+/g, ' ').slice(0, 220);
 }
 
 function loadsAsImage(url) {
@@ -368,10 +388,17 @@ async function probeService(service, z, tile, centre) {
     }
     // Coverage and projection are worth knowing before any tile is fetched.
     for (const name of wanted) {
-      const layer = known.get(name);
+      // Some services advertise their layers with a workspace prefix
+      // ("emodnet:contours") but accept the bare name in a GetMap. Reporting
+      // that as "not found" would be misleading, so the prefixed one counts.
+      const layer = known.get(name) ||
+        caps.layers.find((l) => l.name.endsWith(`:${name}`));
       if (!layer) {
         say(`  ${name}: in den Capabilities nicht gefunden`, 'warn');
         continue;
+      }
+      if (layer.name !== name) {
+        say(`  ${name}: heißt in den Capabilities „${layer.name}"`);
       }
       const inside = covers(layer.bbox, centre);
       const mercator = layer.crs.some((c) => /3857|900913/.test(c));

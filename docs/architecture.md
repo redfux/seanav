@@ -111,12 +111,13 @@ blenden.
 
 ## Kartenebenen
 
-Drei Quellen, in Zeichenreihenfolge:
+Vier Quellen, in Zeichenreihenfolge:
 
 | Ebene | Quelle | Rolle | Abdeckung | Auflösungsgrenze |
 | --- | --- | --- | --- | --- |
 | Grundkarte | `tile.openstreetmap.org` | Land, Küstenlinie, Häfen | weltweit | z19 |
 | Tiefendaten | `wms.geonorge.no/skwms1/wms.dybdedata2`, Layer `Dybdedata2` | Tiefenzonen, Lotungen, Grunde, Schären, Tiefenlinien soweit vermessen | Norwegen | keine (WMS) |
+| Tiefenlinien | `ows.emodnet-bathymetry.eu/wms`, Layer `contours` | Tiefenlinien | Europa | ~115 m (z15) |
 | Seezeichen | `tiles.openseamap.org` | Tonnen, Baken, Feuer | weltweit | z18 |
 
 Die Wahl fiel auf weltweit verfügbare Quellen, weil das Boot dieses Jahr in
@@ -569,7 +570,8 @@ Rasterquelle war der falsche Weg.
 
 ### Kandidaten außerhalb Norwegens
 
-Recherchiert für die Kanaren, geprüft wird mit `compare.html` vor Ort:
+Recherchiert für die Kanaren, gemessen mit `compare.html` bei 28.00902,
+−16.58136 (Teneriffa Süd, z13):
 
 | Dienst | Endpunkt | Inhalt | Lizenz |
 | --- | --- | --- | --- |
@@ -577,11 +579,20 @@ Recherchiert für die Kanaren, geprüft wird mit `compare.html` vor Ort:
 | GRAFCAN (Kanaren) | `idecan1.grafcan.es/ServicioWMS/Topobatimetrico` | durchgehendes Land-See-Modell, 2,5 m, Tiefe je Insel −65 m bis −785 m | offener IDE-Dienst, Namensnennung |
 | EMODnet (Europa) | `ows.emodnet-bathymetry.eu/wms`, Ebenen `mean_multicolour`, `contours` | Tiefenmodell und Tiefenlinien, ~115 m Auflösung | CC-BY 4.0 |
 
-GRAFCAN liefert küstennah feineres Relief als Kartverket, ist aber ein
-Geländemodell: kein Lot, kein Hindernissymbol, kein Seezeichen. EMODnet deckt
-als einziger Kandidat mehrere Reviere mit einer Ebene ab, ist für den
-Nahbereich aber zu grob. Seezeichen brauchen keinen Ersatz – OpenSeaMap ist
-weltweit.
+**Das Messergebnis:**
+
+| Dienst | Antwort | Befund |
+| --- | --- | --- |
+| Kartverket | Abdeckung nein, alle Ebenen leer | wie erwartet – außerhalb Norwegens kostenlos still |
+| IHM Zweck 4 | `ENC_ES4` 100 % gezeichnet, dunkelstes Pixel 0/255; `grupo_2` 8,22 % gezeichnet, ebenfalls 0/255 | vollständige Seekarte; `grupo_2` ist deren Tinte ohne die deckende Flächenhaut aus `grupo_1` |
+| IHM Zweck 5 | leer | Hafenmaßstab, hier draußen gibt es keine |
+| GRAFCAN | `ServiceExceptionReport` statt Bild | Capabilities in Ordnung, GetMap abgelehnt – Grund war im gekürzten Protokoll nicht zu sehen, der Prüfstand zeigt ihn jetzt |
+| EMODnet | `contours` 2,12 % gezeichnet, 0/255; `mean_multicolour` 86,41 % | Linien auf transparentem Grund, genau das Gesuchte; die Flächenvariante malt das ganze Meer zu |
+
+Eingebaut wurde daraus `contours`. GRAFCAN liefert küstennah feineres Relief
+als Kartverket, ist aber ein Geländemodell: kein Lot, kein Hindernissymbol,
+kein Seezeichen – und antwortet vorerst nicht. Seezeichen brauchen ohnehin
+keinen Ersatz, OpenSeaMap ist weltweit.
 
 ### Der Prüfstand
 

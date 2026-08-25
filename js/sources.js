@@ -104,6 +104,44 @@ function depthUrl(z, x, y) {
   return `${DEPTH_WMS}?${params}`;
 }
 
+// --- EMODnet depth contours (WMS) ----------------------------------------
+
+/*
+ * Depth contours for all European waters, including the Canaries and the
+ * Mediterranean - the one candidate that covers more than a single country.
+ * Measured at 28.00902, -16.58136 (south of Tenerife), z13: 2,12 % of the tile
+ * drawn, darkest pixel 0 of 255. Lines on transparent ground, in black ink -
+ * so this layer needs neither blend mode nor filter.
+ *
+ * The colour-shaded siblings of this layer (mean_multicolour and friends) are
+ * deliberately not here: they paint the whole sea and bury the base map for a
+ * gain nobody asked for. Lines are what a chart reads by.
+ *
+ * Resolution of the source is about 115 m, so beyond maxNativeZoom there is no
+ * more detail to fetch - Leaflet scales the last real tile instead, which is
+ * honest about what the data can do.
+ */
+const EMODNET_WMS = 'https://ows.emodnet-bathymetry.eu/wms';
+
+function emodnetContourUrl(z, x, y) {
+  const bbox = tileBBox3857(z, x, y);
+  const params = new URLSearchParams({
+    service: 'WMS',
+    request: 'GetMap',
+    version: '1.3.0',
+    layers: 'contours',
+    styles: '',
+    format: 'image/png',
+    transparent: 'true',
+    crs: 'EPSG:3857',
+    bbox: `${bbox.minX},${bbox.minY},${bbox.maxX},${bbox.maxY}`,
+    // Native tile size: the line widths this service draws are meant for it.
+    width: '256',
+    height: '256',
+  });
+  return `${EMODNET_WMS}?${params}`;
+}
+
 // --- OpenSeaMap seamarks -------------------------------------------------
 
 function seamarkUrl(z, x, y) {
@@ -169,6 +207,19 @@ const CHART_SOURCES = [
     filter: 'depth',
     defaultOn: true,
     attribution: '&copy; Kartverket',
+  },
+  {
+    id: 'emodnet-contours',
+    label: 'Tiefenlinien (Europa)',
+    url: emodnetContourUrl,
+    // Below this the contours of a whole sea area collapse into a smudge.
+    minZoom: 6,
+    // The data is ~115 m; asking for more zoom levels would only be a bigger
+    // picture of the same thing.
+    maxNativeZoom: 15,
+    opaque: false,
+    defaultOn: true,
+    attribution: '&copy; <a href="https://emodnet.ec.europa.eu/en/bathymetry">EMODnet Bathymetry</a> (CC-BY 4.0)',
   },
   {
     id: 'seamarks',

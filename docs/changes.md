@@ -7,12 +7,8 @@ wird hier nichts.
 
 ## Offen
 
-- **„gibt es für die Kanaren auch irgendwo Tiefen- und Seekarten zur freien
-  Verfügung, wie hier in Norwegen?"** (2026-08-25)
-  Recherchiert: IHM (Spanien, offizielle ENC als WMS), GRAFCAN (Kanaren,
-  Topobathymetrie 2,5 m), EMODnet (Europa, CC-BY). Schritt 1 – Prüfstand –
-  ist mit 0.16.2 umgesetzt; die Messung am Revier und der Einbau der Quellen
-  stehen aus.
+_(derzeit keine offenen Punkte – zur Seekarte für spanische Gewässer siehe O9
+in `features.md`, zum GRAFCAN-Fehler O12.)_
 
 - **„wenn sich die Karte dreht, drehen sich nicht die Seezeichen und
   Tiefenangaben, die stehen dann schief/auf dem Kopf. ist das anpassbar?"**
@@ -21,6 +17,13 @@ wird hier nichts.
   `features.md` festgehalten.
 
 ## Erledigt
+
+- **„gibt es für die Kanaren auch irgendwo Tiefen- und Seekarten zur freien
+  Verfügung, wie hier in Norwegen?"** + **„Die EMODNET contours reichen mir,
+  die multicolor Version ist mir zu unübersichtlich und für meinen Fall
+  völlig oversized"** (2026-08-25)
+  Recherchiert, am Revier gemessen, eingebaut in 0.17.0: EMODnet `contours`
+  als europaweite Tiefenlinien-Ebene.
 
 - **„fang mit Schritt 1 an"** (2026-08-25) `compare.html` prüft die drei
   Kandidatendienste, umgesetzt in 0.16.2.

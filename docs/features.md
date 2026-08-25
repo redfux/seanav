@@ -22,6 +22,7 @@ Mobilfunkempfang. Kein Ersatz für vorschriftsmäßige Seekarten und Ausrüstung
 | F11 | Anzeige des belegten Kachelspeichers | 0.1.0 |
 | F12 | Scharfe Kartendarstellung auf hochauflösenden Displays (High-DPI) | 0.3.0 |
 | F13 | Tiefenzonen, Lotungen, Grunde, Schären und Tiefenlinien aus dem Kartverket-Tiefendaten-WMS | 0.4.0 |
+| F32 | Tiefenlinien für europäische Gewässer aus dem EMODnet-Bathymetry-WMS – deckt Kanaren und Mittelmeer mit ab | 0.17.0 |
 | F14 | Seezeichen (Tonnen, Baken, Feuer) aus OpenSeaMap | 0.4.0 |
 | F15 | Kartenebenen einzeln ein-/ausschaltbar, Auswahl bleibt erhalten | 0.4.0 |
 | F16 | Kachelspeicher nach Ebene aufgeschlüsselt, manuell leerbar | 0.4.0 |
@@ -59,7 +60,8 @@ Mobilfunkempfang. Kein Ersatz für vorschriftsmäßige Seekarten und Ausrüstung
 | O2 | Gezieltes Löschen einzelner Offline-Bereiche bzw. des gesamten Kachelcaches aus der App heraus | offen |
 | O5 | Abfragbare Tiefenwerte (Antippen → Tiefe) – blockiert durch einen Serverfehler des Dienstes, siehe B4 in `bugs.md` | extern blockiert |
 | O8 | Vorab-Download ganzer Gebiete. Untersagt durch die Nutzungsbedingungen von `tile.openstreetmap.org`; möglich nur mit einem Anbieter, der Prefetching gestattet – die meisten verlangen dafür einen API-Schlüssel | zu entscheiden |
-| O9 | Tiefendaten außerhalb Norwegens. Kandidaten recherchiert – IHM (Spanien), GRAFCAN (Kanaren), EMODnet (Europa), siehe `architecture.md`; Messung am Revier steht aus, `compare.html` kann sie | in Prüfung |
+| O9 | Tiefendaten außerhalb Norwegens: Tiefenlinien sind mit EMODnet erledigt (F32). Offen bleibt eine **Seekarte** – IHM `grupo_2` wäre gemessen geeignet (8,22 % Tinte, 0/255), nur für spanische Gewässer | teilweise gelöst |
+| O12 | GRAFCAN-Topobathymetrie (Kanaren, 2,5 m): Capabilities in Ordnung, GetMap antwortet mit `ServiceExceptionReport`. Grund ist mit dem Prüfstand aus 0.17.0 auszulesen | offen |
 | O10 | Tiefenlinien im küstennahen Flachwasser. Nicht durch Code lösbar – der Dienst liefert dort nachweislich eine leere Konturkachel, siehe B8 in `bugs.md`. Die Tiefeninformation steckt küstennah in den Tiefenzonen | extern begrenzt |
 | O7 | Offizielle ENC-Vektorkarten (S-57) über einen PRIMAR-Distributor – der einzige vollwertige Ersatz für Rasterkarten, aber lizenzpflichtig | Beschaffungsentscheidung |
 | O11 | Beschriftungen der Kartendienste (Tiefenzahlen, Ortsnamen, Seezeichen) stehen bei gedrehter Karte schief. Nicht behebbar, solange die Ebenen Rasterkacheln sind – die Beschriftung ist ins Bild gezeichnet. Aufrecht nur mit einer vektorbasierten Renderschicht | technisch begrenzt |
