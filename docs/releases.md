@@ -6,6 +6,26 @@ Versionierung nach [SemVer](https://semver.org/lang/de/).
 Die Versionsnummer wird ausschließlich in `js/version.js` gepflegt; Footer und
 Service-Worker-Cachename leiten sich automatisch daraus ab.
 
+## [0.16.0] – 2026-08-24
+
+### Added
+
+- **Marken bei 5 km und 10 km.** Die Leiter reicht damit von 200 m bis 10 km,
+  und welche Sprossen zu sehen sind, entscheidet weiter der Ausschnitt: nahe
+  Marken fallen weg, sobald sie auf dem Bildschirm zusammenrücken, ferne,
+  sobald sie aus dem Bild laufen. Gemessen bei Kurs 0°: z16 nur 200 m, z14
+  200 m/500 m/1 km, z12 1 km/5 km, z11 und z10 5 km/10 km, z9 5 km. Es wird
+  dafür nirgends eine Zoomstufe abgefragt – die beiden bestehenden Regeln
+  greifen von entgegengesetzten Seiten.
+
+### Changed
+
+- **Die Linie zum Ziel ist magenta statt türkis**, auf derselben hellen
+  Unterlinie wie die Kurslinie. Türkis auf Meerblau war in der Sonne kaum zu
+  sehen; schwarz konnte sie nicht werden, weil zwei schwarze Linien vom selben
+  Boot nur noch am Strichmuster auseinanderzuhalten wären. Magenta ist die
+  Farbe, in der auf einer Seekarte ein von Hand gelegter Kurs steht.
+
 ## [0.15.0] – 2026-08-24
 
 ### Changed

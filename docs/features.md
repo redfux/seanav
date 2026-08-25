@@ -15,7 +15,7 @@ Mobilfunkempfang. Kein Ersatz für vorschriftsmäßige Seekarten und Ausrüstung
 | F4 | Geschwindigkeit in Knoten, geglättet | 0.1.0 |
 | F5 | Ziel per Klick/Tap setzen und wieder löschen | 0.1.0 |
 | F6 | Distanz, Peilung und ETA zum Ziel | 0.1.0 |
-| F7 | Distanzmarken auf der Kurslinie (200 m, 500 m, 1 km) mit der jeweils benötigten Fahrzeit | 0.9.0 |
+| F7 | Distanzmarken auf der Kurslinie (200 m bis 10 km, je nach Zoom) mit der jeweils benötigten Fahrzeit | 0.9.0 |
 | ~~F8~~ | ~~Kartenausschnitt vorab herunterladen~~ – entfernt in 0.6.0, siehe O8 | – |
 | F9 | App startet ohne Netzverbindung (App-Shell im Service Worker) | 0.1.0 |
 | F10 | Fehlende Kacheln als erkennbarer Platzhalter statt kaputtem Bild | 0.1.0 |

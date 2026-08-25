@@ -14,8 +14,13 @@ const EARTH_RADIUS_M = 6371000;
 /*
  * Fixed distances marked along the course line. The distance is the constant;
  * what changes with speed is how long it takes to get there.
+ *
+ * Which of them are drawn depends on the view: marks off screen are dropped,
+ * and so are marks that would crowd the one before them (MIN_MARK_SPACING_PX).
+ * Zoomed in that leaves the near ones, zoomed out the far ones - one ladder
+ * covers the whole range without any zoom-dependent bookkeeping.
  */
-const PROJECTION_DISTANCES_M = [200, 500, 1000];
+const PROJECTION_DISTANCES_M = [200, 500, 1000, 5000, 10000];
 
 /*
  * Colours of the course line. Orange looked right on a desk and failed on the
@@ -26,6 +31,17 @@ const PROJECTION_DISTANCES_M = [200, 500, 1000];
  */
 const COURSE_LINE_COLOUR = '#000000';
 const COURSE_LINE_CASING = '#ffffff';
+
+/*
+ * The line to the destination follows the same reasoning as the course line
+ * and for the same reason - turquoise on sea blue was barely there in the sun.
+ * It cannot be black as well, though: two black lines from the same boat would
+ * have to be told apart by their dash pattern alone. Magenta is what a chart
+ * uses for a course laid out by hand, it is far from every colour the base map
+ * uses for water and land, and it keeps its contrast on the same pale casing.
+ */
+const TARGET_LINE_COLOUR = '#d81b60';
+const TARGET_LINE_CASING = '#ffffff';
 
 // The line runs just past the furthest mark, so the outermost label does not
 // sit on its end. Constant, so the line does not change length as marks come
@@ -92,6 +108,7 @@ let projectionEnabled = true;
 let targetMarker;
 let targetLatLng = null;
 let targetLine;
+let targetLineCasing;         // pale line underneath, as on the course line
 let followMode = true;        // map keeps the boat centred until the map is dragged
 let mapZooming = false;       // true while a zoom animation is running
 let speedUnit = 'kn';         // 'kn' | 'kmh', see SPEED_UNITS
@@ -618,8 +635,14 @@ function redrawTargetLine() {
   const start = positionMarker.getLatLng();
   const points = [[start.lat, start.lng], [targetLatLng.lat, targetLatLng.lng]];
   if (!targetLine) {
-    targetLine = L.polyline(points, { color: '#2ec4b6', weight: 2, dashArray: '6 6' }).addTo(map);
+    targetLineCasing = L.polyline(points, {
+      color: TARGET_LINE_CASING, weight: 6, opacity: 0.75, interactive: false,
+    }).addTo(map);
+    targetLine = L.polyline(points, {
+      color: TARGET_LINE_COLOUR, weight: 3, dashArray: '9 6', interactive: false,
+    }).addTo(map);
   } else {
+    targetLineCasing.setLatLngs(points);
     targetLine.setLatLngs(points);
   }
 }
@@ -630,6 +653,7 @@ function clearTarget() {
   targetLatLng = null;
   if (targetMarker) { map.removeLayer(targetMarker); targetMarker = null; }
   if (targetLine) { map.removeLayer(targetLine); targetLine = null; }
+  if (targetLineCasing) { map.removeLayer(targetLineCasing); targetLineCasing = null; }
   document.getElementById('navpanel').classList.add('hidden');
   document.getElementById('target-lock-hint').classList.add('hidden');
 }

@@ -15,6 +15,12 @@ wird hier nichts.
 
 ## Erledigt
 
+- **„bei großen Zoomstufen soll die Kurslinie auch 5- und 10km-Marken zeigen.
+  und die grüne Linie zur Zielmarkierung muss vom Kontrast her ebenfalls
+  optimiert werden, da das Türkisgrün auf dem Meerblau kaum zu erkennen ist"**
+  (2026-08-24) Umgesetzt in 0.16.0: Leiter bis 10 km, Ziellinie magenta auf
+  heller Unterlinie.
+
 - **„bei der Peilungslinie eine andere Farbe nehmen, der Kontrast zw. dem
   derzeitigen Orange und dem Blau der Wasserflächen ist zu gering bei starker
   Sonneneinstrahlung … außerdem die Linie so verlängern, dass auch die

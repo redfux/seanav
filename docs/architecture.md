@@ -232,7 +232,7 @@ Release erfordert damit genau eine Änderung im Code plus den Eintrag in
 ## Distanzmarken auf der Kurslinie
 
 Statt einer Kachel mit Projektionswerten trägt die Kurslinie Punkte bei festen
-Distanzen – 200 m, 500 m und 1 km. Der Wert steht damit dort, wo er hingehört:
+Distanzen – 200 m, 500 m, 1 km, 5 km und 10 km. Der Wert steht damit dort, wo er hingehört:
 an der Stelle, die er beschreibt. Die Linie reicht knapp über die äußerste Marke
 hinaus, damit deren Beschriftung nicht auf dem Linienende sitzt.
 
@@ -242,6 +242,12 @@ Linie ist deshalb schwarz – mehr Kontrast gegen eine helle Karte gibt es nicht
 und liegt auf einer hellen Unterlinie, damit sie über dunklem Grund nicht
 ihrerseits verschwindet. Dieselbe Paarung tragen die Marken: schwarze Punkte mit
 hellem Ring.
+
+Die Linie zum Ziel hat dasselbe Problem gehabt und folgt derselben Bauweise,
+aber nicht derselben Farbe: zwei schwarze Linien vom selben Boot wären nur noch
+am Strichmuster auseinanderzuhalten. Sie ist magenta – die Farbe, in der auf
+einer Seekarte ein von Hand gelegter Kurs steht, weit weg von allem, was die
+Grundkarte für Wasser und Land verwendet – ebenfalls auf heller Unterlinie.
 
 An jeder Marke stehen zwei Angaben auf gegenüberliegenden Seiten der Linie:
 
@@ -264,16 +270,32 @@ Reihenfolge:
 1. Unterhalb von `MIN_PROJECTION_SPEED_MS` gibt es weder einen projizierbaren
    Kurs noch eine sinnvolle Fahrzeit – dann keine Marken.
 2. Liegt eine Marke außerhalb des sichtbaren Ausschnitts, entfällt sie. Weit
-   hineingezoomt trifft das die 500-m-Marke.
+   hineingezoomt trifft das zuerst die weit entfernten.
 3. Liegen zwei Marken auf dem Bildschirm näher beieinander als
    `MIN_MARK_SPACING_PX`, würden ihre Labels sich überdecken. Gemessen wird
    gegen die zuletzt **behaltene** Marke, nicht gegen die zuletzt geprüfte –
    sonst könnte eine übersprungene Marke die nächste doch wieder zu nah
-   heranlassen. Herausgezoomt fallen so beide weg.
+   heranlassen. Herausgezoomt rücken die nahen Marken auf dem Bildschirm
+   zusammen und fallen dadurch weg.
 
 Da die Distanzen fest sind, hängt die Sichtbarkeit nur noch am Zoom, nicht mehr
-an der Geschwindigkeit. Bei Kurs 20°: z14–z16 alle Marken, z17 nur 200 m,
-z18 und z12 keine.
+an der Geschwindigkeit – und die beiden Regeln greifen von entgegengesetzten
+Seiten, sodass **eine** Leiter von 200 m bis 10 km den ganzen Bereich abdeckt,
+ohne dass irgendwo Zoomstufen abgefragt werden. Gemessen bei Kurs 0°:
+
+| Zoom | Auflösung | gezeigte Marken |
+| --- | --- | --- |
+| z16 | 1,2 m/px | 200 m |
+| z14 | 4,7 m/px | 200 m, 500 m, 1 km |
+| z12 | 19 m/px | 1 km, 5 km |
+| z11 | 38 m/px | 5 km, 10 km |
+| z10 | 76 m/px | 5 km, 10 km |
+| z9 | 151 m/px | 5 km |
+
+Die Linie ist mit `1,15 × 10 km` entsprechend lang. Weit hineingezoomt läuft sie
+damit über den Bildschirmrand hinaus, was nichts kostet – sie wird ohnehin
+abgeschnitten – und dafür bleibt ihre Länge konstant, statt bei jedem Zoom
+mitzuwandern.
 
 Zwei Details, die sonst still Ärger machen:
 
