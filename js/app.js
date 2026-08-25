@@ -1,7 +1,11 @@
 /*
- * SeeNavi Bergen - client-side offline sea navigation helper.
+ * SeaGlimpse - client-side orientation aid for boat trips.
  * No server component: map tiles, position handling and route math
  * all run in the browser so the app keeps working without signal.
+ *
+ * Not a navigation system: it shows where the boat is and what the chart
+ * services draw around it, and that is the whole claim. The permanent notice
+ * in the footer says so on screen.
  *
  * APP_VERSION lives in js/version.js, which index.html loads first.
  *
@@ -240,6 +244,7 @@ function setLayerEnabled(source, on) {
   }
   storeLayerPreference(source.id, on);
   refreshAttribution();
+  fitControlsAboveFooter();
 }
 
 function enabledSources() {
@@ -253,7 +258,10 @@ function enabledSources() {
  * inside a map that turns.
  */
 function refreshAttribution() {
-  const credits = ['<a href="https://leafletjs.com/">Leaflet</a>'];
+  // Leaflet is not in this line: BSD-2 asks for the notice in the
+  // distribution, not on screen, and it is in docs/THIRD_PARTY_LICENSES.md.
+  // The chart services are here because their licences do require it.
+  const credits = [];
   enabledSources().forEach((source) => {
     if (source.attribution && !credits.includes(source.attribution)) {
       credits.push(source.attribution);
@@ -990,6 +998,19 @@ function refreshMapModeUi() {
   }
 }
 
+/*
+ * The buttons have to clear the footer strip, and how tall that is depends on
+ * how its three lines wrap - which depends on the screen, the font size the
+ * user has set, and how many chart layers are switched on. Measuring beats
+ * guessing a constant that is wrong on somebody's phone.
+ */
+function fitControlsAboveFooter() {
+  const footer = document.getElementById('footer');
+  if (!footer) return;
+  const height = Math.ceil(footer.getBoundingClientRect().height);
+  document.documentElement.style.setProperty('--controls-bottom', `${height + 10}px`);
+}
+
 // --- Boot ----------------------------------------------------------------
 
 function boot() {
@@ -1000,6 +1021,8 @@ function boot() {
   wireStoragePanel();
   wireToolbar();
   startTracking();
+  fitControlsAboveFooter();
+  window.addEventListener('resize', fitControlsAboveFooter);
 
   if ('serviceWorker' in navigator) {
     navigator.serviceWorker.register('sw.js').catch(() => {

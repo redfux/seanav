@@ -1,8 +1,8 @@
 {
   "id": "./index.html",
-  "name": "SeeNavi Bergen",
-  "short_name": "SeeNavi",
-  "description": "Orientierungshilfe für Bootsfahrten: Position, Kurs, Ziel und Tiefendaten, auch ohne Mobilfunkempfang.",
+  "name": "SeaGlimpse",
+  "short_name": "SeaGlimpse",
+  "description": "Orientierungshilfe für Bootsfahrten: Position, Kurs, Ziel und Tiefendaten, auch ohne Mobilfunkempfang. Kein Navigationssystem und kein Ersatz für Seekarte und Ausrüstung.",
   "lang": "de",
   "dir": "ltr",
   "start_url": "./index.html",

@@ -1,14 +1,20 @@
-# SeeNavi Bergen
+# SeaGlimpse
 
-Client-seitige, offline-fähige See-Navigations-App für die Region um Bergen.
-Läuft komplett im Browser, keine Server-Komponente, keine CDN-Abhängigkeiten,
-kein Build-Schritt.
+Client-seitige, offline-fähige Orientierungshilfe für Bootsfahrten. Läuft
+komplett im Browser, keine Server-Komponente, keine CDN-Abhängigkeiten, kein
+Build-Schritt.
 
 **Live:** https://redfux.github.io/seanav/
 
-> **Hinweis:** Die App ist ein Hilfsmittel zur Orientierung und **kein Ersatz**
-> für vorschriftsmäßige Seekarten und Ausrüstung an Bord. Kartengrundlage sind
-> georeferenzierte Rasterkarten, keine zertifizierten ENC-Vektordaten.
+> **Kein Navigationssystem.** Die App zeigt, wo das Boot ist und was die
+> Kartendienste ringsum zeichnen – mehr behauptet sie nicht. Sie ist **kein
+> Ersatz** für vorschriftsmäßige Seekarten und Ausrüstung an Bord, und die
+> Kartengrundlage sind fremde Kartendienste, keine zertifizierten
+> ENC-Vektordaten. Der Hinweis steht dauerhaft in der Fußzeile der App, nicht
+> nur hier.
+>
+> Der Ordnername im Repository lautet weiterhin `seanav`: er steckt in der
+> Adresse der installierten App, und ein Umbenennen würde sie brechen.
 
 ## Funktionsumfang
 
@@ -86,7 +92,7 @@ sich mit „Nicht jetzt" dauerhaft wegklicken.
   keine automatische Installation, deshalb beschreibt der Hinweis dort nur den
   Weg
 
-Installiert startet SeeNavi im Vollbild ohne Browserleiste, mit eigenem Icon
+Installiert startet SeaGlimpse im Vollbild ohne Browserleiste, mit eigenem Icon
 und – dank Service Worker – auch ohne Empfang.
 
 ### Kartenspeicher

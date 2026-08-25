@@ -5,12 +5,12 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https://tile.openstreetmap.org https://wms.geonorge.no https://ows.emodnet-bathymetry.eu https://ideihm.covam.es https://tiles.openseamap.org; connect-src 'self' https://tile.openstreetmap.org https://wms.geonorge.no https://ows.emodnet-bathymetry.eu https://ideihm.covam.es https://tiles.openseamap.org;">
-  <title>SeeNavi Bergen</title>
+  <title>SeaGlimpse</title>
   <link rel="stylesheet" href="vendor/leaflet.css">
   <link rel="stylesheet" href="style.css">
   <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#101418">
-  <meta name="description" content="Orientierungshilfe für Bootsfahrten: Position, Kurs, Ziel und Tiefendaten, auch ohne Mobilfunkempfang.">
+  <meta name="description" content="Orientierungshilfe für Bootsfahrten: Position, Kurs, Ziel und Tiefendaten, auch ohne Mobilfunkempfang. Kein Navigationssystem.">
   <!-- iOS reads none of the manifest: installed appearance, title and icon
        come from these instead. The status bar stays visible and opaque -
        "black-translucent" would run the map underneath the clock and the
@@ -18,7 +18,7 @@
   <link rel="icon" href="icons/icon.svg" type="image/svg+xml">
   <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
   <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-title" content="SeeNavi">
+  <meta name="apple-mobile-web-app-title" content="SeaGlimpse">
   <meta name="apple-mobile-web-app-status-bar-style" content="black">
   <meta name="mobile-web-app-capable" content="yes">
 </head>
@@ -104,8 +104,8 @@
        browser actually offers an installation and the hint was not dismissed. -->
   <section id="installbanner" class="card hidden" aria-live="polite">
     <h2 class="card-title">Als App installieren</h2>
-    <p class="card-text" id="install-text">Auf dem Homescreen startet SeeNavi ohne
-      Browserleiste und öffnet auch ohne Empfang.</p>
+    <p class="card-text" id="install-text">Auf dem Homescreen startet SeaGlimpse
+      ohne Browserleiste und öffnet auch ohne Empfang.</p>
     <div class="card-actions">
       <button id="btn-install" class="btn-text">Installieren</button>
       <button id="btn-install-later" class="btn-text btn-quiet">Nicht jetzt</button>
@@ -214,13 +214,22 @@
     </button>
   </div>
 
-  <div id="attribution"></div>
+
 
   <!-- Short-lived feedback for actions that otherwise leave no trace, e.g. a
        tap on the map that a fixed destination has ignored. -->
   <div id="snackbar" role="status" aria-live="polite"></div>
 
-  <div id="footer">thought up by human, coded by ai · v<span id="app-version"></span></div>
+  <!-- The warning is part of the app, not of a page nobody reads: it stays on
+       screen the whole time, above the credits it shares its strip with. -->
+  <!-- One strip along the bottom edge: credits, the standing warning, and who
+       built it. Together rather than stacked separately, so nothing can slide
+       over anything else when a line wraps on a narrow screen. -->
+  <footer id="footer">
+    <p id="attribution"></p>
+    <p id="disclaimer">Kein Navigationssystem – ersetzt Seekarte und Ausrüstung nicht</p>
+    <p id="colophon">SeaGlimpse · thought up by human, coded by ai · v<span id="app-version"></span></p>
+  </footer>
 
   <script src="vendor/leaflet.js"></script>
   <script src="js/version.js"></script>

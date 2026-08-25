@@ -18,6 +18,13 @@ in `features.md`, zum GRAFCAN-Fehler O12.)_
 
 ## Erledigt
 
+- **„brauchen wir langsam einen neuen Namen für die App … nimm ‚SeaGlimpse'
+  als neuen Namen … es muss unbedingt im Footer noch der Hinweis dauerhaft
+  erscheinen, dass die App nicht zum Navigieren genutzt werden darf"**
+  (2026-08-25) Umgesetzt in 0.19.0. Der Repository-Pfad bleibt `seanav`; einen
+  vom Pfad getrennten Anzeigenamen kennt GitHub nicht, dort lässt sich nur die
+  Beschreibung setzen.
+
 - **„ja, bau die IHM-Seekarte als weitere Ebene ein"** (2026-08-25)
   Umgesetzt in 0.18.0: Sublayer `grupo_2`, Kartenzweck folgt dem Zoom.
 

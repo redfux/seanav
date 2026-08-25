@@ -62,7 +62,7 @@ function showInstallBanner(mode) {
   if (mode === 'ios') {
     document.getElementById('install-text').textContent =
       'Im Browsermenü „Teilen“ antippen, dann „Zum Home-Bildschirm“. Danach ' +
-      'startet SeeNavi ohne Browserleiste und öffnet auch ohne Empfang.';
+      'startet SeaGlimpse ohne Browserleiste und öffnet auch ohne Empfang.';
     // No programmatic installation on iOS - a button that cannot do anything
     // is worse than no button.
     document.getElementById('btn-install').classList.add('hidden');

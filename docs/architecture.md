@@ -655,6 +655,30 @@ offen sind und sich aus keiner Dokumentation beantworten lassen:
 Voreingestellte Orte (Bergen, Las Palmas, Teneriffa Süd) machen den Vergleich
 zwischen den Revieren möglich, ohne hinzufahren.
 
+## Die Fußzeile trägt den Haftungshinweis
+
+Eine Warnung, die in einer readme steht, hat niemand gelesen, wenn es darauf
+ankommt. „Kein Navigationssystem – ersetzt Seekarte und Ausrüstung nicht" steht
+deshalb dauerhaft auf dem Bildschirm, in Warnfarbe und eine Spur größer als das
+Impressum darunter: groß genug zum Erfassen, klein genug, um der Karte nicht
+den Platz streitig zu machen.
+
+Kartennachweis, Hinweis und Impressum bilden **eine** Leiste am unteren Rand.
+Vorher lagen Nachweis und Fußzeile getrennt übereinander, jeder mit eigenem
+Abstand vom unteren Rand – und beim ersten längeren Nachweis schoben sie sich
+ineinander. In einer Leiste kann das nicht passieren.
+
+Wie hoch diese Leiste ist, hängt vom Umbruch ihrer drei Zeilen ab, und der
+hängt am Gerät, an der eingestellten Schriftgröße und daran, wie viele
+Kartenebenen eingeschaltet sind. `fitControlsAboveFooter()` misst sie deshalb
+und setzt `--controls-bottom` danach, statt eine Konstante zu raten, die auf
+irgendeinem Telefon falsch ist. Gemessen wird beim Start, bei jeder
+Größenänderung und bei jedem Ebenenwechsel.
+
+Leaflet steht nicht im Nachweis: BSD-2 verlangt den Vermerk in der Verteilung,
+nicht auf dem Bildschirm, und er steht in `THIRD_PARTY_LICENSES.md`. Die
+Kartendienste stehen dort, weil ihre Lizenzen es verlangen.
+
 ## Oberfläche: Material 3
 
 Grundlage ist Material 3 in dunkler Ausprägung, mit zwei bewussten

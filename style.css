@@ -49,9 +49,11 @@
   --inset-top: env(safe-area-inset-top, 0px);
   --inset-bottom: env(safe-area-inset-bottom, 0px);
 
-  /* Buttons on the left and on the right sit on one line, clear of the
-     credits strip and the footer below it. */
-  --controls-bottom: calc(var(--inset-bottom) + 66px);
+  /* Buttons on the left and on the right sit on one line, clear of the footer
+     strip. The strip's height depends on how its lines wrap, so app.js
+     measures it and overwrites this - the value here is what holds until the
+     first measurement. */
+  --controls-bottom: calc(var(--inset-bottom) + 82px);
 }
 
 * { box-sizing: border-box; }
@@ -607,12 +609,31 @@ html, body {
   right: 0;
   bottom: 0;
   z-index: 1000;
-  padding: 5px 10px calc(var(--inset-bottom) + 5px);
-  font-size: 11px;
+  padding: 4px 10px calc(var(--inset-bottom) + 5px);
   text-align: center;
-  color: var(--md-on-surface-variant);
   background: color-mix(in srgb, var(--md-surface) 82%, transparent);
   pointer-events: none;
+}
+
+#footer p { margin: 0; }
+
+/*
+ * What this app is not. It stays on screen for good, because a warning that
+ * lives in a readme is a warning nobody has read when it matters. Set in the
+ * caution colour and a shade larger than the colophon under it - enough to be
+ * read at a glance, not enough to compete with the chart.
+ */
+#disclaimer {
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.25;
+  color: #ffc14d;
+}
+
+#colophon {
+  font-size: 11px;
+  line-height: 1.3;
+  color: var(--md-on-surface-variant);
 }
 
 /* --- Zoom and credits ----------------------------------------------------- */
@@ -649,25 +670,19 @@ html, body {
 .zoom-btn[disabled] { opacity: 0.4; cursor: default; }
 
 /*
- * Map credits. Required by the licences of all three services, so this is not
- * decoration: it sits above the footer, outside the map, and is rebuilt from
- * the layers actually switched on.
+ * Map credits. Required by the licences of every service in use, so this is
+ * not decoration: it is rebuilt from the layers actually switched on and lives
+ * in the footer strip, outside the map - inside it would sit at the corner of
+ * the oversized container and turn along with it.
  */
 #attribution {
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: calc(var(--inset-bottom) + 22px);
-  z-index: 1000;
-  padding: 2px 10px;
-  font-size: 10px;
-  line-height: 1.3;
-  text-align: center;
+  font-size: 9.5px;
+  line-height: 1.25;
   color: var(--md-on-surface-variant);
-  background: color-mix(in srgb, var(--md-surface) 82%, transparent);
 }
 
-#attribution a { color: var(--md-primary); }
+/* The strip takes no taps; its links do. */
+#attribution a { color: var(--md-primary); pointer-events: auto; }
 
 /* --- Leaflet integration -------------------------------------------------- */
 

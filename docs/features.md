@@ -2,8 +2,10 @@
 
 ## Zweck
 
-Orientierungshilfe für Bootsfahrten in der Region Bergen, nutzbar ohne
-Mobilfunkempfang. Kein Ersatz für vorschriftsmäßige Seekarten und Ausrüstung.
+Orientierungshilfe für Bootsfahrten, nutzbar ohne Mobilfunkempfang. **Kein
+Navigationssystem** und kein Ersatz für vorschriftsmäßige Seekarten und
+Ausrüstung – der Name der App sagt das mit, seit sie SeaGlimpse heißt, und die
+Fußzeile sagt es dauerhaft.
 
 ## Umgesetzt
 
@@ -24,6 +26,7 @@ Mobilfunkempfang. Kein Ersatz für vorschriftsmäßige Seekarten und Ausrüstung
 | F13 | Tiefenzonen, Lotungen, Grunde, Schären und Tiefenlinien aus dem Kartverket-Tiefendaten-WMS | 0.4.0 |
 | F32 | Tiefenlinien für europäische Gewässer aus dem EMODnet-Bathymetry-WMS – deckt Kanaren und Mittelmeer mit ab | 0.17.0 |
 | F33 | Offizielle spanische Seekarte (IHM) als Ebene: Lotungen, Felsen, Wracks, Hindernisse, Tiefenlinien; Kartenzweck folgt dem Zoom | 0.18.0 |
+| F34 | Dauerhafter Hinweis in der Fußzeile, dass die App kein Navigationssystem ist | 0.19.0 |
 | F14 | Seezeichen (Tonnen, Baken, Feuer) aus OpenSeaMap | 0.4.0 |
 | F15 | Kartenebenen einzeln ein-/ausschaltbar, Auswahl bleibt erhalten | 0.4.0 |
 | F16 | Kachelspeicher nach Ebene aufgeschlüsselt, manuell leerbar | 0.4.0 |

@@ -6,6 +6,39 @@ Versionierung nach [SemVer](https://semver.org/lang/de/).
 Die Versionsnummer wird ausschließlich in `js/version.js` gepflegt; Footer und
 Service-Worker-Cachename leiten sich automatisch daraus ab.
 
+## [0.19.0] – 2026-08-25
+
+### Changed
+
+- **Die App heißt SeaGlimpse.** „SeeNavi" hat behauptet, was sie ausdrücklich
+  nicht ist – ein Navigationssystem. Umbenannt sind Manifest (`name`,
+  `short_name`, Beschreibung), Seitentitel, iOS-App-Titel, Installationshinweis
+  und Fußzeile, dazu `readme.md` und die Wartungsseiten. Der Ordnername im
+  Repository bleibt `seanav`: er steckt in der Adresse der installierten App.
+- Die Speicherschlüssel behalten ihr altes Präfix (`seenavi-tiles`,
+  `seenavi.*`). Sie sind unsichtbar, und ein Umbenennen würde Kachelspeicher
+  und Einstellungen wegwerfen.
+
+### Added
+
+- **Der Haftungshinweis steht jetzt dauerhaft in der App**, nicht nur in der
+  readme: „Kein Navigationssystem – ersetzt Seekarte und Ausrüstung nicht", in
+  Warnfarbe über dem Impressum. Eine Warnung, die in einer readme steht, hat
+  niemand gelesen, wenn es darauf ankommt.
+
+### Fixed
+
+- Kartennachweis und Fußzeile bilden eine Leiste statt zweier getrennt
+  positionierter Zeilen – mit fünf Kartenebenen wurde der Nachweis so lang,
+  dass er sich über die Fußzeile schob.
+- Die Schaltflächen richten sich nach der **gemessenen** Höhe dieser Leiste,
+  statt nach einer Konstanten: wie hoch sie ist, hängt vom Umbruch ab und der
+  vom Gerät, von der Schriftgröße und von der Zahl eingeschalteter Ebenen.
+  Gemessen wird beim Start, bei Größenänderung und bei jedem Ebenenwechsel.
+- Leaflet steht nicht mehr im Nachweis auf dem Bildschirm: BSD-2 verlangt den
+  Vermerk in der Verteilung, und dort steht er (`THIRD_PARTY_LICENSES.md`).
+  Das spart der Karte eine Zeile.
+
 ## [0.18.0] – 2026-08-25
 
 ### Added
