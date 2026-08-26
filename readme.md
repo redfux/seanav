@@ -36,6 +36,8 @@ Build-Schritt.
 - Marken von 200 m bis 10 km auf der Kurslinie, mit der jeweils benötigten Fahrzeit – je nach Zoomstufe die nahen oder die fernen
 - Angesehene Kartenausschnitte bleiben ohne Empfang verfügbar
 - Als App installierbar (PWA) – startet dann ohne Browserleiste
+- Vollbild auf Knopfdruck (Symbol rechts unten in der Fußleiste), wenn die
+  Systemleisten des Telefons stören
 
 ## Setup
 

@@ -630,7 +630,42 @@ html, body {
   color: #ffc14d;
 }
 
+/*
+ * Fullscreen toggle. Android gives no way to hide the bottom system bar on its
+ * own - the Fullscreen API takes both bars or neither - so this is the choice
+ * made explicit: the app normally runs with the phone's bars visible (clock,
+ * battery), and one tap trades them for the whole screen.
+ *
+ * It lives in the corner of the footer strip: needed once when casting off,
+ * never while steering, so it does not deserve a place among the map buttons.
+ */
+#btn-fullscreen {
+  position: absolute;
+  right: 6px;
+  bottom: calc(var(--inset-bottom) + 4px);
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: none;
+  background: none;
+  color: var(--md-on-surface-variant);
+  cursor: pointer;
+  pointer-events: auto;
+}
+
+#btn-fullscreen .icon { width: 18px; height: 18px; }
+#btn-fullscreen:active { color: var(--md-primary); }
+#btn-fullscreen.hidden { display: none; }
+
 #colophon {
+  /* Um die Breite des Vollbild-Knopfes eingerückt, damit die Zeile auch auf
+     schmalen Geräten nicht unter ihn läuft - und ohne den Namen der App, der
+     im Titel und im Task-Switcher ohnehin steht: mit ihm brach die Zeile um
+     und die Leiste wuchs um 14 Pixel, die der Karte fehlen. */
+  padding: 0 34px;
   font-size: 11px;
   line-height: 1.3;
   color: var(--md-on-surface-variant);

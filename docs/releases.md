@@ -6,6 +6,22 @@ Versionierung nach [SemVer](https://semver.org/lang/de/).
 Die Versionsnummer wird ausschließlich in `js/version.js` gepflegt; Footer und
 Service-Worker-Cachename leiten sich automatisch daraus ab.
 
+## [0.20.0] – 2026-08-25
+
+### Added
+
+- **Vollbild auf Knopfdruck**, als Schalter in der Ecke der Fußleiste. Anlass
+  war die weiße Systemleiste unten: sie allein ausblenden geht nicht – die
+  Fullscreen-API nimmt beide Leisten oder keine, und Androids selektiven
+  Immersive-Modus erreicht eine Webseite nicht. Statt das im Manifest
+  festzuschreiben (`display: fullscreen` kostete Uhr und Akkustand) steht der
+  Tausch jetzt zur Wahl: normal laufen die Systemleisten mit, ein Tipp gibt den
+  ganzen Bildschirm.
+- Der Knopf erscheint nur, wo `document.fullscreenEnabled` es zulässt – iOS
+  gibt Vollbild allein an Video-Elemente. Beim Wechsel ändern sich die
+  Safe-Area-Ränder, deshalb werden Leistenhöhe und Kartengröße danach neu
+  vermessen.
+
 ## [0.19.2] – 2026-08-25
 
 ### Changed

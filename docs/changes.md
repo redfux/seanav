@@ -14,6 +14,9 @@ wird hier nichts.
   einer installierten App selbst. In 0.19.2 sind alle Angaben gesetzt, die
   greifen können; bleibt sie hell, liegt es an Chromes Design-Einstellung.
   Siehe O13 in `features.md`.
+- **„und nur den unteren Streifen ausblenden geht nicht?"** (2026-08-25)
+  Nein – die Fullscreen-API nimmt beide Leisten oder keine. Als Ausweg ein
+  Vollbildschalter in der Fußleiste, umgesetzt in 0.20.0.
 
 - **„wenn sich die Karte dreht, drehen sich nicht die Seezeichen und
   Tiefenangaben, die stehen dann schief/auf dem Kopf. ist das anpassbar?"**

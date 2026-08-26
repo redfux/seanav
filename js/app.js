@@ -999,6 +999,47 @@ function refreshMapModeUi() {
 }
 
 /*
+ * Fullscreen.
+ *
+ * Android has no way to hide the bottom system bar by itself: the Fullscreen
+ * API takes both bars or neither, and the selective immersive mode Android
+ * apps use is not reachable from a web page. So the trade is made explicit -
+ * normally the phone's bars stay visible, because clock and battery belong on
+ * a boat, and one tap gives the whole screen instead.
+ *
+ * Only offered where the browser actually has fullscreen to give: iOS grants
+ * it to video elements alone, and a button that cannot do anything is worse
+ * than no button.
+ */
+function wireFullscreen() {
+  const button = document.getElementById('btn-fullscreen');
+  if (!document.fullscreenEnabled) return;
+  button.classList.remove('hidden');
+
+  button.addEventListener('click', () => {
+    if (document.fullscreenElement) {
+      document.exitFullscreen().catch(() => { /* already on the way out */ });
+    } else {
+      // Needs a user gesture, which a click is - a refusal is not worth a
+      // message, the button simply stays as it was.
+      document.documentElement.requestFullscreen().catch(() => {});
+    }
+  });
+
+  document.addEventListener('fullscreenchange', () => {
+    const on = !!document.fullscreenElement;
+    button.setAttribute('aria-pressed', on ? 'true' : 'false');
+    button.title = on ? 'Vollbild beenden' : 'Vollbild';
+    document.getElementById('ic-fullscreen-use')
+      .setAttribute('href', on ? '#ic-fullscreen-exit' : '#ic-fullscreen');
+    // The safe areas change with the system bars, so the strip below the
+    // buttons is a different height now.
+    fitControlsAboveFooter();
+    map.invalidateSize({ animate: false });
+  });
+}
+
+/*
  * The buttons have to clear the footer strip, and how tall that is depends on
  * how its three lines wrap - which depends on the screen, the font size the
  * user has set, and how many chart layers are switched on. Measuring beats
@@ -1021,6 +1062,7 @@ function boot() {
   wireStoragePanel();
   wireToolbar();
   startTracking();
+  wireFullscreen();
   fitControlsAboveFooter();
   window.addEventListener('resize', fitControlsAboveFooter);
 

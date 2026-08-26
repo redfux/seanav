@@ -353,8 +353,18 @@ Edge-to-Edge-Fall neuerer Android-Versionen und `theme-color` zusätzlich mit
 `media`-Varianten für `prefers-color-scheme` und `display-mode: standalone`,
 die manche Chrome-Versionen für die Systemleisten heranziehen. Bleibt die
 Leiste hell, hilft nur das Thema von Chrome selbst (Einstellungen → Design →
-Dunkel) – oder `display: fullscreen`, das beide Leisten wieder ausblendet und
-damit auch Uhr und Akkustand.
+Dunkel).
+
+**Nur die untere Leiste ausblenden geht nicht.** Die Fullscreen-API nimmt beide
+Leisten oder keine, und Androids selektiven Immersive-Modus, mit dem native
+Apps einzelne Leisten verstecken, erreicht eine Webseite nicht. Statt das im
+Manifest festzuschreiben – `display: fullscreen` hatte genau diesen Preis und
+kostete Uhr und Akkustand – steht der Tausch jetzt als Schalter in der Ecke der
+Fußleiste: normal laufen die Systemleisten mit, ein Tipp gibt den ganzen
+Bildschirm. Der Knopf erscheint nur, wo `document.fullscreenEnabled` es
+zulässt; iOS gibt Vollbild allein an Video-Elemente, und ein Knopf, der nichts
+kann, ist schlimmer als keiner. Beim Wechsel ändern sich die Safe-Area-Ränder,
+deshalb werden Leistenhöhe und Kartengröße danach neu vermessen.
 
 ### Icons
 

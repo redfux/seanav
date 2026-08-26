@@ -77,6 +77,16 @@
         <path d="M6 12h12" fill="none" stroke="currentColor"
               stroke-width="2.2" stroke-linecap="round"></path>
       </g>
+      <g id="ic-fullscreen">
+        <path d="M3.6 9V3.6H9M15 3.6h5.4V9M20.4 15v5.4H15M9 20.4H3.6V15"
+              fill="none" stroke="currentColor" stroke-width="2"
+              stroke-linecap="round" stroke-linejoin="round"></path>
+      </g>
+      <g id="ic-fullscreen-exit">
+        <path d="M9 3.6V9H3.6M15 9V3.6M15 9h5.4M15 20.4V15h5.4M9 15v5.4M9 15H3.6"
+              fill="none" stroke="currentColor" stroke-width="2"
+              stroke-linecap="round" stroke-linejoin="round"></path>
+      </g>
       <g id="ic-chevron">
         <path d="M6.5 9.5 12 15l5.5-5.5" fill="none" stroke="currentColor"
               stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"></path>
@@ -238,7 +248,13 @@
   <footer id="footer">
     <p id="attribution"></p>
     <p id="disclaimer">Kein Navigationssystem – ersetzt Seekarte und Ausrüstung nicht</p>
-    <p id="colophon">SeaGlimpse · thought up by human, coded by ai · v<span id="app-version"></span></p>
+    <p id="colophon">thought up by human, coded by ai · v<span id="app-version"></span></p>
+    <!-- Sits in the footer strip rather than among the map buttons: it is used
+         once at the start of a trip, not while steering. Hidden where the
+         browser has no fullscreen to give. -->
+    <button id="btn-fullscreen" class="hidden" title="Vollbild" aria-label="Vollbild" aria-pressed="false">
+      <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><use id="ic-fullscreen-use" href="#ic-fullscreen"></use></svg>
+    </button>
   </footer>
 
   <script src="vendor/leaflet.js"></script>

@@ -44,6 +44,7 @@ Fußzeile sagt es dauerhaft.
 | F32 | Tiefenlinien für europäische Gewässer aus dem EMODnet-Bathymetry-WMS – deckt Kanaren und Mittelmeer mit ab | 0.17.0 |
 | F33 | Offizielle spanische Seekarte (IHM) als Ebene: Lotungen, Felsen, Wracks, Hindernisse, Tiefenlinien; Kartenzweck folgt dem Zoom | 0.18.0 |
 | F34 | Dauerhafter Hinweis in der Fußzeile, dass die App kein Navigationssystem ist | 0.19.0 |
+| F35 | Vollbild auf Knopfdruck: blendet beide Systemleisten aus und gibt den ganzen Bildschirm der Karte | 0.20.0 |
 | --- | --- | --- |
 
 ## Nichtfunktionale Anforderungen
@@ -70,5 +71,5 @@ Fußzeile sagt es dauerhaft.
 | O10 | Tiefenlinien im küstennahen Flachwasser. Nicht durch Code lösbar – der Dienst liefert dort nachweislich eine leere Konturkachel, siehe B8 in `bugs.md`. Die Tiefeninformation steckt küstennah in den Tiefenzonen | extern begrenzt |
 | O11 | Beschriftungen der Kartendienste (Tiefenzahlen, Ortsnamen, Seezeichen) stehen bei gedrehter Karte schief. Nicht behebbar, solange die Ebenen Rasterkacheln sind – die Beschriftung ist ins Bild gezeichnet. Aufrecht nur mit einer vektorbasierten Renderschicht | technisch begrenzt |
 | O12 | GRAFCAN-Topobathymetrie (Kanaren, 2,5 m): Capabilities in Ordnung, GetMap antwortet mit `ServiceExceptionReport`. Grund ist mit dem Prüfstand aus 0.17.0 auszulesen | offen |
-| O13 | Untere Systemleiste von Android in der installierten App einfärben. Chrome bestimmt sie dort selbst; weder Manifest noch CSS setzen sie zuverlässig. Alles, was greifen kann, ist gesetzt (0.19.2) | extern begrenzt |
+| O13 | Untere Systemleiste von Android in der installierten App einfärben oder allein ausblenden. Chrome bestimmt die Farbe dort selbst; die Fullscreen-API nimmt beide Leisten oder keine. Alles Setzbare ist gesetzt (0.19.2), als Ausweg gibt es den Vollbildschalter (F35) | extern begrenzt |
 | --- | --- | --- |
