@@ -26,6 +26,12 @@ wird hier nichts.
 
 ## Erledigt
 
+- **„es kommt manchmal vor, dass sich das Boot trotz gleichmäßiger
+  Geradeausfahrt spontan dreht … evtl. hilft es, wenn man die Reaktionszeit
+  beim Kurswechsel etwas sanfter gestaltet"** (2026-08-26)
+  Nachgemessen und behoben in 0.20.1: mittlere Kursabweichung von 69° auf 9°,
+  siehe B9 in `bugs.md`.
+
 - **„jetzt prüfe bitte nochmal alle Doku auf Aktualität und passe bei Bedarf
   an"** (2026-08-25) Durchgang über readme und alle Dateien in `docs/`;
   Korrekturen in 0.19.1, veraltete Wartungsseite entfernt.

@@ -16,6 +16,28 @@ in `features.md`.)_
 
 ## Behoben
 
+### B9 – Boot drehte sich spontan bei Geradeausfahrt
+
+**Symptom:** Bei gleichmäßiger Geradeausfahrt drehte sich das Bootssymbol
+gelegentlich sprunghaft, ohne dass sich am Kurs etwas geändert hatte.
+
+**Ursache, nachgerechnet.** Der Kurs entstand aus der Peilung zwischen den
+**letzten beiden** Fixes, verworfen wurde nur, was weniger als **1 m**
+auseinanderlag – und der gemeldete Gerätekurs wurde völlig ungeglättet
+übernommen, obwohl der Kommentar an der Variablen „smoothed" behauptete. Ein
+GPS-Fix streut um einige Meter; bei 5 kn liegen zwei Fixes 2,5 m auseinander.
+Damit ist der Fehler so groß wie die Strecke selbst.
+
+Simulierte Geradeausfahrt (90°, 5 kn, σ = 3 m, 60 Fixes) durch den alten Code:
+mittlere Kursabweichung **69,4°**, Maximum **178,2°**. Das Boot zeigte
+zeitweise genau rückwärts.
+
+**Behoben in 0.20.1** durch Mindestgeschwindigkeit, lange Basislinie und ein
+zirkuläres gleitendes Mittel – die Begründung steht in `architecture.md`.
+Dieselbe Fahrt danach: **9,4°** mittlere Abweichung, Maximum **25,5°**; bei
+2 kn 12,3° und 52,7°. Erkauft mit Nachlauf: eine harte Wende um 90° ist nach
+9 s auf ±10° eingeschwungen.
+
 ### B8 – Tiefenlinien im Flachwasser: gemessen, nicht mehr vermutet
 
 **Symptom:** Küstennah zeigte die Konturebene nichts, obwohl Lotungen und

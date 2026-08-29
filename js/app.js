@@ -74,8 +74,39 @@ const MIN_MARK_SPACING_PX = 34;
  */
 const MARK_TIME_OFFSET_PX = 34;
 const MARK_DISTANCE_OFFSET_PX = 13;
-const SPEED_SMOOTHING_SAMPLES = 6;   // moving average window for speed/heading
+/*
+ * How many fixes are kept. The speed only ever looks at the last two, the
+ * heading at as many as it needs to get a long enough baseline - at slow speed
+ * that is most of them, which is why the history is longer than the six the
+ * speed used to need.
+ */
+const FIX_HISTORY_SAMPLES = 15;
 const STALE_FIX_MS = 8000;           // GPS fix older than this counts as lost
+
+/*
+ * Heading. A GPS fix scatters by a few metres even standing still, and a
+ * course computed from two fixes a second apart divides that scatter by the
+ * distance covered in between. At 5 kn that distance is 2,5 m - the same order
+ * as the scatter itself - so the computed course swings wildly while the boat
+ * runs dead straight. That is what makes the boat spin on screen.
+ *
+ * Three things against it, in the order they take effect:
+ *
+ *  - MIN_HEADING_SPEED_MS: below this there is no course worth computing at
+ *    all, and the last one is kept rather than replaced by noise.
+ *  - MIN_HEADING_BASELINE_M: the course is taken over the longest stretch in
+ *    the sample window instead of between the last two fixes, and only once
+ *    that stretch is clearly longer than the scatter. Over 12 m the same few
+ *    metres of error tilt the line by a few degrees, not by fifty.
+ *  - HEADING_SMOOTHING: a circular moving average over the result. Angles
+ *    cannot be averaged as numbers - 359 and 1 degrees average to 180, the
+ *    opposite direction - so the average runs over the unit vector and the
+ *    angle is read back from it.
+ */
+const MIN_HEADING_SPEED_MS = 0.5;    // ~1 kn
+const MIN_HEADING_BASELINE_M = 12;
+const MIN_HEADING_BASELINE_SLOW_M = 5;
+const HEADING_SMOOTHING = 0.35;
 
 /*
  * A destination that has stood untouched for this long is taken to be the one
@@ -123,6 +154,7 @@ let snackTimer = null;
 let lastFixes = [];      // recent {lat, lng, t} samples for smoothing
 let currentSpeedMs = 0;  // smoothed speed in m/s
 let currentHeadingDeg = null; // smoothed course over ground in degrees
+let headingVector = null;     // unit vector of the smoothed heading, see updateHeading()
 let watchId = null;
 
 // --- Geodesy helpers -----------------------------------------------------
@@ -330,7 +362,7 @@ function onPosition(pos) {
   const fix = { lat: latitude, lng: longitude, t: now };
 
   lastFixes.push(fix);
-  if (lastFixes.length > SPEED_SMOOTHING_SAMPLES) lastFixes.shift();
+  if (lastFixes.length > FIX_HISTORY_SAMPLES) lastFixes.shift();
 
   // Prefer the device's own speed/heading if it reports them (usually more
   // accurate at low speed than deriving from two nearby GPS points), else
@@ -341,11 +373,16 @@ function onPosition(pos) {
     currentSpeedMs = smooth(currentSpeedMs, derivedSpeed());
   }
 
-  if (typeof heading === 'number' && heading !== null && !Number.isNaN(heading)) {
-    currentHeadingDeg = heading;
-  } else {
-    const derived = derivedHeading();
-    if (derived !== null) currentHeadingDeg = derived;
+  /*
+   * The device's own heading gets the same treatment as a derived one: it is
+   * computed from the same noisy positions and jitters just as much. Below
+   * walking pace neither is worth anything, and the last known heading stays -
+   * a boat lying still keeps pointing where it last pointed.
+   */
+  if (currentSpeedMs >= MIN_HEADING_SPEED_MS) {
+    const reported = (typeof heading === 'number' && heading !== null &&
+      !Number.isNaN(heading)) ? heading : null;
+    updateHeading(reported !== null ? reported : derivedHeading());
   }
 
   setGpsStatus('Fix ok');
@@ -374,12 +411,63 @@ function derivedSpeed() {
   return dist / dt;
 }
 
+/*
+ * Course over a stretch long enough to be movement rather than scatter. The
+ * search walks back from the newest fix and stops at the first one far enough
+ * away: that is the shortest sufficient baseline, and therefore the one that
+ * lags least behind a turn.
+ *
+ * Slowly enough - a couple of knots - even the whole history does not add up
+ * to twelve metres. Rather than freezing the heading there, the longest
+ * stretch available is used as long as it clears a lower floor; the scatter
+ * then bites harder, but the moving average behind this catches most of it,
+ * and a wrong-ish heading at two knots costs less than one that stopped
+ * updating an hour ago.
+ */
 function derivedHeading() {
   if (lastFixes.length < 2) return null;
-  const a = lastFixes[lastFixes.length - 2];
-  const b = lastFixes[lastFixes.length - 1];
-  if (haversineDistance(a, b) < 1) return null; // too little movement, keep old heading
-  return bearingBetween(a, b);
+  const to = lastFixes[lastFixes.length - 1];
+  for (let i = lastFixes.length - 2; i >= 0; i--) {
+    if (haversineDistance(lastFixes[i], to) >= MIN_HEADING_BASELINE_M) {
+      return bearingBetween(lastFixes[i], to);
+    }
+  }
+  const oldest = lastFixes[0];
+  if (haversineDistance(oldest, to) >= MIN_HEADING_BASELINE_SLOW_M) {
+    return bearingBetween(oldest, to);
+  }
+  return null;
+}
+
+/*
+ * Circular moving average of the heading. Averaging degrees directly breaks at
+ * the wrap - 359 and 1 average to 180, exactly the wrong way - so the average
+ * is kept as a unit vector and the angle read back from it. That also damps by
+ * itself: a single fix pointing the opposite way shortens the vector instead
+ * of turning it.
+ *
+ * If the vector does collapse - the readings really are pointing every which
+ * way - the direction it holds means nothing, and it starts over from the
+ * current reading.
+ */
+function updateHeading(headingDeg) {
+  if (headingDeg === null) return;
+  const rad = toRad(headingDeg);
+  const x = Math.sin(rad);
+  const y = Math.cos(rad);
+
+  if (!headingVector) {
+    headingVector = { x, y };
+  } else {
+    headingVector = {
+      x: headingVector.x + HEADING_SMOOTHING * (x - headingVector.x),
+      y: headingVector.y + HEADING_SMOOTHING * (y - headingVector.y),
+    };
+    if (Math.hypot(headingVector.x, headingVector.y) < 0.05) {
+      headingVector = { x, y };
+    }
+  }
+  currentHeadingDeg = (toDeg(Math.atan2(headingVector.x, headingVector.y)) + 360) % 360;
 }
 
 // --- Map drawing -----------------------------------------------------------

@@ -6,6 +6,34 @@ Versionierung nach [SemVer](https://semver.org/lang/de/).
 Die Versionsnummer wird ausschließlich in `js/version.js` gepflegt; Footer und
 Service-Worker-Cachename leiten sich automatisch daraus ab.
 
+## [0.20.1] – 2026-08-26
+
+### Fixed
+
+- **Das Boot drehte sich bei Geradeausfahrt.** Der Kurs kam aus der Peilung
+  zwischen den letzten beiden Fixes, und der gemeldete Gerätekurs wurde
+  ungeglättet übernommen. Ein GPS-Fix streut um einige Meter, bei 5 kn liegen
+  zwei Fixes 2,5 m auseinander – der Fehler war so groß wie die Strecke.
+  Nachgerechnet an simulierter Geradeausfahrt (90°, 5 kn, σ = 3 m): mittlere
+  Abweichung **69,4°**, Ausreißer bis **178,2°**, das Boot zeigte zeitweise
+  rückwärts.
+- Der Kurs entsteht jetzt aus einer Basislinie von mindestens 12 m statt aus
+  zwei benachbarten Fixes, wird unterhalb von 0,5 m/s gar nicht mehr
+  angefasst – ein liegendes Boot zeigt weiter dorthin, wohin es zuletzt zeigte
+  – und läuft anschließend durch ein **zirkuläres** gleitendes Mittel, das
+  über den Einheitsvektor rechnet und deshalb am Nulldurchgang nicht kippt.
+  Der Gerätekurs geht denselben Weg; er stammt aus denselben verrauschten
+  Positionen.
+- Dieselbe simulierte Fahrt danach: **9,4°** mittlere Abweichung, Maximum
+  **25,5°**. Bei 2 kn, wo die Basislinie nicht mehr voll zusammenkommt und die
+  längste vorhandene genommen wird: 12,3° und 52,7°.
+- Der Preis ist Nachlauf: eine harte Wende von 90° auf 180° ist nach **9 s**
+  auf ±10° eingeschwungen. Für ein Boot der richtige Tausch – eine echte Wende
+  dauert länger als die Anzeige.
+- Die Fix-Historie ist von 6 auf 15 Einträge gewachsen, damit die Basislinie
+  auch bei langsamer Fahrt zusammenkommt. Die Geschwindigkeit schaut wie bisher
+  nur auf die letzten beiden.
+
 ## [0.20.0] – 2026-08-25
 
 ### Added

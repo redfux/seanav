@@ -551,15 +551,53 @@ kann, will man vor dem Ablegen wissen, nicht danach.
 
 ## Genauigkeit und Glättung
 
-`onPosition()` bevorzugt `speed`/`heading` des Geräts, weil diese bei
-langsamer Fahrt meist genauer sind als eine Ableitung aus zwei nahe
-beieinanderliegenden GPS-Punkten. Fehlen sie, wird aus den letzten Fixes
-gerechnet, wobei Bewegungen unter 1 m für den Kurs verworfen werden, damit
-GPS-Rauschen im Stillstand die Kurslinie nicht rotieren lässt.
+**Geschwindigkeit.** `onPosition()` bevorzugt `speed` des Geräts und rechnet
+sonst aus den letzten beiden Fixes. Geglättet wird per exponentiellem
+gleitendem Mittel (α = 0,35): kostet etwas Reaktionszeit, hält die Anzeige
+dafür ruhig genug zum Ablesen.
 
-Geglättet wird per exponentiellem gleitendem Mittel (α = 0,35). Das kostet
-etwas Reaktionszeit – bei Anlegemanövern können Werte sichtbar nachlaufen –
-hält die Anzeige dafür aber ruhig genug zum Ablesen.
+**Kurs.** Der teuerste Teil, denn hier teilt sich Rauschen durch eine kleine
+Zahl. Ein GPS-Fix streut auch im Stillstand um einige Meter; ein Kurs aus zwei
+Fixes im Sekundenabstand dividiert diese Streuung durch die Strecke dazwischen,
+und die beträgt bei 5 kn ganze 2,5 m. Gemessen an simulierter Geradeausfahrt
+mit σ = 3 m Positionsrauschen ergab das eine mittlere Kursabweichung von
+**69°** und Ausreißer bis **178°** – das Boot zeigte zeitweise rückwärts.
+
+Drei Stufen dagegen, in dieser Reihenfolge:
+
+1. **Mindestgeschwindigkeit** (`MIN_HEADING_SPEED_MS`, 0,5 m/s ≈ 1 kn). Darunter
+   gibt es keinen Kurs, der die Rechnung lohnt; der letzte bleibt stehen. Ein
+   liegendes Boot zeigt weiter dorthin, wohin es zuletzt zeigte.
+2. **Lange Basislinie** (`MIN_HEADING_BASELINE_M`, 12 m). Gesucht wird rückwärts
+   ab dem neuesten Fix der erste, der weit genug entfernt liegt – die kürzeste
+   ausreichende Strecke, also die mit dem geringsten Nachlauf. Über 12 m kippen
+   dieselben drei Meter Fehler die Linie um wenige Grad statt um fünfzig.
+   Langsam genug summiert selbst die ganze Historie keine 12 m; dann wird die
+   längste vorhandene Strecke genommen, sofern sie 5 m überschreitet – ein
+   ungenauer Kurs bei zwei Knoten kostet weniger als einer, der vor einer
+   Stunde stehen geblieben ist.
+3. **Zirkuläres gleitendes Mittel** (`HEADING_SMOOTHING`, α = 0,35). Winkel
+   lassen sich nicht als Zahlen mitteln – 359° und 1° ergäben 180°, die
+   Gegenrichtung –, deshalb läuft das Mittel über den Einheitsvektor, aus dem
+   der Winkel zurückgelesen wird. Das dämpft von selbst: ein einzelner
+   Ausreißer verkürzt den Vektor, statt ihn zu drehen. Kollabiert der Vektor
+   ganz, weil die Messungen wirklich in alle Richtungen zeigen, beginnt er beim
+   aktuellen Wert neu.
+
+Auch der vom Gerät gemeldete Kurs läuft durch dieselbe Kette: er stammt aus
+denselben verrauschten Positionen und zittert genauso.
+
+Gemessen nach dem Umbau, gleiche simulierte Fahrt:
+
+| Fall | mittlere Abweichung | Maximum |
+| --- | --- | --- |
+| vorher, 5 kn | 69,4° | 178,2° |
+| nachher, 5 kn | 9,4° | 25,5° |
+| nachher, 2 kn | 12,3° | 52,7° |
+
+Der Preis ist Nachlauf: eine harte Wende von 90° auf 180° ist nach **9 s** auf
+±10° eingeschwungen. Für ein Boot ist das der richtige Tausch – eine echte
+Wende dauert ohnehin länger als die Anzeige.
 
 Distanz und Peilung über Haversine bzw. Großkreis-Anfangspeilung auf einer
 Kugel mit R = 6.371 km. Der Fehler gegenüber einem Ellipsoidmodell liegt bei
