@@ -355,20 +355,26 @@ function wireLayerPanel() {
  * which the app otherwise never does - hence only ever on an explicit tap,
  * and with the referrer withheld.
  */
-const AIS_MAP_BASE = 'https://www.vesselfinder.com/';
-const AIS_MAP_MIN_ZOOM = 3;
-const AIS_MAP_MAX_ZOOM = 18;
+/*
+ * The address has to be one the target site itself puts in its address bar,
+ * not one that merely looks plausible: measured on the water, VesselFinder
+ * ignored lat/lon/zoom entirely and opened wherever the browser had last left
+ * it - its map keeps no state in the URL at all (panning there does not change
+ * the address). MarineTraffic does: these path segments are the form its own
+ * share links have, which is why they survive a cold open.
+ */
+const AIS_MAP_BASE = 'https://www.marinetraffic.com/en/ais/home/';
+const AIS_MAP_NAME = 'MarineTraffic';
+const AIS_MAP_MIN_ZOOM = 2;
+const AIS_MAP_MAX_ZOOM = 17;
 
 function aisMapUrl() {
   const centre = map.getCenter();
   // Their map stops outside this band and would answer with its default view.
   const zoom = Math.min(AIS_MAP_MAX_ZOOM, Math.max(AIS_MAP_MIN_ZOOM, Math.round(map.getZoom())));
-  const params = new URLSearchParams({
-    lat: centre.lat.toFixed(5),
-    lon: centre.lng.toFixed(5),
-    zoom: String(zoom),
-  });
-  return `${AIS_MAP_BASE}?${params.toString()}`;
+  // Segments, not query parameters - and centerx is the longitude.
+  return `${AIS_MAP_BASE}centerx:${centre.lng.toFixed(5)}`
+    + `/centery:${centre.lat.toFixed(5)}/zoom:${zoom}`;
 }
 
 function refreshAisLink() {
@@ -379,7 +385,8 @@ function refreshAisLink() {
   link.href = offline ? AIS_MAP_BASE : aisMapUrl();
   document.getElementById('ais-hint').textContent = offline
     ? 'Ohne Empfang nicht möglich – die Schiffskarte kommt aus dem Netz.'
-    : 'Öffnet den gezeigten Ausschnitt bei VesselFinder. Kleine Sportboote senden meist kein AIS.';
+    : `Öffnet den gezeigten Ausschnitt bei ${AIS_MAP_NAME}. Kleine Sportboote `
+      + 'senden meist kein AIS.';
 }
 
 function wireAisLink() {

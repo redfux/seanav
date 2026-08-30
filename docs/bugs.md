@@ -16,6 +16,35 @@ in `features.md`.)_
 
 ## Behoben
 
+### B10 – Der Sprung zur AIS-Karte landete auf dem Standardausschnitt
+
+**Symptom:** „Schiffe in der Nähe" öffnete VesselFinder nicht an der Stelle,
+die SeaGlimpse zeigte, sondern dort, wo der Browser die Seite zuletzt verlassen
+hatte – beim ersten Mal auf deren Standardansicht. Die Adresse in der
+Adresszeile stimmte, der Ausschnitt nicht.
+
+**Ursache.** `?lat=…&lon=…&zoom=…` ist die Parameterform der **Einbettungs**-
+Karte von VesselFinder (`/aismap`), nicht der Website. Deren Website hält
+ihren Ausschnitt überhaupt nicht in der Adresse – am Gerät nachgewiesen:
+zoomt man dort, ändert sich die URL nicht. Die Parameter wurden also nicht
+falsch verstanden, sondern gar nicht gelesen; die Position kam aus dem
+lokalen Speicher des Browsers.
+
+**Behoben in 0.22.1** durch den Wechsel des Ziels auf MarineTraffic. Deren
+Adressform ist keine Vermutung, sondern die, die ihre Website selbst erzeugt,
+während man auf ihr navigiert – Pfadsegmente statt Parameter, und `centerx`
+ist die Länge:
+
+```
+https://www.marinetraffic.com/en/ais/home/centerx:<lon>/centery:<lat>/zoom:<z>
+```
+
+**Die Lehre, die über diesen Fall hinausgeht:** eine Adresse taugt nur dann
+als Sprungziel, wenn die Zielseite sie selbst in ihrer Adresszeile führt. Eine
+Form aus einer Einbettungs-Dokumentation ist kein Beleg dafür. Nachprüfen
+lässt sich das in einem einzigen Handgriff, ohne eine Zeile Code: die Karte
+der Zielseite verschieben und schauen, ob die Adresse mitwandert.
+
 ### B9 – Boot drehte sich spontan bei Geradeausfahrt
 
 **Symptom:** Bei gleichmäßiger Geradeausfahrt drehte sich das Bootssymbol

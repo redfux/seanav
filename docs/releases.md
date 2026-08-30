@@ -6,6 +6,18 @@ Versionierung nach [SemVer](https://semver.org/lang/de/).
 Die Versionsnummer wird ausschließlich in `js/version.js` gepflegt; Footer und
 Service-Worker-Cachename leiten sich automatisch daraus ab.
 
+## [0.22.1] – 2026-08-30
+
+### Fixed
+
+- **Der Sprung landete auf dem falschen Ausschnitt.** VesselFinder liest
+  `lat/lon/zoom` nur in seiner Einbettungs-Karte; die Website selbst hält
+  ihren Ausschnitt gar nicht in der Adresse – am Gerät nachgewiesen: dort zu
+  zoomen ändert die URL nicht. Ziel ist jetzt **MarineTraffic**, dessen
+  Adressform die Seite beim Navigieren selbst erzeugt:
+  `…/ais/home/centerx:<lon>/centery:<lat>/zoom:<z>`. Zoom auf 2–17 begrenzt.
+  Siehe B10 in `bugs.md`.
+
 ## [0.22.0] – 2026-08-30
 
 ### Added

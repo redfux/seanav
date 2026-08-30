@@ -822,21 +822,34 @@ Karte ohne Anmeldung zeigt und weltweit empfängt:
 
 | Seite | Link mit Position | Ohne Anmeldung | Auf dem Telefon |
 | --- | --- | --- | --- |
-| **VesselFinder** | `https://www.vesselfinder.com/?lat=<lat>&lon=<lon>&zoom=<z>`, Zoom 3–18 | Karte und Schiffsdetails frei: Name, Typ, Kurs, Geschwindigkeit, Zielhafen, ETA, meist ein Foto | die leichteste der drei Seiten |
-| **MarineTraffic** | `https://www.marinetraffic.com/en/ais/home/centerx:<lon>/centery:<lat>/zoom:<z>` | Karte frei, ein Teil der Detailfelder erst nach Anmeldung | die schwerste: Cookie-Banner und App-Hinweis vor der Karte |
-| **MyShipTracking** | `https://www.myshiptracking.com/?lat=<lat>&lng=<lon>&zoom=<z>` | Karte frei | dazwischen |
+| **MarineTraffic** | `…/en/ais/home/centerx:<lon>/centery:<lat>/zoom:<z>`, Zoom 2–17 | Karte frei, ein Teil der Detailfelder erst nach Anmeldung | schwer: Cookie-Banner und App-Hinweis vor der Karte – **aber die Adresse trägt den Ausschnitt**, gemessen am Gerät |
+| **VesselFinder** | Website: **gar keine**; `…/aismap?lat=&lon=&zoom=` ist die Einbettungs-Karte | Karte und Schiffsdetails frei, meist mit Foto | die leichteste Seite, als Sprungziel dennoch untauglich |
+| **MyShipTracking** | `…/?lat=<lat>&lng=<lon>&zoom=<z>` – ungeprüft, dieselbe Form wie bei VesselFinder und damit verdächtig | Karte frei | dazwischen |
 
-Eingebaut ist **VesselFinder**, und zwar allein: es ist die leichteste der
-drei Seiten und die einzige, die Kurs, Geschwindigkeit, Zielhafen und meist
-ein Foto ohne Anmeldung zeigt – genau die Felder, um die es geht. Die beiden
-anderen stehen hier als Ausweichadressen, falls sich das ändert.
+Eingebaut war zuerst **VesselFinder** – und das war falsch. Am Gerät zeigte
+sich, was aus keiner Dokumentation hervorging: die Website liest `lat/lon/zoom`
+nicht. Diese Parameter gehören ihrer **Einbettungs**-Karte unter `/aismap`.
+Ihre Website hält ihren Ausschnitt überhaupt nicht in der Adresse; sie öffnet
+dort, wo der Browser sie zuletzt verlassen hat. Siehe B10 in `bugs.md`.
 
-Die Linkformen stammen aus der Dokumentation und den eigenen Beispielen der
-Anbieter, **nicht aus einer eigenen Messung**: die Hosts sind aus der
-Entwicklungsumgebung heraus gesperrt. Gemessen ist alles diesseits davon –
-dass der Link der Karte folgt (Zoom 14 → nach zweimal Herauszoomen 12), dass
-er ohne Netz nicht springt, sondern eine Meldung zeigt, und dass er danach
-wieder zurückfindet.
+Eingebaut ist seit 0.22.1 **MarineTraffic**, allein:
+
+```
+https://www.marinetraffic.com/en/ais/home/centerx:<lon>/centery:<lat>/zoom:<z>
+```
+
+Pfadsegmente statt Parameter, `centerx` ist die Länge, Zoom 2–17. Der
+Unterschied zur ersten Wahl ist nicht die Quelle der Adressform, sondern ihre
+Art: **diese Form erzeugt die Zielseite selbst**, während man auf ihr
+navigiert. Genau das ist das Prüfkriterium, und es kostet keinen Code – die
+Karte der Zielseite verschieben und sehen, ob die Adresse mitwandert. Tut sie
+es nicht, gibt es dort keinen Sprungpunkt, gleichgültig was in einer
+Einbettungs-Anleitung steht.
+
+Gemessen ist alles diesseits der Landesgrenze dieser Umgebung – die Hosts
+selbst sind hier gesperrt: dass der Link der Karte folgt (z14 → z10 → am
+oberen Anschlag z17 statt der 19 der eigenen Karte), dass er ohne Netz nicht
+springt, sondern eine Meldung zeigt, und dass er danach wieder zurückfindet.
 
 **Rechtlich unkritisch:** ein gewöhnlicher Hyperlink auf eine öffentliche Seite
 ist etwas anderes als das, was die Anbieter einschränken – nämlich das
@@ -852,7 +865,7 @@ passiert hier nicht.
   App öffnet Android eine Custom Tab mit Zurück-Pfeil; SeaGlimpse bleibt
   dahinter stehen und ist samt Zoom, Ziel und Kurs sofort wieder da.
 - **Übergeben wird die Kartenmitte und der aktuelle Zoom**, begrenzt auf das
-  Band der Zielseite (3–18). Im Folgemodus ist die Mitte die eigene Position –
+  Band der Zielseite (2–17). Im Folgemodus ist die Mitte die eigene Position –
   der Ausschnitt drüben passt also zu dem, was man gerade sieht. Die Adresse
   hängt an `moveend` und `zoomend` und ist deshalb auch dann aktuell, wenn man
   sie lange drückt und kopiert, statt sie anzutippen.

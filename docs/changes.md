@@ -7,6 +7,14 @@ wird hier nichts.
 
 ## Offen
 
+- **„der Kartenausschnitt passt nicht, es scheint nur der Standardeinstiegs-
+  punkt zu sein … wenn ich zum korrekten Ausschnitt zoome, auf VesselFinder,
+  ändert sich die URL nicht … d. h. irgendwas passt mit der URL noch nicht"**
+  (2026-08-30) Behoben in 0.22.1: VesselFinders Website liest die Parameter
+  gar nicht, sie gehören deren Einbettungs-Karte. Ziel ist jetzt
+  MarineTraffic, dessen Adressform die Seite beim Navigieren selbst erzeugt.
+  Siehe B10 in `bugs.md`.
+
 - **„ist es möglich, auch andere Schiffe als optionalen Layer auf der Karte
   darzustellen? wenn man auf die Schiffe tippt, sollten sich weitere Infos
   dazu öffnen bzw. entsprechende Websites, wo dann öffentliche Informationen

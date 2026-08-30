@@ -45,7 +45,7 @@ Fußzeile sagt es dauerhaft.
 | F33 | Offizielle spanische Seekarte (IHM) als Ebene: Lotungen, Felsen, Wracks, Hindernisse, Tiefenlinien; Kartenzweck folgt dem Zoom | 0.18.0 |
 | F34 | Dauerhafter Hinweis in der Fußzeile, dass die App kein Navigationssystem ist | 0.19.0 |
 | F35 | Vollbild auf Knopfdruck: blendet beide Systemleisten aus und gibt den ganzen Bildschirm der Karte | 0.20.0 |
-| F36 | Knopf „Schiffe in der Nähe" im Ebenenmenü: öffnet den gezeigten Ausschnitt bei VesselFinder – Name, Typ, Kurs, Geschwindigkeit und Zielhafen ohne Anmeldung | 0.22.0 |
+| F36 | Knopf „Schiffe in der Nähe" im Ebenenmenü: öffnet den gezeigten Ausschnitt bei MarineTraffic – Name, Typ, Kurs, Geschwindigkeit und Zielhafen zu jedem Schiff | 0.22.0 |
 | --- | --- | --- |
 
 ## Nichtfunktionale Anforderungen
