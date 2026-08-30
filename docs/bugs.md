@@ -39,6 +39,11 @@ ist die Länge:
 https://www.marinetraffic.com/en/ais/home/centerx:<lon>/centery:<lat>/zoom:<z>
 ```
 
+**Seit 0.23.1 ist das Ziel wieder VesselFinder**, jetzt aber die richtige
+Adresse: `…/aismap?zoom=&lat=&lon=`, deren Einbettungs-Karte. Am Gerät
+bestätigt – der Ausschnitt stimmt. Es war also nie der Anbieter, der nicht
+passte, sondern die Adresse.
+
 **Die Lehre, die über diesen Fall hinausgeht:** eine Adresse taugt nur dann
 als Sprungziel, wenn die Zielseite sie selbst in ihrer Adresszeile führt. Eine
 Form aus einer Einbettungs-Dokumentation ist kein Beleg dafür. Nachprüfen

@@ -7,6 +7,12 @@ wird hier nichts.
 
 ## Offen
 
+- **„schmeiß MarineTraffic raus, ich finde VesselFinder für meinen Bedarf
+  besser. der Kartenausschnitt passt übrigens"** (2026-08-30)
+  Umgesetzt in 0.23.1. Damit ist auch bestätigt, dass die Einbettungs-Karte
+  am richtigen Fleck aufmacht – der Punkt, den ich von hier aus nicht prüfen
+  konnte.
+
 - **„mit MarineTraffic funktioniert es erstmal. bau trotzdem die
   VesselFinder-Einbettungs-Karte zum Testen als zweite Variante mit ein.
   dann sag ich dir, welche Variante mir besser gefällt"** (2026-08-30)

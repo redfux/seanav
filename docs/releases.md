@@ -6,6 +6,16 @@ Versionierung nach [SemVer](https://semver.org/lang/de/).
 Die Versionsnummer wird ausschließlich in `js/version.js` gepflegt; Footer und
 Service-Worker-Cachename leiten sich automatisch daraus ab.
 
+## [0.23.1] – 2026-08-30
+
+### Changed
+
+- **Ein Ziel statt zwei:** der Vergleich ist entschieden, geblieben ist
+  VesselFinders Einbettungs-Karte – die nackte Karte ohne Cookie-Banner und
+  App-Hinweis. Der Ausschnitt stimmt, am Gerät bestätigt. MarineTraffic ist
+  aus der App raus; seine geprüfte Adressform steht in `architecture.md`,
+  ein Zurücktauschen bleibt damit eine Zeile.
+
 ## [0.23.0] – 2026-08-30
 
 ### Added

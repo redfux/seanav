@@ -45,7 +45,7 @@ Fußzeile sagt es dauerhaft.
 | F33 | Offizielle spanische Seekarte (IHM) als Ebene: Lotungen, Felsen, Wracks, Hindernisse, Tiefenlinien; Kartenzweck folgt dem Zoom | 0.18.0 |
 | F34 | Dauerhafter Hinweis in der Fußzeile, dass die App kein Navigationssystem ist | 0.19.0 |
 | F35 | Vollbild auf Knopfdruck: blendet beide Systemleisten aus und gibt den ganzen Bildschirm der Karte | 0.20.0 |
-| F36 | „Schiffe in der Nähe" im Ebenenmenü: öffnet den gezeigten Ausschnitt in einer öffentlichen AIS-Karte – MarineTraffic (volle Seite) oder VesselFinder (nackte Karte), beide mit Name, Typ, Kurs, Geschwindigkeit und Zielhafen je Schiff | 0.22.0, zweites Ziel 0.23.0 |
+| F36 | „Schiffe in der Nähe" im Ebenenmenü: öffnet den gezeigten Ausschnitt in der öffentlichen AIS-Karte von VesselFinder – Name, Typ, Kurs, Geschwindigkeit und Zielhafen je Schiff | 0.22.0 |
 | --- | --- | --- |
 
 ## Nichtfunktionale Anforderungen
@@ -54,7 +54,7 @@ Fußzeile sagt es dauerhaft.
   nachgeladen; keine CDN-Links
 - **Datensparsam:** keine Server-Komponente, keine Analytics, keine
   Übertragung von Positionsdaten. Einzige Ausnahme ist der Sprung zur
-  AIS-Karte (F36): er übergibt die Kartenmitte an den gewählten Anbieter –
+  AIS-Karte (F36): er übergibt die Kartenmitte an den Fremdanbieter –
   ausschließlich beim ausdrücklichen Antippen, nie im Hintergrund
 - **Buildfrei:** direkt auslieferbare statische Dateien, keine `package.json`
 - **Mobile-first:** Bedienung einhändig am Telefon, Kontraste für Tageslicht

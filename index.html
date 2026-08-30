@@ -185,22 +185,13 @@
          is the jump - a plain link, nothing is loaded from there. It sits here
          rather than on a fifth button because it stands in for the layer. -->
     <div class="panel-extra">
-      <h3 class="card-title">Schiffe in der Nähe</h3>
-      <div class="card-actions">
-        <a class="btn-text btn-icon" data-ais="marinetraffic" target="_blank"
-           rel="noopener noreferrer" href="https://www.marinetraffic.com/en/ais/home/">
-          <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><use href="#ic-ship"></use></svg>
-          MarineTraffic
-        </a>
-        <a class="btn-text btn-icon btn-quiet" data-ais="vesselfinder" target="_blank"
-           rel="noopener noreferrer" href="https://www.vesselfinder.com/aismap">
-          <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><use href="#ic-ship"></use></svg>
-          VesselFinder
-        </a>
-      </div>
-      <p class="card-text" id="ais-hint">Beide öffnen den gezeigten Ausschnitt –
-        VesselFinder als nackte Karte ohne die Seite drumherum. Kleine
-        Sportboote senden meist kein AIS.</p>
+      <a id="link-ais" class="btn-text btn-icon" target="_blank"
+         rel="noopener noreferrer" href="https://www.vesselfinder.com/aismap">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><use href="#ic-ship"></use></svg>
+        Schiffe in der Nähe
+      </a>
+      <p class="card-text" id="ais-hint">Öffnet den gezeigten Ausschnitt bei
+        VesselFinder. Kleine Sportboote senden meist kein AIS.</p>
     </div>
   </section>
 

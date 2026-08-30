@@ -360,89 +360,72 @@ function wireLayerPanel() {
  * not one that merely looks plausible. Measured on the water: VesselFinder's
  * website ignored lat/lon/zoom entirely and opened wherever the browser had
  * last left it - its map keeps no state in the URL at all, panning there does
- * not change the address (B10 in docs/bugs.md). Only its embed map reads a
- * position, and that is what is linked here.
+ * not change the address (B10 in docs/bugs.md). Its embed map does read a
+ * position, and confirmed on the device, that is the one that lands right.
  *
- * Two targets while it is being tried out: they draw on different receiver
- * networks and look nothing alike - MarineTraffic is the full site with its
- * cookie banner, the VesselFinder entry is the bare map. Adding one is a row
- * in this table plus an <a data-ais="..."> in the panel.
+ * MarineTraffic works just as well and was tried alongside it for a while;
+ * this one won on use - the bare map without the site around it. The other
+ * address is kept in architecture.md rather than here.
  */
-const AIS_MAPS = {
-  marinetraffic: {
-    name: 'MarineTraffic',
-    home: 'https://www.marinetraffic.com/en/ais/home/',
-    minZoom: 2,
-    maxZoom: 17,
-    // Path segments rather than query parameters - and centerx is longitude.
-    url: (lat, lon, zoom) =>
-      `https://www.marinetraffic.com/en/ais/home/centerx:${lon}/centery:${lat}/zoom:${zoom}`,
-  },
-  vesselfinder: {
-    name: 'VesselFinder',
-    home: 'https://www.vesselfinder.com/aismap',
-    minZoom: 3,
-    maxZoom: 18,
-    // The embed map sizes itself from these, so it is told to fill the tab.
-    url: (lat, lon, zoom) => {
-      const params = new URLSearchParams({
-        zoom: String(zoom),
-        lat,
-        lon,
-        width: '100%',
-        height: '100%',
-        names: 'true',
-      });
-      return `https://www.vesselfinder.com/aismap?${params.toString()}`;
-    },
+const AIS_MAP = {
+  name: 'VesselFinder',
+  home: 'https://www.vesselfinder.com/aismap',
+  minZoom: 3,
+  maxZoom: 18,
+  // The embed map sizes itself from these, so it is told to fill the tab.
+  url: (lat, lon, zoom) => {
+    const params = new URLSearchParams({
+      zoom: String(zoom),
+      lat,
+      lon,
+      width: '100%',
+      height: '100%',
+      names: 'true',
+    });
+    return `https://www.vesselfinder.com/aismap?${params.toString()}`;
   },
 };
 
-const AIS_HINT_ONLINE = 'Beide öffnen den gezeigten Ausschnitt – VesselFinder '
-  + 'als nackte Karte ohne die Seite drumherum. Kleine Sportboote senden meist '
-  + 'kein AIS.';
+const AIS_HINT_ONLINE = `Öffnet den gezeigten Ausschnitt bei ${AIS_MAP.name}. `
+  + 'Kleine Sportboote senden meist kein AIS.';
 const AIS_HINT_OFFLINE = 'Ohne Empfang nicht möglich – die Schiffskarte kommt '
   + 'aus dem Netz.';
 
-function aisMapUrl(target) {
+function aisMapUrl() {
   const centre = map.getCenter();
-  // Outside its own band a service falls back to its default view.
-  const zoom = Math.min(target.maxZoom, Math.max(target.minZoom, Math.round(map.getZoom())));
-  return target.url(centre.lat.toFixed(5), centre.lng.toFixed(5), zoom);
+  // Outside its own band the service falls back to its default view.
+  const zoom = Math.min(AIS_MAP.maxZoom, Math.max(AIS_MAP.minZoom, Math.round(map.getZoom())));
+  return AIS_MAP.url(centre.lat.toFixed(5), centre.lng.toFixed(5), zoom);
 }
 
-function refreshAisLinks() {
+function refreshAisLink() {
+  const link = document.getElementById('link-ais');
+  if (!link) return;
   const offline = navigator.onLine === false;
-  document.querySelectorAll('[data-ais]').forEach((link) => {
-    const target = AIS_MAPS[link.dataset.ais];
-    if (!target) return;
-    link.classList.toggle('is-offline', offline);
-    link.href = offline ? target.home : aisMapUrl(target);
-  });
+  link.classList.toggle('is-offline', offline);
+  link.href = offline ? AIS_MAP.home : aisMapUrl();
   document.getElementById('ais-hint').textContent =
     offline ? AIS_HINT_OFFLINE : AIS_HINT_ONLINE;
 }
 
-function wireAisLinks() {
-  const links = document.querySelectorAll('[data-ais]');
-  if (!links.length) return;
+function wireAisLink() {
+  const link = document.getElementById('link-ais');
+  if (!link) return;
 
   // Kept current from the map itself, so a long press offers the same address
   // the tap would open.
-  map.on('moveend zoomend', refreshAisLinks);
-  window.addEventListener('online', refreshAisLinks);
-  window.addEventListener('offline', refreshAisLinks);
+  map.on('moveend zoomend', refreshAisLink);
+  window.addEventListener('online', refreshAisLink);
+  window.addEventListener('offline', refreshAisLink);
 
-  links.forEach((link) => {
-    link.addEventListener('click', (e) => {
-      if (navigator.onLine === false) {
-        e.preventDefault();
-        showSnack('Ohne Empfang nicht möglich');
-      }
-    });
+  link.addEventListener('click', (e) => {
+    if (navigator.onLine === false) {
+      e.preventDefault();
+      showSnack('Ohne Empfang nicht möglich');
+    }
   });
 
-  refreshAisLinks();
+  refreshAisLink();
 }
 
 // --- Position handling -----------------------------------------------------
@@ -1274,7 +1257,7 @@ function boot() {
   initMap();
   maintainCache();
   wireLayerPanel();
-  wireAisLinks();
+  wireAisLink();
   wireStoragePanel();
   wireToolbar();
   startTracking();

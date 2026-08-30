@@ -822,54 +822,44 @@ Karte ohne Anmeldung zeigt und weltweit empfängt:
 
 | Seite | Link mit Position | Ohne Anmeldung | Auf dem Telefon |
 | --- | --- | --- | --- |
-| **MarineTraffic** | `…/en/ais/home/centerx:<lon>/centery:<lat>/zoom:<z>`, Zoom 2–17 | Karte frei, ein Teil der Detailfelder erst nach Anmeldung | schwer: Cookie-Banner und App-Hinweis vor der Karte – **aber die Adresse trägt den Ausschnitt**, gemessen am Gerät |
-| **VesselFinder** | Website: **gar keine**; `…/aismap?lat=&lon=&zoom=` ist die Einbettungs-Karte | Karte und Schiffsdetails frei, meist mit Foto | die leichteste Seite, als Sprungziel dennoch untauglich |
+| **VesselFinder** | Website: **gar keine**; die Einbettungs-Karte `…/aismap?zoom=&lat=&lon=` trägt den Ausschnitt – am Gerät bestätigt, Zoom 3–18 | Karte und Schiffsdetails frei, meist mit Foto | die leichteste Seite; **eingebaut** |
+| **MarineTraffic** | `…/en/ais/home/centerx:<lon>/centery:<lat>/zoom:<z>`, Zoom 2–17 – ebenfalls bestätigt | Karte frei, ein Teil der Detailfelder erst nach Anmeldung | schwer: Cookie-Banner und App-Hinweis vor der Karte; geprüfte Ausweichadresse |
 | **MyShipTracking** | `…/?lat=<lat>&lng=<lon>&zoom=<z>` – ungeprüft, dieselbe Form wie bei VesselFinder und damit verdächtig | Karte frei | dazwischen |
 
-Eingebaut war zuerst **VesselFinder** – und das war falsch. Am Gerät zeigte
-sich, was aus keiner Dokumentation hervorging: die Website liest `lat/lon/zoom`
-nicht. Diese Parameter gehören ihrer **Einbettungs**-Karte unter `/aismap`.
-Ihre Website hält ihren Ausschnitt überhaupt nicht in der Adresse; sie öffnet
-dort, wo der Browser sie zuletzt verlassen hat. Siehe B10 in `bugs.md`.
-
-Eingebaut ist seit 0.22.1 **MarineTraffic**:
+Der Weg dahin ist es wert, festgehalten zu werden, weil er zweimal am selben
+Punkt abbog. Eingebaut war zuerst **VesselFinders Website** – und die liest
+`lat/lon/zoom` gar nicht. Diese Parameter gehören ihrer **Einbettungs**-Karte
+unter `/aismap`; die Website hält ihren Ausschnitt überhaupt nicht in der
+Adresse und öffnet dort, wo der Browser sie zuletzt verlassen hat (B10 in
+`bugs.md`). Ziel wurde daraufhin **MarineTraffic**, dessen Adressform die
+Seite beim Navigieren selbst erzeugt:
 
 ```
 https://www.marinetraffic.com/en/ais/home/centerx:<lon>/centery:<lat>/zoom:<z>
 ```
 
-Pfadsegmente statt Parameter, `centerx` ist die Länge, Zoom 2–17. Der
-Unterschied zur ersten Wahl ist nicht die Quelle der Adressform, sondern ihre
-Art: **diese Form erzeugt die Zielseite selbst**, während man auf ihr
-navigiert. Genau das ist das Prüfkriterium, und es kostet keinen Code – die
-Karte der Zielseite verschieben und sehen, ob die Adresse mitwandert. Tut sie
-es nicht, gibt es dort keinen Sprungpunkt, gleichgültig was in einer
-Einbettungs-Anleitung steht.
-
-Gemessen ist alles diesseits der Landesgrenze dieser Umgebung – die Hosts
-selbst sind hier gesperrt: dass der Link der Karte folgt (z14 → z10 → am
-oberen Anschlag z17 statt der 19 der eigenen Karte), dass er ohne Netz nicht
-springt, sondern eine Meldung zeigt, und dass er danach wieder zurückfindet.
-
-Seit 0.23.0 steht **VesselFinder als zweiter, leiserer Knopf daneben** – zum
-Vergleichen, nicht als Notnagel. Verlinkt ist dort die Einbettungs-Karte, der
-einzige Teil dieser Seite, der eine Position liest:
+Das funktionierte auf Anhieb. Beide standen danach eine Version lang
+nebeneinander im Menü, und im Gebrauch gewann **VesselFinders
+Einbettungs-Karte** – die nackte Karte ohne Cookie-Banner und App-Hinweis:
 
 ```
 https://www.vesselfinder.com/aismap?zoom=<z>&lat=<lat>&lon=<lon>&names=true
 ```
 
-Die beiden sehen einander nicht ähnlich: MarineTraffic ist die volle Seite
-mit Cookie-Banner und App-Hinweis, VesselFinder die nackte Karte ohne alles.
-Sie speisen sich außerdem aus verschiedenen Empfängernetzen, zeigen also nicht
-zwingend dieselben Schiffe. Welcher bleibt, entscheidet der Gebrauch; die
-Ziele stehen als Tabelle `AIS_MAPS` in `js/app.js`, ein weiterer ist eine
-Zeile dort plus ein `<a data-ais="…">` im Ebenenmenü.
+Seit 0.23.1 ist das das einzige Ziel, Zoom 3–18. Die MarineTraffic-Adresse
+steht hier, weil sie geprüft ist und ein Austausch damit eine Zeile bleibt.
 
-Ein Vorbehalt bleibt bei der Einbettungs-Karte: `width`/`height` gehen als
-`100%` mit, und ein Prozentzeichen muss in einer Adresse als `%25` kodiert
-sein. Ob die Seite das wieder dekodiert, ist von hier aus nicht prüfbar –
-sitzt die Karte schief, sind es diese beiden Parameter.
+Die Lehre aus dem Umweg: **eine Adresse taugt nur als Sprungziel, wenn die
+Zielseite sie selbst in ihrer Adresszeile führt.** Eine Form aus einer
+Einbettungs-Anleitung ist kein Beleg dafür – die Karte der Zielseite
+verschieben und sehen, ob die Adresse mitwandert, kostet keinen Code und
+hätte den Umweg gespart.
+
+Gemessen ist alles diesseits der Landesgrenze dieser Umgebung – die Hosts
+selbst sind hier gesperrt: dass der Link der Karte folgt, dass der Zoom am
+Anschlag stehen bleibt (Karte z19 → z18), dass er ohne Netz nicht springt,
+sondern eine Meldung zeigt, und dass er danach wieder zurückfindet. Dass der
+Ausschnitt drüben wirklich stimmt, ist am Gerät bestätigt.
 
 **Rechtlich unkritisch:** ein gewöhnlicher Hyperlink auf eine öffentliche Seite
 ist etwas anderes als das, was die Anbieter einschränken – nämlich das
@@ -885,7 +875,7 @@ passiert hier nicht.
   App öffnet Android eine Custom Tab mit Zurück-Pfeil; SeaGlimpse bleibt
   dahinter stehen und ist samt Zoom, Ziel und Kurs sofort wieder da.
 - **Übergeben wird die Kartenmitte und der aktuelle Zoom**, begrenzt auf das
-  Band der Zielseite (2–17). Im Folgemodus ist die Mitte die eigene Position –
+  Band der Zielseite (3–18). Im Folgemodus ist die Mitte die eigene Position –
   der Ausschnitt drüben passt also zu dem, was man gerade sieht. Die Adresse
   hängt an `moveend` und `zoomend` und ist deshalb auch dann aktuell, wenn man
   sie lange drückt und kopiert, statt sie anzutippen.
