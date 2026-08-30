@@ -809,7 +809,7 @@ Proxy, ohne Schlüssel und ohne Geheimnis einbinden. Damit ließe sich die
 ganze Ebene fertig bauen und ausprobieren, nur eben in der Ostsee wirksam;
 Weg B wäre danach ein Quellenwechsel, kein Neubau.
 
-### Entschieden: der Sprungknopf (Weg A)
+### Gebaut: der Sprungknopf (Weg A)
 
 Nachgeschärfte Anforderung: **weltweit**, nicht ein Land; Sportboote sind
 egal; genutzt wird es auch an Land, wenn die Kinder wissen wollen, was da
@@ -826,22 +826,24 @@ Karte ohne Anmeldung zeigt und weltweit empfängt:
 | **MarineTraffic** | `https://www.marinetraffic.com/en/ais/home/centerx:<lon>/centery:<lat>/zoom:<z>` | Karte frei, ein Teil der Detailfelder erst nach Anmeldung | die schwerste: Cookie-Banner und App-Hinweis vor der Karte |
 | **MyShipTracking** | `https://www.myshiptracking.com/?lat=<lat>&lng=<lon>&zoom=<z>` | Karte frei | dazwischen |
 
-Vorschlag: **VesselFinder als Ziel des Knopfes**, MarineTraffic als zweiter,
-kleinerer Link daneben – die beiden speisen sich aus unterschiedlichen
-Empfängernetzen, und wer eins nicht mag, nimmt das andere.
+Eingebaut ist **VesselFinder**, und zwar allein: es ist die leichteste der
+drei Seiten und die einzige, die Kurs, Geschwindigkeit, Zielhafen und meist
+ein Foto ohne Anmeldung zeigt – genau die Felder, um die es geht. Die beiden
+anderen stehen hier als Ausweichadressen, falls sich das ändert.
 
-Die drei Linkformen stammen aus der Dokumentation und den eigenen Beispielen
-der Anbieter, **nicht aus einer eigenen Messung**: die Hosts sind aus der
-Entwicklungsumgebung heraus gesperrt. Erster Schritt beim Bauen ist deshalb,
-die drei Links einmal am Telefon anzutippen und zu sehen, welcher wirklich am
-richtigen Fleck aufmacht.
+Die Linkformen stammen aus der Dokumentation und den eigenen Beispielen der
+Anbieter, **nicht aus einer eigenen Messung**: die Hosts sind aus der
+Entwicklungsumgebung heraus gesperrt. Gemessen ist alles diesseits davon –
+dass der Link der Karte folgt (Zoom 14 → nach zweimal Herauszoomen 12), dass
+er ohne Netz nicht springt, sondern eine Meldung zeigt, und dass er danach
+wieder zurückfindet.
 
 **Rechtlich unkritisch:** ein gewöhnlicher Hyperlink auf eine öffentliche Seite
 ist etwas anderes als das, was die Anbieter einschränken – nämlich das
 Einbetten per iframe und das automatisierte Abgreifen der Daten. Beides
 passiert hier nicht.
 
-**Technisch klein:**
+**Technisch klein**, umgesetzt in `js/app.js` als `wireAisLink()`:
 
 - **Kein CSP-Eintrag nötig.** Die Richtlinie dieser App beschränkt das *Laden*
   von Ressourcen, nicht das *Navigieren*. Der Sprung lädt nichts nach, er
@@ -850,13 +852,17 @@ passiert hier nicht.
   App öffnet Android eine Custom Tab mit Zurück-Pfeil; SeaGlimpse bleibt
   dahinter stehen und ist samt Zoom, Ziel und Kurs sofort wieder da.
 - **Übergeben wird die Kartenmitte und der aktuelle Zoom**, begrenzt auf das
-  Band der Zielseite. Im Folgemodus ist die Mitte die eigene Position – der
-  Ausschnitt drüben passt also zu dem, was man gerade sieht.
+  Band der Zielseite (3–18). Im Folgemodus ist die Mitte die eigene Position –
+  der Ausschnitt drüben passt also zu dem, was man gerade sieht. Die Adresse
+  hängt an `moveend` und `zoomend` und ist deshalb auch dann aktuell, wenn man
+  sie lange drückt und kopiert, statt sie anzutippen.
 - **Ohne Netz nutzlos**, und das muss der Eintrag sagen statt ins Leere zu
   springen: bei `navigator.onLine === false` bleibt er inaktiv mit Hinweis.
-- **Platz:** ein Eintrag im Ebenenmenü, kein fünfter Knopf. Die Knopfleiste
-  ist mit vier Knöpfen voll, und der Sprung ist ja gerade der Ersatz für die
-  Ebene, die es nicht geben kann.
+- **Platz:** ein Eintrag im Ebenenmenü, unter einem Trennstrich hinter den
+  Schaltern, kein fünfter Knopf. Die Knopfleiste ist mit vier Knöpfen voll,
+  und der Sprung ist ja gerade der Ersatz für die Ebene, die es nicht geben
+  kann. Ein `<a>` und kein `<button>`: es ist eine Adresse, und dann soll sie
+  sich auch wie eine verhalten.
 
 **Ein Zugeständnis, das benannt gehört.** `features.md` verspricht unter
 „Datensparsam": keine Übertragung von Positionsdaten. Ein Sprung mit

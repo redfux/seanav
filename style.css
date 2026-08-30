@@ -493,6 +493,35 @@ html, body {
   margin: 0;
 }
 
+/* The jump to the public AIS map, set off from the layer switches above it:
+   it is not a layer, it leaves the app. */
+.panel-extra {
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px solid var(--md-outline);
+}
+
+.panel-extra .card-text { margin: 8px 0 0; }
+
+/* A text button that carries an icon - laid out as a row, and as an <a> it
+   needs the button paddings it does not inherit. */
+.btn-icon {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 0;
+  text-decoration: none;
+}
+
+.btn-icon .icon { width: 22px; height: 22px; }
+
+/* Offline the target cannot answer, so the link says so instead of opening an
+   error page. */
+.btn-icon.is-offline {
+  color: var(--md-on-surface-variant);
+  opacity: 0.6;
+}
+
 /* --- Marks on the course line ---------------------------------------------
  * The divIcon anchors a zero-sized box on the point; the span inside is what
  * is centred on it. Doing the centring in CSS keeps Leaflet's own positioning

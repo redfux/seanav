@@ -45,6 +45,7 @@ Fußzeile sagt es dauerhaft.
 | F33 | Offizielle spanische Seekarte (IHM) als Ebene: Lotungen, Felsen, Wracks, Hindernisse, Tiefenlinien; Kartenzweck folgt dem Zoom | 0.18.0 |
 | F34 | Dauerhafter Hinweis in der Fußzeile, dass die App kein Navigationssystem ist | 0.19.0 |
 | F35 | Vollbild auf Knopfdruck: blendet beide Systemleisten aus und gibt den ganzen Bildschirm der Karte | 0.20.0 |
+| F36 | Knopf „Schiffe in der Nähe" im Ebenenmenü: öffnet den gezeigten Ausschnitt bei VesselFinder – Name, Typ, Kurs, Geschwindigkeit und Zielhafen ohne Anmeldung | 0.22.0 |
 | --- | --- | --- |
 
 ## Nichtfunktionale Anforderungen
@@ -52,7 +53,9 @@ Fußzeile sagt es dauerhaft.
 - **Offline-first:** zur Laufzeit wird außer Kartenkacheln nichts aus dem Web
   nachgeladen; keine CDN-Links
 - **Datensparsam:** keine Server-Komponente, keine Analytics, keine
-  Übertragung von Positionsdaten
+  Übertragung von Positionsdaten. Einzige Ausnahme ist der Sprung zur
+  AIS-Karte (F36): er übergibt die Kartenmitte an den Fremdanbieter –
+  ausschließlich beim ausdrücklichen Antippen, nie im Hintergrund
 - **Buildfrei:** direkt auslieferbare statische Dateien, keine `package.json`
 - **Mobile-first:** Bedienung einhändig am Telefon, Kontraste für Tageslicht
 - **Zielumgebung:** aktuelle Evergreen-Browser (Chrome, Firefox, Edge, Safari)
@@ -72,5 +75,5 @@ Fußzeile sagt es dauerhaft.
 | O11 | Beschriftungen der Kartendienste (Tiefenzahlen, Ortsnamen, Seezeichen) stehen bei gedrehter Karte schief. Nicht behebbar, solange die Ebenen Rasterkacheln sind – die Beschriftung ist ins Bild gezeichnet. Aufrecht nur mit einer vektorbasierten Renderschicht | technisch begrenzt |
 | O12 | GRAFCAN-Topobathymetrie (Kanaren, 2,5 m): Capabilities in Ordnung, GetMap antwortet mit `ServiceExceptionReport`. Grund ist mit dem Prüfstand aus 0.17.0 auszulesen | offen |
 | O13 | Untere Systemleiste von Android in der installierten App einfärben oder allein ausblenden. Chrome bestimmt die Farbe dort selbst; die Fullscreen-API nimmt beide Leisten oder keine. Alles Setzbare ist gesetzt (0.19.2), als Ausweg gibt es den Vollbildschalter (F35) | extern begrenzt |
-| O14 | Knopf „Schiffe in der Nähe": springt mit der Kartenmitte in eine öffentliche AIS-Karte (VesselFinder, alternativ MarineTraffic). Geplant in 0.21.2, noch nicht gebaut. Eine eigene Schiffsebene bleibt verworfen – weltweite Live-Quellen verlangen einen Schlüssel und damit eine Server-Komponente; Begründung und Quellenvergleich in `architecture.md` | geplant |
+| ~~O14~~ | ~~Andere Schiffe auf der Karte~~ – als Sprungknopf in eine öffentliche AIS-Karte umgesetzt in 0.22.0 (F36). Eine eigene Schiffsebene bleibt verworfen: weltweite Live-Quellen verlangen einen Schlüssel und damit eine Server-Komponente, siehe `architecture.md` | – |
 | --- | --- | --- |

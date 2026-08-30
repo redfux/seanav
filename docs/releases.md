@@ -6,6 +6,20 @@ Versionierung nach [SemVer](https://semver.org/lang/de/).
 Die Versionsnummer wird ausschließlich in `js/version.js` gepflegt; Footer und
 Service-Worker-Cachename leiten sich automatisch daraus ab.
 
+## [0.22.0] – 2026-08-30
+
+### Added
+
+- **„Schiffe in der Nähe"** im Ebenenmenü: ein Link, der den gezeigten
+  Ausschnitt – Kartenmitte und Zoom – bei VesselFinder öffnet. Dort stehen
+  Name, Typ, Kurs, Geschwindigkeit und Zielhafen ohne Anmeldung.
+- Ohne Empfang springt er nicht ins Leere, sondern sagt es: der Eintrag
+  blasst ab, der Hinweistext wechselt, ein Tippen bringt eine Meldung.
+- Kein neuer CSP-Eintrag und kein Schlüssel – ein Link lädt nichts nach. Die
+  Kartenmitte geht dabei einmalig an den Fremdanbieter; das ist die einzige
+  Ausnahme von „keine Übertragung von Positionsdaten" und steht so in
+  `features.md`.
+
 ## [0.21.2] – 2026-08-30
 
 ### Changed

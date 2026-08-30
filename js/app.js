@@ -342,6 +342,66 @@ function wireLayerPanel() {
   });
 }
 
+// --- The jump to a public AIS map -----------------------------------------
+
+/*
+ * Other ships cannot be drawn on this map: every worldwide AIS feed is behind
+ * a key, a key needs a server to hold it, and this app has none - the reasons
+ * and the sources examined are in docs/architecture.md. What works without
+ * either is a link that hands the shown section over to a public AIS map.
+ *
+ * It is a link, not a fetch: nothing is loaded from there, so it needs no
+ * entry in the CSP. What it does do is pass the map centre to a third party,
+ * which the app otherwise never does - hence only ever on an explicit tap,
+ * and with the referrer withheld.
+ */
+const AIS_MAP_BASE = 'https://www.vesselfinder.com/';
+const AIS_MAP_MIN_ZOOM = 3;
+const AIS_MAP_MAX_ZOOM = 18;
+
+function aisMapUrl() {
+  const centre = map.getCenter();
+  // Their map stops outside this band and would answer with its default view.
+  const zoom = Math.min(AIS_MAP_MAX_ZOOM, Math.max(AIS_MAP_MIN_ZOOM, Math.round(map.getZoom())));
+  const params = new URLSearchParams({
+    lat: centre.lat.toFixed(5),
+    lon: centre.lng.toFixed(5),
+    zoom: String(zoom),
+  });
+  return `${AIS_MAP_BASE}?${params.toString()}`;
+}
+
+function refreshAisLink() {
+  const link = document.getElementById('link-ais');
+  if (!link) return;
+  const offline = navigator.onLine === false;
+  link.classList.toggle('is-offline', offline);
+  link.href = offline ? AIS_MAP_BASE : aisMapUrl();
+  document.getElementById('ais-hint').textContent = offline
+    ? 'Ohne Empfang nicht möglich – die Schiffskarte kommt aus dem Netz.'
+    : 'Öffnet den gezeigten Ausschnitt bei VesselFinder. Kleine Sportboote senden meist kein AIS.';
+}
+
+function wireAisLink() {
+  const link = document.getElementById('link-ais');
+  if (!link) return;
+
+  // Kept current from the map itself, so a long press offers the same address
+  // the tap would open.
+  map.on('moveend zoomend', refreshAisLink);
+  window.addEventListener('online', refreshAisLink);
+  window.addEventListener('offline', refreshAisLink);
+
+  link.addEventListener('click', (e) => {
+    if (navigator.onLine === false) {
+      e.preventDefault();
+      showSnack('Ohne Empfang nicht möglich');
+    }
+  });
+
+  refreshAisLink();
+}
+
 // --- Position handling -----------------------------------------------------
 
 function startTracking() {
@@ -1171,6 +1231,7 @@ function boot() {
   initMap();
   maintainCache();
   wireLayerPanel();
+  wireAisLink();
   wireStoragePanel();
   wireToolbar();
   startTracking();

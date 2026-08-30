@@ -24,6 +24,11 @@ Build-Schritt.
 - Offizielle spanische Seekarte (IHM) mit Lotungen, Felsen, Wracks und Hindernissen – für spanische Gewässer inklusive der Kanaren
 - Seezeichen (Tonnen, Baken, Feuer) aus OpenSeaMap
 - Einzelne Kartenebenen über 🗺️ ein- und ausschaltbar
+- „Schiffe in der Nähe" im selben Menü: öffnet den gezeigten Ausschnitt bei
+  VesselFinder, wo Name, Typ, Kurs, Geschwindigkeit und Zielhafen ohne
+  Anmeldung stehen. Andere Schiffe **in** dieser Karte gehen nicht – jede
+  weltweite AIS-Quelle verlangt einen Schlüssel und damit einen eigenen
+  Server, siehe `docs/architecture.md`
 - Eigene Position per Geräte-GPS (`navigator.geolocation`)
 - Eigene Position als Bootssymbol, gedreht in den aktuellen Kurs
 - Karte wahlweise nordwärts oder in Fahrtrichtung gedreht
@@ -120,10 +125,13 @@ Nutzungsdaten übertragen.
 | Cache API (`seenavi-shell-v<version>`) | App-Shell: HTML/CSS/JS/Leaflet | App startet ohne Netz |
 
 Die GPS-Position wird ausschließlich im Arbeitsspeicher gehalten und nicht
-persistiert. Zurücksetzen lässt sich beides über „Websitedaten löschen" in den
+persistiert. Sie verlässt das Gerät an genau einer Stelle: beim Antippen von
+„Schiffe in der Nähe" steht die Kartenmitte im Link zu VesselFinder – nur
+dann, nie im Hintergrund. Zurücksetzen lässt sich beides über „Websitedaten löschen" in den
 Browser-Einstellungen.
 
-Ausgehende Verbindungen bestehen ausschließlich zum Abruf von Kartenkacheln:
+Ausgehende Verbindungen bestehen ausschließlich zum Abruf von Kartenkacheln
+(der AIS-Link lädt nichts nach, er verlässt die Seite):
 `tile.openstreetmap.org` (Grundkarte), `wms.geonorge.no` (Tiefendaten
 Norwegen), `ows.emodnet-bathymetry.eu` (Tiefenlinien Europa),
 `ideihm.covam.es` (Seekarte Spanien) und `tiles.openseamap.org` (Seezeichen).

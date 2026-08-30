@@ -7,21 +7,6 @@ wird hier nichts.
 
 ## Offen
 
-- **„ich brauche definitiv eine weltweite Anbindung, nicht nur ein Land.
-  Variante A scheint mir für meinen Fall ausreichend. es geht nur darum,
-  dass meine Kinder gerne wissen wollen, was für Schiffe so in der Nähe
-  sind, auch wenn wir an Land sind. kleine Sportboote sind da egal. wenn es
-  einen Button gibt, mit dem man auf seiner aktuellen Position in eine
-  AIS-Karte ‚springen' kann, würde das schon erstmal reichen. auf welche
-  Seite würde man denn hier z. B. problemlos springen können? Noch nicht
-  umsetzen!"** (2026-08-30)
-  Geplant, nicht gebaut. Ziel wäre VesselFinder
-  (`?lat=…&lon=…&zoom=…`, Karte und Schiffsdetails ohne Anmeldung,
-  leichteste der Seiten), daneben MarineTraffic als zweite Wahl. Ein
-  Hyperlink braucht weder Schlüssel noch CSP-Eintrag; der Eintrag käme ins
-  Ebenenmenü, nicht als fünfter Knopf. Siehe `architecture.md`, O14 in
-  `features.md`.
-
 - **„ist es möglich, auch andere Schiffe als optionalen Layer auf der Karte
   darzustellen? wenn man auf die Schiffe tippt, sollten sich weitere Infos
   dazu öffnen bzw. entsprechende Websites, wo dann öffentliche Informationen
@@ -53,6 +38,21 @@ wird hier nichts.
   `features.md` festgehalten.
 
 ## Erledigt
+
+- **„ich brauche definitiv eine weltweite Anbindung, nicht nur ein Land.
+  Variante A scheint mir für meinen Fall ausreichend. es geht nur darum,
+  dass meine Kinder gerne wissen wollen, was für Schiffe so in der Nähe
+  sind, auch wenn wir an Land sind. kleine Sportboote sind da egal. wenn es
+  einen Button gibt, mit dem man auf seiner aktuellen Position in eine
+  AIS-Karte ‚springen' kann, würde das schon erstmal reichen. auf welche
+  Seite würde man denn hier z. B. problemlos springen können? Noch nicht
+  umsetzen!"** (2026-08-30)
+  Umgesetzt in 0.22.0 mit VesselFinder
+  (`?lat=…&lon=…&zoom=…`, Karte und Schiffsdetails ohne Anmeldung,
+  leichteste der Seiten); MarineTraffic bleibt vorerst weg. Ein
+  Hyperlink braucht weder Schlüssel noch CSP-Eintrag; der Eintrag sitzt im
+  Ebenenmenü, nicht auf einem fünften Knopf. Siehe `architecture.md`, O14 in
+  `features.md`.
 
 - **„setze HEADING_SMOOTHING so, dass eine harte Wende von 90° auf 180° nach
   4 Sekunden auf ±10° eingeschwungen ist … und kannst du es so einstellen,
