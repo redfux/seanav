@@ -789,13 +789,11 @@ die diese App bewusst nicht hat.
 
 ### Drei mögliche Wege
 
-**Weg A – verlinken statt zeichnen.** Keine Schiffe auf der Karte, aber ein
-Knopf, der den aktuellen Kartenausschnitt in einer öffentlichen AIS-Karte
-öffnet (`marinetraffic.com/en/ais/home/centerx:…/centery:…/zoom:…`, im neuen
-Tab). Kostet nichts, verrät nichts, braucht keinen CSP-Eintrag und keinen
-Schlüssel, weil nichts geladen wird – es wird nur verlassen. Liefert aber
-genau das nicht, was die Anforderung eigentlich meint: den Blick auf die
-eigene Karte.
+**Weg A – verlinken statt zeichnen.** Keine Schiffe auf der eigenen Karte,
+aber ein Knopf, der den aktuellen Ausschnitt in einer öffentlichen AIS-Karte
+öffnet. Kostet nichts, braucht keinen Schlüssel und keinen CSP-Eintrag, weil
+nichts geladen wird – es wird nur verlassen. **Das ist der gewählte Weg**,
+siehe unten.
 
 **Weg B – echte Ebene über einen eigenen Relay.** Ein winziger, lesender
 Vermittler (Cloudflare Worker o. ä.) hält den Schlüssel, spricht mit
@@ -811,7 +809,66 @@ Proxy, ohne Schlüssel und ohne Geheimnis einbinden. Damit ließe sich die
 ganze Ebene fertig bauen und ausprobieren, nur eben in der Ostsee wirksam;
 Weg B wäre danach ein Quellenwechsel, kein Neubau.
 
+### Entschieden: der Sprungknopf (Weg A)
+
+Nachgeschärfte Anforderung: **weltweit**, nicht ein Land; Sportboote sind
+egal; genutzt wird es auch an Land, wenn die Kinder wissen wollen, was da
+draußen fährt. Damit fällt der ganze Zielkonflikt weg – gebraucht wird kein
+Live-Layer, sondern ein Knopf, der den aktuellen Ausschnitt in einer
+öffentlichen AIS-Karte öffnet.
+
+**Welche Seite?** In Frage kommt, was die Position im Link entgegennimmt, die
+Karte ohne Anmeldung zeigt und weltweit empfängt:
+
+| Seite | Link mit Position | Ohne Anmeldung | Auf dem Telefon |
+| --- | --- | --- | --- |
+| **VesselFinder** | `https://www.vesselfinder.com/?lat=<lat>&lon=<lon>&zoom=<z>`, Zoom 3–18 | Karte und Schiffsdetails frei: Name, Typ, Kurs, Geschwindigkeit, Zielhafen, ETA, meist ein Foto | die leichteste der drei Seiten |
+| **MarineTraffic** | `https://www.marinetraffic.com/en/ais/home/centerx:<lon>/centery:<lat>/zoom:<z>` | Karte frei, ein Teil der Detailfelder erst nach Anmeldung | die schwerste: Cookie-Banner und App-Hinweis vor der Karte |
+| **MyShipTracking** | `https://www.myshiptracking.com/?lat=<lat>&lng=<lon>&zoom=<z>` | Karte frei | dazwischen |
+
+Vorschlag: **VesselFinder als Ziel des Knopfes**, MarineTraffic als zweiter,
+kleinerer Link daneben – die beiden speisen sich aus unterschiedlichen
+Empfängernetzen, und wer eins nicht mag, nimmt das andere.
+
+Die drei Linkformen stammen aus der Dokumentation und den eigenen Beispielen
+der Anbieter, **nicht aus einer eigenen Messung**: die Hosts sind aus der
+Entwicklungsumgebung heraus gesperrt. Erster Schritt beim Bauen ist deshalb,
+die drei Links einmal am Telefon anzutippen und zu sehen, welcher wirklich am
+richtigen Fleck aufmacht.
+
+**Rechtlich unkritisch:** ein gewöhnlicher Hyperlink auf eine öffentliche Seite
+ist etwas anderes als das, was die Anbieter einschränken – nämlich das
+Einbetten per iframe und das automatisierte Abgreifen der Daten. Beides
+passiert hier nicht.
+
+**Technisch klein:**
+
+- **Kein CSP-Eintrag nötig.** Die Richtlinie dieser App beschränkt das *Laden*
+  von Ressourcen, nicht das *Navigieren*. Der Sprung lädt nichts nach, er
+  verlässt die Seite.
+- **`target="_blank"` mit `rel="noopener noreferrer"`.** In der installierten
+  App öffnet Android eine Custom Tab mit Zurück-Pfeil; SeaGlimpse bleibt
+  dahinter stehen und ist samt Zoom, Ziel und Kurs sofort wieder da.
+- **Übergeben wird die Kartenmitte und der aktuelle Zoom**, begrenzt auf das
+  Band der Zielseite. Im Folgemodus ist die Mitte die eigene Position – der
+  Ausschnitt drüben passt also zu dem, was man gerade sieht.
+- **Ohne Netz nutzlos**, und das muss der Eintrag sagen statt ins Leere zu
+  springen: bei `navigator.onLine === false` bleibt er inaktiv mit Hinweis.
+- **Platz:** ein Eintrag im Ebenenmenü, kein fünfter Knopf. Die Knopfleiste
+  ist mit vier Knöpfen voll, und der Sprung ist ja gerade der Ersatz für die
+  Ebene, die es nicht geben kann.
+
+**Ein Zugeständnis, das benannt gehört.** `features.md` verspricht unter
+„Datensparsam": keine Übertragung von Positionsdaten. Ein Sprung mit
+Koordinaten im Link ist genau das – einmalig, an einen Fremdanbieter. Es
+passiert ausschließlich auf ausdrückliches Antippen, nie im Hintergrund und
+nie ohne Zutun; `rel="noreferrer"` hält zusätzlich zurück, von welcher Seite
+der Sprung kam. Das Versprechen bekommt damit eine Ausnahme, und die steht
+hier, statt in der Beschreibung stillschweigend zu verschwinden.
+
 ### Wie die Ebene aussähe, wenn sie gebaut wird
+
+Gilt für Weg B oder C, falls die Frage je zurückkommt.
 
 - **Keine Kachelquelle.** `sources.js` bleibt unberührt: Positionen sind keine
   Bilder. Die Ebene wäre eine eigene Datei `js/ais.js` mit einer

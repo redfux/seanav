@@ -6,6 +6,17 @@ Versionierung nach [SemVer](https://semver.org/lang/de/).
 Die Versionsnummer wird ausschließlich in `js/version.js` gepflegt; Footer und
 Service-Worker-Cachename leiten sich automatisch daraus ab.
 
+## [0.21.2] – 2026-08-30
+
+### Changed
+
+- **Der AIS-Plan ist entschieden:** Weg A, ein Sprungknopf in eine
+  öffentliche AIS-Karte, weil die Anforderung weltweit gilt und Sportboote
+  ohnehin nicht gebraucht werden. In `architecture.md` steht jetzt der
+  Vergleich der drei verlinkbaren Seiten samt Linkform, dazu Platzierung,
+  Verhalten ohne Netz und das benannte Zugeständnis an „Datensparsam".
+  Weiterhin kein Code – der Wunsch war ausdrücklich „noch nicht umsetzen".
+
 ## [0.21.1] – 2026-08-30
 
 ### Added
