@@ -6,6 +6,16 @@ Versionierung nach [SemVer](https://semver.org/lang/de/).
 Die Versionsnummer wird ausschließlich in `js/version.js` gepflegt; Footer und
 Service-Worker-Cachename leiten sich automatisch daraus ab.
 
+## [0.21.1] – 2026-08-30
+
+### Added
+
+- **Recherche zu einer AIS-Ebene** in `architecture.md`: Vergleich von acht
+  Quellen (aisstream, BarentsWatch/Kystverket, Digitraffic, AISHub, DMA,
+  Kystdatahuset, eigener Empfänger an Bord, MarineTraffic/VesselFinder),
+  drei mögliche Wege und der Entwurf der Ebene. Kein Code – der Wunsch war
+  ausdrücklich „nur recherchieren und planen". Als O14 in `features.md`.
+
 ## [0.21.0] – 2026-08-26
 
 ### Changed

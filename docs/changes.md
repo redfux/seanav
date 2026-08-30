@@ -7,6 +7,19 @@ wird hier nichts.
 
 ## Offen
 
+- **„ist es möglich, auch andere Schiffe als optionalen Layer auf der Karte
+  darzustellen? wenn man auf die Schiffe tippt, sollten sich weitere Infos
+  dazu öffnen bzw. entsprechende Websites, wo dann öffentliche Informationen
+  zu den Schiffen, wie aktueller Kurs, Geschwindigkeit und Zielhafen,
+  abrufbar sind. alle Quellen sollen natürlich frei zugänglich sein. Nur
+  recherchieren und planen, aber noch nicht umsetzen."** (2026-08-30)
+  Recherchiert, nicht gebaut – wie gewünscht. Ergebnis: die Daten sind frei,
+  der Zugang ist es nicht. Weltweite Live-Quellen verlangen einen Schlüssel
+  und damit einen eigenen Server, die schlüsselfreie Quelle (Digitraffic)
+  deckt nur finnische Gewässer ab. Quellenvergleich, drei mögliche Wege und
+  der Entwurf der Ebene stehen in `architecture.md`, als O14 in
+  `features.md` festgehalten.
+
 - **„in der PWA unter Android ist die unterste Systemleiste noch weiß. kannst
   du es so anpassen, dass sie in derselben Farbe dargestellt wird wie der
   Hintergrund der Fußleiste"** (2026-08-25)

@@ -753,6 +753,89 @@ offen sind und sich aus keiner Dokumentation beantworten lassen:
 Voreingestellte Orte (Bergen, Las Palmas, Teneriffa Süd) machen den Vergleich
 zwischen den Revieren möglich, ohne hinzufahren.
 
+## Andere Schiffe (AIS): recherchiert, nicht gebaut
+
+Gewünscht ist eine abschaltbare Ebene mit anderen Schiffen, antippbar für
+Kurs, Geschwindigkeit und Zielhafen – aus frei zugänglichen Quellen. Die
+Recherche ist gemacht, gebaut ist nichts. Der Grund steht in den drei Sätzen,
+an denen jede Quelle scheitert oder nicht scheitert:
+
+1. **Keine Server-Komponente.** Die App liegt als statische Dateien auf GitHub
+   Pages. Es gibt niemanden, der eine Verbindung offen hält oder einen
+   Schlüssel verwahrt.
+2. **Kein Geheimnis im Repository.** Was im Quelltext steht, steht öffentlich.
+   Ein API-Schlüssel im Frontend ist kein Schlüssel mehr.
+3. **Jede Gegenstelle braucht CORS und einen CSP-Eintrag.** Kartenkacheln
+   dürfen zur Not ohne CORS als `<img>` kommen; Positionsdaten nicht, die
+   müssen durch `fetch` oder WebSocket, und beides prüft der Browser.
+
+### Was es gibt
+
+| Quelle | Zugang | Revier | Befund |
+| --- | --- | --- | --- |
+| aisstream.io | WebSocket, kostenloser Schlüssel nach Anmeldung | weltweit | Die Bedingungen untersagen die direkte Browserverbindung ausdrücklich: „Direct browser connections are not permitted. Connect from your own server and proxy only the information your clients need." Dazu läge der Schlüssel öffentlich im Repo. **Scheidet aus** |
+| BarentsWatch / Kystverket | REST und Server-Sent-Events, OAuth `client_credentials` über `id.barentswatch.no/connect/token`, `scope=ais` | norwegische Wirtschaftszone samt Svalbard und Jan Mayen | Die Daten selbst sind frei (NLOD), aber ein Client muss registriert werden, und selbst registrierte Clients können nur `client_credentials` – also Client-Secret, also nicht im Frontend. Ohne Fischereifahrzeuge unter 15 m und Freizeitboote unter 45 m. **Nur mit Proxy** |
+| Digitraffic (Fintraffic) | REST ohne Schlüssel (`meri.digitraffic.fi/api/ais/v1/locations`, `…/vessels`), zusätzlich MQTT über WebSocket; erbeten wird nur ein `Digitraffic-User`-Header | nur finnische Gewässer | Genau die gesuchte Bauform, freundlich zum Browser – aber das falsche Revier, weder Bergen noch die Kanaren |
+| AISHub | HTTP-Webservice mit Nutzernamen | weltweit | Zugang nur im Tausch: eigene Empfängerstation, die im 7-Tage-Mittel mindestens 10 Schiffe sieht und zu 90 % läuft. Die Zugangsdaten wären wieder ein Geheimnis |
+| Danish Maritime Authority | CSV-Archive über `web.ais.dk` | dänische Gewässer | Historische Aufzeichnungen, kein Live-Bild |
+| Kystdatahuset | offener WMS | Norwegen | Verkehrsdichteraster von 2011 – Wege, keine Schiffe |
+| Eigener AIS-Empfänger an Bord | NMEA über WLAN, `http://` im lokalen Netz | Sichtweite, ~20 sm | Von einer über HTTPS ausgelieferten Seite nicht erreichbar: Mixed Content, dazu Chromes Private Network Access. Ginge nur mit einem im Telefon gültigen Zertifikat für das Bordnetz |
+| MarineTraffic, VesselFinder | öffentliche Schiffsseiten je MMSI | weltweit | Als **Ziel** eines Antippens brauchbar – das ist ein Link, keine Datenabfrage. Die Kartendaten selbst sind kostenpflichtig |
+
+Das Muster ist überall dasselbe: die Daten sind frei, der *Zugang* ist es
+nicht. Wer AIS weltweit ausliefert, will wissen, wer fragt, und knüpft das an
+einen Schlüssel – und ein Schlüssel setzt genau die Server-Komponente voraus,
+die diese App bewusst nicht hat.
+
+### Drei mögliche Wege
+
+**Weg A – verlinken statt zeichnen.** Keine Schiffe auf der Karte, aber ein
+Knopf, der den aktuellen Kartenausschnitt in einer öffentlichen AIS-Karte
+öffnet (`marinetraffic.com/en/ais/home/centerx:…/centery:…/zoom:…`, im neuen
+Tab). Kostet nichts, verrät nichts, braucht keinen CSP-Eintrag und keinen
+Schlüssel, weil nichts geladen wird – es wird nur verlassen. Liefert aber
+genau das nicht, was die Anforderung eigentlich meint: den Blick auf die
+eigene Karte.
+
+**Weg B – echte Ebene über einen eigenen Relay.** Ein winziger, lesender
+Vermittler (Cloudflare Worker o. ä.) hält den Schlüssel, spricht mit
+BarentsWatch oder aisstream, filtert auf die angefragte Bounding Box und
+antwortet mit CORS-Header. Erst damit ist die Ebene baubar – und erst damit
+hat die App eine Server-Komponente, einen laufenden Hostnamen, eine
+Betriebsverantwortung und eine Stelle, an der Positionsanfragen sichtbar
+werden. Das ist keine technische, sondern eine Grundsatzentscheidung; alles,
+was `features.md` unter „Offline-first" und „Datensparsam" führt, steht daran.
+
+**Weg C – Digitraffic als Prototyp.** Die finnische Quelle lässt sich ohne
+Proxy, ohne Schlüssel und ohne Geheimnis einbinden. Damit ließe sich die
+ganze Ebene fertig bauen und ausprobieren, nur eben in der Ostsee wirksam;
+Weg B wäre danach ein Quellenwechsel, kein Neubau.
+
+### Wie die Ebene aussähe, wenn sie gebaut wird
+
+- **Keine Kachelquelle.** `sources.js` bleibt unberührt: Positionen sind keine
+  Bilder. Die Ebene wäre eine eigene Datei `js/ais.js` mit einer
+  Leaflet-`LayerGroup` und einem Eintrag im Ebenenmenü wie F15.
+- **Nichts davon in den Kachelspeicher.** Positionen sind Sekundenware; der
+  IndexedDB-Cache existiert für Karten, die offline gelten. Ohne Netz zeigt
+  die Ebene nichts an – und sagt das auch.
+- **Abfrage an der Bounding Box**, gedrosselt beim Verschieben, danach etwa
+  alle 30 s; Marker als gedrehte Pfeile, die sich wie das Bootssymbol gegen
+  die Kartendrehung zurückdrehen müssen, Farbe nach Schiffstyp.
+- **Antippen öffnet eine Karte** mit Name, MMSI, Kurs, Geschwindigkeit und –
+  falls die Quelle sie führt – Zielhafen, dazu einen Link auf die öffentliche
+  Schiffsseite bei MarineTraffic oder VesselFinder.
+- **CSP:** die neue Gegenstelle in `connect-src`, sonst nichts.
+
+### Was dabei ehrlich dazugehört
+
+AIS zeigt nicht alle Schiffe. Kleine Freizeitboote senden meist gar nicht,
+Norwegen filtert Fischerei unter 15 m und Freizeit unter 45 m ausdrücklich
+heraus, und terrestrisch empfangene Positionen sind je nach Netz Minuten alt.
+Eine Schiffsebene in dieser App wäre also dasselbe wie die Seekarte hier: ein
+Blick, keine Grundlage für eine Entscheidung. Der Hinweis in der Fußzeile gilt
+unverändert – und für diese Ebene besonders.
+
 ## Die Fußzeile trägt den Haftungshinweis
 
 Eine Warnung, die in einer readme steht, hat niemand gelesen, wenn es darauf
