@@ -26,6 +26,12 @@ wird hier nichts.
 
 ## Erledigt
 
+- **„setze HEADING_SMOOTHING so, dass eine harte Wende von 90° auf 180° nach
+  4 Sekunden auf ±10° eingeschwungen ist … und kannst du es so einstellen,
+  dass die Kurslinie nur angezeigt wird, wenn der unterste rechte Button aktiv
+  ist"** (2026-08-26) Umgesetzt in 0.21.0: α = 0,45 (3 s mit Gerätekurs), und
+  der Schalter blendet die ganze Linie aus.
+
 - **„es kommt manchmal vor, dass sich das Boot trotz gleichmäßiger
   Geradeausfahrt spontan dreht … evtl. hilft es, wenn man die Reaktionszeit
   beim Kurswechsel etwas sanfter gestaltet"** (2026-08-26)

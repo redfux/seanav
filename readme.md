@@ -72,7 +72,7 @@ relativ und funktionieren daher auch unter dem Unterpfad `/seanav/`.
 4. Mit **zwei Fingern** lässt sich die Karte frei drehen; nahe Norden rastet
    sie ein, ein Tipp auf den Knopf stellt sie gerade und zentriert wieder
 5. Ein Tipp auf die Geschwindigkeit schaltet zwischen Knoten und km/h
-6. 📐 blendet die Distanzmarken auf der Kurslinie ein/aus
+6. 📐 blendet die Kurslinie samt ihren Distanzmarken ein/aus
 
 Der Bildschirm bleibt an, solange die App im Vordergrund ist. Lehnt der Browser
 das ab, sagt die App es einmal – dann schaltet sich das Display wie gewohnt ab.

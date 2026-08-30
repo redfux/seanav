@@ -12,7 +12,7 @@ Fußzeile sagt es dauerhaft.
 | # | Anforderung | Seit |
 | ~~F1~~ | ~~Seekarte als Kartenuntergrund (Kartverket „Sjøkart Raster")~~ – Rasterquelle entfernt in 0.6.0, ersetzt durch OSM als Grundkarte plus die Tiefen- und Seekartenebenen (F13, F32, F33) | – |
 | F2 | Eigene Position per Geräte-GPS, Symbol auf der Karte (seit 0.11.0 ein Boot, siehe F27) | 0.1.0 |
-| F3 | Kurs über Grund (COG) als Linie in Fahrtrichtung | 0.1.0 |
+| F3 | Kurs über Grund (COG) als Linie in Fahrtrichtung; über den Marken-Schalter samt Linie ein-/ausblendbar | 0.1.0 |
 | F4 | Geschwindigkeit geglättet, in Knoten oder km/h (siehe F29) | 0.1.0 |
 | F5 | Ziel per Klick/Tap setzen und wieder löschen | 0.1.0 |
 | F6 | Distanz, Peilung und ETA zum Ziel | 0.1.0 |

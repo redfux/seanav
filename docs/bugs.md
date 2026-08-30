@@ -33,7 +33,8 @@ mittlere Kursabweichung **69,4°**, Maximum **178,2°**. Das Boot zeigte
 zeitweise genau rückwärts.
 
 **Behoben in 0.20.1** durch Mindestgeschwindigkeit, lange Basislinie und ein
-zirkuläres gleitendes Mittel – die Begründung steht in `architecture.md`.
+zirkuläres gleitendes Mittel (dessen Faktor in 0.21.0 auf 0,45 nachgezogen
+wurde, siehe dort) – die Begründung steht in `architecture.md`.
 Dieselbe Fahrt danach: **9,4°** mittlere Abweichung, Maximum **25,5°**; bei
 2 kn 12,3° und 52,7°. Erkauft mit Nachlauf: eine harte Wende um 90° ist nach
 9 s auf ±10° eingeschwungen.

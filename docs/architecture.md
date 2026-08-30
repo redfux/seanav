@@ -240,6 +240,10 @@ Release erfordert damit genau eine Änderung im Code plus den Eintrag in
 
 ## Distanzmarken auf der Kurslinie
 
+Die Kurslinie ist eine Projektion und hängt deshalb ganz am selben Schalter wie
+die Marken darauf: ist er aus, verschwindet die Linie mit. Eine Linie ohne ihre
+Werte war ein halber Zustand, den niemand bestellt hatte.
+
 Statt einer Kachel mit Projektionswerten trägt die Kurslinie Punkte bei festen
 Distanzen – 200 m, 500 m, 1 km, 5 km und 10 km. Der Wert steht damit dort, wo er hingehört:
 an der Stelle, die er beschreibt. Die Linie reicht knapp über die äußerste Marke
@@ -576,7 +580,7 @@ Drei Stufen dagegen, in dieser Reihenfolge:
    längste vorhandene Strecke genommen, sofern sie 5 m überschreitet – ein
    ungenauer Kurs bei zwei Knoten kostet weniger als einer, der vor einer
    Stunde stehen geblieben ist.
-3. **Zirkuläres gleitendes Mittel** (`HEADING_SMOOTHING`, α = 0,35). Winkel
+3. **Zirkuläres gleitendes Mittel** (`HEADING_SMOOTHING`, α = 0,45). Winkel
    lassen sich nicht als Zahlen mitteln – 359° und 1° ergäben 180°, die
    Gegenrichtung –, deshalb läuft das Mittel über den Einheitsvektor, aus dem
    der Winkel zurückgelesen wird. Das dämpft von selbst: ein einzelner
@@ -595,9 +599,28 @@ Gemessen nach dem Umbau, gleiche simulierte Fahrt:
 | nachher, 5 kn | 9,4° | 25,5° |
 | nachher, 2 kn | 12,3° | 52,7° |
 
-Der Preis ist Nachlauf: eine harte Wende von 90° auf 180° ist nach **9 s** auf
-±10° eingeschwungen. Für ein Boot ist das der richtige Tausch – eine echte
-Wende dauert ohnehin länger als die Anzeige.
+**Wie schnell das einschwingt, hängt daran, woher der Kurs kommt.** Meldet das
+Gerät einen eigenen – der Normalfall am Telefon, und der ohne Basislinien-Lauf –
+entscheidet allein α. Muss er aus Positionen abgeleitet werden, gibt die
+Basislinie das Tempo vor und kein α kommt darunter. Gemessen über acht
+Rauschmuster je Wert, harte Wende von 90° auf 180°, 5 kn:
+
+| α | Gerätekurs: Einschwingen | Geradeaus Ø | abgeleitet: Einschwingen | Geradeaus Ø |
+| --- | --- | --- | --- | --- |
+| 0,35 | 4 s | 3,2° | 7 s | 9,8° |
+| **0,45** | **3 s** | **3,6°** | **7 s** | **10,8°** |
+| 0,55 | 2 s | 4,1° | 8 s | 11,8° |
+| 0,80 | 1 s | 5,3° | 16 s | 14,3° |
+
+Gewählt ist 0,45: schnell genug für ein kleines Motorboot, das in ein paar
+Sekunden herum ist, und noch ruhig genug. Über 0,55 hinaus wird der abgeleitete
+Kurs deutlich schlechter, weil das Filter dann dem Rauschen folgt statt es zu
+glätten.
+
+Auch die Basislinie wurde gegengeprüft: kürzer macht **beides** schlechter –
+bei 8 m statt 12 m steigt die Einschwingzeit auf 13 s und die Ruhelage auf
+13,6°, weil die kürzere Strecke mehr Rauschen durchlässt, das das Filter dann
+wieder ausbügeln muss. Die 12 m bleiben.
 
 Distanz und Peilung über Haversine bzw. Großkreis-Anfangspeilung auf einer
 Kugel mit R = 6.371 km. Der Fehler gegenüber einem Ellipsoidmodell liegt bei

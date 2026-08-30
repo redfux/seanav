@@ -6,6 +6,24 @@ Versionierung nach [SemVer](https://semver.org/lang/de/).
 Die Versionsnummer wird ausschließlich in `js/version.js` gepflegt; Footer und
 Service-Worker-Cachename leiten sich automatisch daraus ab.
 
+## [0.21.0] – 2026-08-26
+
+### Changed
+
+- **Der Kurs schwingt schneller ein.** `HEADING_SMOOTHING` steht auf 0,45 statt
+  0,35. Gemessen über acht Rauschmuster je Wert: meldet das Gerät einen eigenen
+  Kurs – der Normalfall am Telefon –, ist eine Wende von 90° auf 180° damit
+  nach **3 s** auf ±10° eingeschwungen statt nach 4 s, bei 3,6° statt 3,2°
+  mittlerer Abweichung im Geradeauslauf. Im Code nachgemessen: 3 s.
+- **Ohne Gerätekurs bleibt es bei 7 s**, und das ist keine Einstellungssache:
+  dort gibt die 12-Meter-Basislinie das Tempo vor. Ein größeres α macht es
+  schlechter (0,8 → 16 s), eine kürzere Basislinie ebenfalls (8 m → 13 s bei
+  13,6° Ruhelage), weil beides mehr Rauschen durchlässt, als es an Aktualität
+  gewinnt. Die Messreihen stehen in `architecture.md`.
+- **Der Schalter unten rechts blendet jetzt die ganze Kurslinie aus**, nicht
+  nur die Zahlen daran. Die Linie ist eine Projektion wie die Marken auf ihr;
+  eine Linie ohne ihre Werte war ein halber Zustand.
+
 ## [0.20.1] – 2026-08-26
 
 ### Fixed
