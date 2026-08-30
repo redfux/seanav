@@ -23,12 +23,12 @@ Build-Schritt.
 - Tiefenlinien für europäische Gewässer aus EMODnet Bathymetry – Kanaren und Mittelmeer eingeschlossen
 - Offizielle spanische Seekarte (IHM) mit Lotungen, Felsen, Wracks und Hindernissen – für spanische Gewässer inklusive der Kanaren
 - Seezeichen (Tonnen, Baken, Feuer) aus OpenSeaMap
-- Einzelne Kartenebenen über 🗺️ ein- und ausschaltbar
+- Einzelne Kartenebenen über den Ebenen-Knopf (Stapel-Symbol) ein- und ausschaltbar
 - „Schiffe in der Nähe" im selben Menü: öffnet den gezeigten Ausschnitt in
   der öffentlichen AIS-Karte von VesselFinder, wo zu jedem Schiff Name, Typ,
-  Kurs, Geschwindigkeit und Zielhafen stehen. Andere Schiffe **in** dieser Karte gehen nicht – jede
-  weltweite AIS-Quelle verlangt einen Schlüssel und damit einen eigenen
-  Server, siehe `docs/architecture.md`
+  Kurs, Geschwindigkeit und Zielhafen stehen. Andere Schiffe **in** dieser
+  Karte gehen nicht – jede weltweite AIS-Quelle verlangt einen Schlüssel und
+  damit einen eigenen Server, siehe `docs/architecture.md`
 - Eigene Position per Geräte-GPS (`navigator.geolocation`)
 - Eigene Position als Bootssymbol, gedreht in den aktuellen Kurs
 - Karte wahlweise nordwärts oder in Fahrtrichtung gedreht
@@ -77,7 +77,11 @@ relativ und funktionieren daher auch unter dem Unterpfad `/seanav/`.
 4. Mit **zwei Fingern** lässt sich die Karte frei drehen; nahe Norden rastet
    sie ein, ein Tipp auf den Knopf stellt sie gerade und zentriert wieder
 5. Ein Tipp auf die Geschwindigkeit schaltet zwischen Knoten und km/h
-6. 📐 blendet die Kurslinie samt ihren Distanzmarken ein/aus
+6. Der unterste Knopf (Dreieck) blendet die Kurslinie samt ihren
+   Distanzmarken ein und aus
+7. Im Ebenenmenü öffnet „Schiffe in der Nähe" den gezeigten Ausschnitt in
+   einer öffentlichen AIS-Karte – in einem neuen Tab, die App bleibt
+   dahinter stehen
 
 Der Bildschirm bleibt an, solange die App im Vordergrund ist. Lehnt der Browser
 das ab, sagt die App es einmal – dann schaltet sich das Display wie gewohnt ab.
@@ -99,8 +103,10 @@ sich mit „Nicht jetzt" dauerhaft wegklicken.
   keine automatische Installation, deshalb beschreibt der Hinweis dort nur den
   Weg
 
-Installiert startet SeaGlimpse im Vollbild ohne Browserleiste, mit eigenem Icon
-und – dank Service Worker – auch ohne Empfang.
+Installiert startet SeaGlimpse ohne Browserleiste, mit eigenem Icon und –
+dank Service Worker – auch ohne Empfang. Die Systemleisten des Telefons
+bleiben sichtbar (Uhrzeit, Akkustand); den ganzen Bildschirm gibt der
+Vollbildschalter in der Fußleiste.
 
 ### Kartenspeicher
 
@@ -110,13 +116,15 @@ bleibt also verfügbar, ein unbekanntes Revier nicht.
 
 Einen Vorab-Download ganzer Gebiete gibt es nicht: die Nutzungsbedingungen von
 `tile.openstreetmap.org` untersagen das Herunterladen von Kacheln, die niemand
-angesehen hat. Über 💾 lässt sich der Speicherstand einsehen und leeren.
+angesehen hat. Über den Speicher-Knopf (Zylinder-Symbol) lässt sich der
+Stand einsehen und leeren.
 
 ## Datenspeicherung
 
 Alles bleibt lokal auf dem Gerät. Es gibt keine Server-Komponente, keine
-Analytics- und keine Tracking-Skripte, und es werden keinerlei Positions- oder
-Nutzungsdaten übertragen.
+Analytics- und keine Tracking-Skripte, und es werden von sich aus keinerlei
+Positions- oder Nutzungsdaten übertragen. Die eine Ausnahme steht unten und
+passiert nur auf ausdrückliches Antippen.
 
 | Speicher | Inhalt | Zweck |
 | --- | --- | --- |
@@ -127,8 +135,8 @@ Nutzungsdaten übertragen.
 Die GPS-Position wird ausschließlich im Arbeitsspeicher gehalten und nicht
 persistiert. Sie verlässt das Gerät an genau einer Stelle: beim Antippen von
 „Schiffe in der Nähe" steht die Kartenmitte im Link zu VesselFinder – nur
-dann, nie im Hintergrund. Zurücksetzen lässt sich beides über „Websitedaten löschen" in den
-Browser-Einstellungen.
+dann, nie im Hintergrund. Zurücksetzen lässt sich der gespeicherte Stand über
+„Websitedaten löschen" in den Browser-Einstellungen.
 
 Ausgehende Verbindungen bestehen ausschließlich zum Abruf von Kartenkacheln
 (der AIS-Link lädt nichts nach, er verlässt die Seite):

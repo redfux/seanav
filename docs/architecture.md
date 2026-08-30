@@ -236,7 +236,12 @@ Release erfordert damit genau eine Änderung im Code plus den Eintrag in
   Fremddaten. Auf der Wartungsseite `compare.html` wird alles, was von fremden
   Servern ins Protokoll geht, vorher escaped.
 - **Keine Secrets:** keiner der Kartendienste braucht einen API-Key, es gibt
-  daher weder `.env` noch Zugangsdaten im Repo.
+  daher weder `.env` noch Zugangsdaten im Repo. Aus demselben Grund gibt es
+  keine eigene AIS-Ebene, sondern nur den Sprung zu einer fremden Karte –
+  siehe unten.
+- **Der AIS-Sprung steht nicht in der CSP**, und das ist kein Versehen: die
+  Richtlinie beschränkt, was die Seite *lädt*, nicht wohin sie *navigiert*.
+  Er lädt nichts nach.
 
 ## Distanzmarken auf der Kurslinie
 
@@ -467,8 +472,8 @@ wird deshalb beim ersten Update des Ziehens am Element abgelesen.
 
 **Was die Drehung nicht kann:** Die Beschriftungen der Kartendienste – Tiefenzahlen,
 Ortsnamen, Seezeichensymbole – stehen bei gedrehter Karte schief. Sie sind in
-die Kacheln eingebrannt; OSM, Kartverket und OpenSeaMap liefern fertige Bilder,
-keine Objekte. Was in ein Bild gezeichnet ist, dreht sich mit dem Bild, und kein
+die Kacheln eingebrannt; alle fünf Dienste – OSM, Kartverket, EMODnet, IHM und
+OpenSeaMap – liefern fertige Bilder, keine Objekte. Was in ein Bild gezeichnet ist, dreht sich mit dem Bild, und kein
 Eingriff auf der Client-Seite kann einzelne Pixel wieder aufrichten. Aufrecht
 zu halten wären sie nur, wenn die Karte aus Vektordaten gezeichnet würde
 (Vektorkacheln mit MapLibre GL, oder die Tiefendaten als GeoJSON über WFS und
@@ -656,6 +661,10 @@ Rasterquelle war der falsche Weg.
   Gewässer ab.
 - **OpenSeaMap Seezeichen** – Tonnen, Baken und Feuer als transparentes
   Overlay, CC-BY-SA. Deckung ist community-abhängig.
+- **EMODnet Bathymetry `contours`** (0.17.0) und **IHM `grupo_2`** (0.18.0) –
+  Tiefenlinien für ganz Europa und die offizielle spanische Seekarte.
+  Beide kamen aus der Suche nach Quellen außerhalb Norwegens; die Messung,
+  die zu ihnen führte, steht weiter unten.
 
 ### Verworfen oder offen
 
@@ -981,8 +990,8 @@ Der Bildschirm ist in Zonen aufgeteilt, die sich nicht überschneiden – auf
 | Zone | Inhalt |
 | --- | --- |
 | oben, volle Breite | App-Bar mit Kurs, Speed, GPS |
-| oben links | Ablesekarten (Navigation, Projektion), gestapelt in einer Spalte |
+| oben links | Ablesekarten (Zielkarte, Installationshinweis), gestapelt in einer Spalte |
 | Mitte oben | Sheets für Ebenen und Speicher, gegenseitig ausschließend |
 | unten rechts | Schaltflächen |
 | unten links | Zoom-Control |
-| unten, volle Breite | Attribution über dem Footer |
+| unten, volle Breite | Fußleiste: Kartennachweis, Haftungshinweis, Impressum und der Vollbildschalter – eine Leiste, deren gemessene Höhe die Schaltflächen darüber hält |

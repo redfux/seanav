@@ -43,7 +43,7 @@ POSSIBILITY OF SUCH DAMAGE.
 - **Rechteinhaber:** OpenStreetMap-Mitwirkende
 - **Lizenz:** Open Database License (ODbL) 1.0. Die Namensnennung ist
   **verpflichtend** und erscheint als „© OpenStreetMap" mit Link auf
-  https://www.openstreetmap.org/copyright im Leaflet-Attribution-Control.
+  https://www.openstreetmap.org/copyright im Kartennachweis der Fußleiste.
 - **Nutzungsbedingungen:** https://operations.osmfoundation.org/policies/tiles/
   Bulk-Downloading ist untersagt; die App speichert ausschließlich Kacheln,
   die tatsächlich angezeigt wurden, und bietet keinen Vorab-Download.
@@ -55,17 +55,46 @@ POSSIBILITY OF SUCH DAMAGE.
 - **Rechteinhaber:** Kartverket (norwegische Kartenbehörde)
 - **Nutzung:** offener, kostenfreier Dienst ohne API-Key
 - **Abdeckung:** norwegische Gewässer
-- **Attribution:** wird als „© Kartverket" im Leaflet-Attribution-Control
+- **Attribution:** wird als „© Kartverket" im Kartennachweis der Fußleiste
   angezeigt (Quellen-Registry in `js/sources.js`)
+
+## Kartendaten – EMODnet Bathymetry
+
+- **Bezug:** zur Laufzeit als WMS-Bilder von `ows.emodnet-bathymetry.eu`,
+  Ebene `contours`; nicht im Repository enthalten
+- **Rechteinhaber:** EMODnet Bathymetry Consortium (EU)
+- **Lizenz:** CC-BY 4.0 – Namensnennung verpflichtend, erscheint als
+  „© EMODnet Bathymetry (CC-BY 4.0)" mit Link im Kartennachweis
+- **Nutzung:** offener Dienst ohne API-Key
+- **Abdeckung:** europäische Gewässer einschließlich Kanaren und Mittelmeer
+
+## Kartendaten – Instituto Hidrográfico de la Marina (IHM)
+
+- **Bezug:** zur Laufzeit als WMS-Bilder von `ideihm.covam.es`, Ebene
+  `grupo_2` der Kartenzwecke `cartaENCp3`–`p5`; nicht im Repository enthalten
+- **Rechteinhaber:** Instituto Hidrográfico de la Marina (Spanien)
+- **Nutzung:** frei einsehbarer Dienst ohne API-Key; kommerzielle Nutzung ist
+  vertragspflichtig. Der Anbieter weist ausdrücklich darauf hin, dass die
+  Darstellung **nicht zur Navigation** dient
+- **Attribution:** „© Instituto Hidrográfico de la Marina" im Kartennachweis
+- **Abdeckung:** spanische Gewässer einschließlich der Kanaren
 
 ## Kartendaten – OpenSeaMap
 
 - **Bezug:** zur Laufzeit als Kacheln von `tiles.openseamap.org`
-- **Lizenz:** CC-BY-SA, Namensnennung im Attribution-Control
+- **Lizenz:** CC-BY-SA, Namensnennung im Kartennachweis der Fußleiste
 
 ## Schriften und Icons
 
 Keine eingebetteten Fremdschriften – die App nutzt ausschließlich
-System-Schriftarten. Die Toolbar-Symbole sind Unicode-Emoji, gerendert durch
-die Emoji-Schrift des jeweiligen Systems; es wird keine Icon-Bibliothek
-eingebunden.
+System-Schriftarten. Die Symbole der Oberfläche sind selbst gezeichnete
+Inline-SVGs, einmal in `index.html` als `<defs>` abgelegt und per `<use>`
+referenziert; es wird weder eine Icon-Bibliothek noch ein Icon-Font
+eingebunden. Die früheren Unicode-Emoji sind seit 0.7.0 ersetzt.
+
+## Verlinkte fremde Dienste
+
+„Schiffe in der Nähe" öffnet die öffentliche AIS-Karte von VesselFinder in
+einem neuen Tab. Das ist ein Hyperlink: es werden keine Daten von dort
+geladen, nichts eingebettet und nichts gespeichert, weshalb daraus auch keine
+Lizenzpflicht entsteht.

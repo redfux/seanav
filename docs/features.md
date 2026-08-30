@@ -68,6 +68,7 @@ Fußzeile sagt es dauerhaft.
 | O3 | Routen mit mehreren Wegpunkten statt nur einem Einzelziel | offen |
 | ~~O4~~ | ~~Google Material Design als gestalterische Grundlage~~ – umgesetzt in 0.7.0 (F19) | – |
 | O5 | Abfragbare Tiefenwerte (Antippen → Tiefe) – blockiert durch einen Serverfehler des Dienstes, siehe B4 in `bugs.md` | extern blockiert |
+| ~~O6~~ | ~~Seezeichen-Overlay (Tonnen, Baken, Feuer) aus OpenSeaMap~~ – umgesetzt in 0.4.0 (F14), allerdings als Rasterkacheln statt vektorbasiert; die damit verbundene Einschränkung steht als O11 | – |
 | O7 | Offizielle ENC-Vektorkarten (S-57) über einen PRIMAR-Distributor – die einzige Quelle mit zertifizierten Seekarten, deren Beschriftung sich zudem mitdrehen ließe (O11), aber lizenzpflichtig | Beschaffungsentscheidung |
 | O8 | Vorab-Download ganzer Gebiete. Untersagt durch die Nutzungsbedingungen von `tile.openstreetmap.org`; möglich nur mit einem Anbieter, der Prefetching gestattet – die meisten verlangen dafür einen API-Schlüssel | zu entscheiden |
 | ~~O9~~ | ~~Tiefendaten außerhalb Norwegens~~ – Tiefenlinien europaweit mit EMODnet (F32), Seekarte für spanische Gewässer mit IHM (F33), beide in 0.17.0/0.18.0 | – |

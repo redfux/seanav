@@ -1,11 +1,28 @@
 # Änderungswünsche
 
-Eingangskorb für gewünschte, noch nicht umgesetzte Änderungen. Einträge werden
-stichpunktartig notiert und nach Umsetzung nach „Erledigt" verschoben – im
-Original-Wortlaut, ergänzt um Datum und eine kurze Umsetzungsnotiz. Gelöscht
-wird hier nichts.
+Eingangskorb für gewünschte Änderungen. Einträge werden im Original-Wortlaut
+notiert, ergänzt um Datum und eine kurze Umsetzungsnotiz, und nach der
+Umsetzung nach „Erledigt" verschoben. Unter „Offen" bleibt, was der Wunsch
+wollte und die App nicht kann – auch wenn die Frage beantwortet ist.
+Gelöscht wird hier nichts.
 
 ## Offen
+
+- **„in der PWA unter Android ist die unterste Systemleiste noch weiß. kannst
+  du es so anpassen, dass sie in derselben Farbe dargestellt wird wie der
+  Hintergrund der Fußleiste"** (2026-08-25)
+  Von der Seite aus nicht steuerbar: die untere Systemleiste färbt Chrome in
+  einer installierten App selbst. In 0.19.2 sind alle Angaben gesetzt, die
+  greifen können; bleibt sie hell, liegt es an Chromes Design-Einstellung.
+  Siehe O13 in `features.md`.
+
+- **„wenn sich die Karte dreht, drehen sich nicht die Seezeichen und
+  Tiefenangaben, die stehen dann schief/auf dem Kopf. ist das anpassbar?"**
+  (2026-08-24) Nicht mit Rasterkacheln – die Beschriftung ist ins Bild
+  gezeichnet. Bliebe nur eine vektorbasierte Renderschicht; als O11 in
+  `features.md` festgehalten.
+
+## Erledigt
 
 - **„schmeiß MarineTraffic raus, ich finde VesselFinder für meinen Bedarf
   besser. der Kartenausschnitt passt übrigens"** (2026-08-30)
@@ -16,15 +33,16 @@ wird hier nichts.
 - **„mit MarineTraffic funktioniert es erstmal. bau trotzdem die
   VesselFinder-Einbettungs-Karte zum Testen als zweite Variante mit ein.
   dann sag ich dir, welche Variante mir besser gefällt"** (2026-08-30)
-  Umgesetzt in 0.23.0: zweiter, leiserer Knopf daneben. Die Entscheidung,
-  welcher bleibt, steht noch aus.
+  Umgesetzt in 0.23.0: zweiter, leiserer Knopf daneben. Entschieden wurde
+  zugunsten von VesselFinder, MarineTraffic ist mit 0.23.1 wieder raus.
 
 - **„der Kartenausschnitt passt nicht, es scheint nur der Standardeinstiegs-
   punkt zu sein … wenn ich zum korrekten Ausschnitt zoome, auf VesselFinder,
   ändert sich die URL nicht … d. h. irgendwas passt mit der URL noch nicht"**
   (2026-08-30) Behoben in 0.22.1: VesselFinders Website liest die Parameter
-  gar nicht, sie gehören deren Einbettungs-Karte. Ziel ist jetzt
-  MarineTraffic, dessen Adressform die Seite beim Navigieren selbst erzeugt.
+  gar nicht, sie gehören deren Einbettungs-Karte. Ziel wurde daraufhin
+  MarineTraffic, dessen Adressform die Seite beim Navigieren selbst erzeugt;
+  seit 0.23.1 ist es wieder VesselFinder, nun mit der richtigen Adresse.
   Siehe B10 in `bugs.md`.
 
 - **„ist es möglich, auch andere Schiffe als optionalen Layer auf der Karte
@@ -40,24 +58,9 @@ wird hier nichts.
   der Entwurf der Ebene stehen in `architecture.md`, als O14 in
   `features.md` festgehalten.
 
-- **„in der PWA unter Android ist die unterste Systemleiste noch weiß. kannst
-  du es so anpassen, dass sie in derselben Farbe dargestellt wird wie der
-  Hintergrund der Fußleiste"** (2026-08-25)
-  Von der Seite aus nicht steuerbar: die untere Systemleiste färbt Chrome in
-  einer installierten App selbst. In 0.19.2 sind alle Angaben gesetzt, die
-  greifen können; bleibt sie hell, liegt es an Chromes Design-Einstellung.
-  Siehe O13 in `features.md`.
 - **„und nur den unteren Streifen ausblenden geht nicht?"** (2026-08-25)
   Nein – die Fullscreen-API nimmt beide Leisten oder keine. Als Ausweg ein
   Vollbildschalter in der Fußleiste, umgesetzt in 0.20.0.
-
-- **„wenn sich die Karte dreht, drehen sich nicht die Seezeichen und
-  Tiefenangaben, die stehen dann schief/auf dem Kopf. ist das anpassbar?"**
-  (2026-08-24) Nicht mit Rasterkacheln – die Beschriftung ist ins Bild
-  gezeichnet. Bliebe nur eine vektorbasierte Renderschicht; als O11 in
-  `features.md` festgehalten.
-
-## Erledigt
 
 - **„ich brauche definitiv eine weltweite Anbindung, nicht nur ein Land.
   Variante A scheint mir für meinen Fall ausreichend. es geht nur darum,
@@ -142,7 +145,6 @@ wird hier nichts.
 - **„die Karte ist nicht drehbar, wenn man sie mit den Fingern bewegt. kannst
   du das noch implementieren"** (2026-08-24) Umgesetzt in 0.13.0 als
   Zwei-Finger-Drehung mit Schwelle und Einrasten bei Norden.
-
 
 - **„die ETA soll nur klein dargestellt werden, wenn die Zielkachel eingeklappt
   ist, ansonsten … in der selben Größe/Schriftart wie die Entfernung"**,

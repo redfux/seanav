@@ -6,6 +6,30 @@ Versionierung nach [SemVer](https://semver.org/lang/de/).
 Die Versionsnummer wird ausschließlich in `js/version.js` gepflegt; Footer und
 Service-Worker-Cachename leiten sich automatisch daraus ab.
 
+## [0.23.2] – 2026-08-30
+
+### Changed
+
+- **Doku-Durchgang über readme und alle Dateien in `docs/`.** Korrigiert:
+  die readme versprach „keinerlei Positionsdaten" und widersprach damit dem
+  Absatz zwei weiter unten; sie nannte die installierte App „Vollbild",
+  obwohl `standalone` genau dafür gewählt wurde, dass die Systemleisten
+  bleiben; und sie benannte drei Knöpfe mit Emoji, die seit 0.7.0 keine mehr
+  sind.
+- `THIRD_PARTY_LICENSES.md` führte EMODnet und IHM nicht auf, obwohl beide
+  seit 0.17.0/0.18.0 zur Laufzeit geladen werden und Namensnennung
+  verlangen. Ergänzt, samt dem Hinweis des IHM, dass seine Darstellung nicht
+  zur Navigation dient. Der Nachweis sitzt außerdem längst in der Fußleiste,
+  nicht mehr im Leaflet-Control, und die Symbole sind Inline-SVG statt Emoji.
+- `architecture.md`: die Rasterbeschriftung betrifft alle fünf Dienste, nicht
+  die drei von damals; die Liste der umgesetzten Quellen kannte EMODnet und
+  IHM noch nicht; die Flächenaufteilung nannte eine Projektionskarte, die es
+  nicht mehr gibt, und eine Attribution über der Fußzeile statt darin.
+- `features.md`: O6 war gelöscht statt durchgestrichen worden – wieder da,
+  mit dem Vermerk, dass F14 ihn erfüllt hat.
+- `changes.md`: vier erledigte Einträge lagen noch unter „Offen". Verschoben;
+  dort bleibt jetzt nur, was die App wirklich nicht kann.
+
 ## [0.23.1] – 2026-08-30
 
 ### Changed
