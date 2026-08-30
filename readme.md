@@ -24,9 +24,10 @@ Build-Schritt.
 - Offizielle spanische Seekarte (IHM) mit Lotungen, Felsen, Wracks und Hindernissen – für spanische Gewässer inklusive der Kanaren
 - Seezeichen (Tonnen, Baken, Feuer) aus OpenSeaMap
 - Einzelne Kartenebenen über 🗺️ ein- und ausschaltbar
-- „Schiffe in der Nähe" im selben Menü: öffnet den gezeigten Ausschnitt bei
-  MarineTraffic, wo zu jedem Schiff Name, Typ, Kurs, Geschwindigkeit und
-  Zielhafen stehen. Andere Schiffe **in** dieser Karte gehen nicht – jede
+- „Schiffe in der Nähe" im selben Menü: öffnet den gezeigten Ausschnitt in
+  einer öffentlichen AIS-Karte – wahlweise MarineTraffic (volle Seite) oder
+  VesselFinder (nackte Karte) –, wo zu jedem Schiff Name, Typ, Kurs,
+  Geschwindigkeit und Zielhafen stehen. Andere Schiffe **in** dieser Karte gehen nicht – jede
   weltweite AIS-Quelle verlangt einen Schlüssel und damit einen eigenen
   Server, siehe `docs/architecture.md`
 - Eigene Position per Geräte-GPS (`navigator.geolocation`)
@@ -126,7 +127,7 @@ Nutzungsdaten übertragen.
 
 Die GPS-Position wird ausschließlich im Arbeitsspeicher gehalten und nicht
 persistiert. Sie verlässt das Gerät an genau einer Stelle: beim Antippen von
-„Schiffe in der Nähe" steht die Kartenmitte im Link zu MarineTraffic – nur
+„Schiffe in der Nähe" steht die Kartenmitte im Link zur gewählten AIS-Karte – nur
 dann, nie im Hintergrund. Zurücksetzen lässt sich beides über „Websitedaten löschen" in den
 Browser-Einstellungen.
 

@@ -7,6 +7,12 @@ wird hier nichts.
 
 ## Offen
 
+- **„mit MarineTraffic funktioniert es erstmal. bau trotzdem die
+  VesselFinder-Einbettungs-Karte zum Testen als zweite Variante mit ein.
+  dann sag ich dir, welche Variante mir besser gefällt"** (2026-08-30)
+  Umgesetzt in 0.23.0: zweiter, leiserer Knopf daneben. Die Entscheidung,
+  welcher bleibt, steht noch aus.
+
 - **„der Kartenausschnitt passt nicht, es scheint nur der Standardeinstiegs-
   punkt zu sein … wenn ich zum korrekten Ausschnitt zoome, auf VesselFinder,
   ändert sich die URL nicht … d. h. irgendwas passt mit der URL noch nicht"**

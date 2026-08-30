@@ -832,7 +832,7 @@ nicht. Diese Parameter gehören ihrer **Einbettungs**-Karte unter `/aismap`.
 Ihre Website hält ihren Ausschnitt überhaupt nicht in der Adresse; sie öffnet
 dort, wo der Browser sie zuletzt verlassen hat. Siehe B10 in `bugs.md`.
 
-Eingebaut ist seit 0.22.1 **MarineTraffic**, allein:
+Eingebaut ist seit 0.22.1 **MarineTraffic**:
 
 ```
 https://www.marinetraffic.com/en/ais/home/centerx:<lon>/centery:<lat>/zoom:<z>
@@ -850,6 +850,26 @@ Gemessen ist alles diesseits der Landesgrenze dieser Umgebung – die Hosts
 selbst sind hier gesperrt: dass der Link der Karte folgt (z14 → z10 → am
 oberen Anschlag z17 statt der 19 der eigenen Karte), dass er ohne Netz nicht
 springt, sondern eine Meldung zeigt, und dass er danach wieder zurückfindet.
+
+Seit 0.23.0 steht **VesselFinder als zweiter, leiserer Knopf daneben** – zum
+Vergleichen, nicht als Notnagel. Verlinkt ist dort die Einbettungs-Karte, der
+einzige Teil dieser Seite, der eine Position liest:
+
+```
+https://www.vesselfinder.com/aismap?zoom=<z>&lat=<lat>&lon=<lon>&names=true
+```
+
+Die beiden sehen einander nicht ähnlich: MarineTraffic ist die volle Seite
+mit Cookie-Banner und App-Hinweis, VesselFinder die nackte Karte ohne alles.
+Sie speisen sich außerdem aus verschiedenen Empfängernetzen, zeigen also nicht
+zwingend dieselben Schiffe. Welcher bleibt, entscheidet der Gebrauch; die
+Ziele stehen als Tabelle `AIS_MAPS` in `js/app.js`, ein weiterer ist eine
+Zeile dort plus ein `<a data-ais="…">` im Ebenenmenü.
+
+Ein Vorbehalt bleibt bei der Einbettungs-Karte: `width`/`height` gehen als
+`100%` mit, und ein Prozentzeichen muss in einer Adresse als `%25` kodiert
+sein. Ob die Seite das wieder dekodiert, ist von hier aus nicht prüfbar –
+sitzt die Karte schief, sind es diese beiden Parameter.
 
 **Rechtlich unkritisch:** ein gewöhnlicher Hyperlink auf eine öffentliche Seite
 ist etwas anderes als das, was die Anbieter einschränken – nämlich das

@@ -6,6 +6,18 @@ Versionierung nach [SemVer](https://semver.org/lang/de/).
 Die Versionsnummer wird ausschließlich in `js/version.js` gepflegt; Footer und
 Service-Worker-Cachename leiten sich automatisch daraus ab.
 
+## [0.23.0] – 2026-08-30
+
+### Added
+
+- **Zweites Sprungziel zum Vergleichen:** neben MarineTraffic steht jetzt
+  VesselFinder, und zwar dessen Einbettungs-Karte – der einzige Teil jener
+  Seite, der eine Position liest (siehe B10). Die volle Seite gegen die
+  nackte Karte, dazu zwei verschiedene Empfängernetze.
+- Die Ziele stehen als Tabelle `AIS_MAPS` in `js/app.js`; ein weiteres ist
+  eine Zeile dort plus ein `<a data-ais="…">` im Ebenenmenü. Jedes bringt
+  sein eigenes Zoomband mit (MarineTraffic 2–17, VesselFinder 3–18).
+
 ## [0.22.1] – 2026-08-30
 
 ### Fixed
